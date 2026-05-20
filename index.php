@@ -1,11 +1,11 @@
-<?php require_once 'includes/config.php'; ?>
+﻿<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="UX Pacific Shop - Premium UX/UI design resources" />
-    <title>UX Pacific – Shop</title>
+    <title>UX Pacific - Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -106,119 +106,7 @@
                 <button class="filter-btn">Badges</button>
             </div>
             
-            <div class="products-grid">
-                <?php
-                if (!isset($conn)) {
-                    @require_once 'includes/config.php';
-                }
-                
-                if (isset($conn)) {
-                    $sql = "SELECT * FROM products WHERE is_active = 1 ORDER BY id ASC LIMIT 4";
-                    $result = $conn->query($sql);
-                    if ($result && $result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            $id = $row['id'];
-                            $name = htmlspecialchars($row['name']);
-                            $category = htmlspecialchars($row['category']);
-                            $image = htmlspecialchars($row['image']);
-                            $price = number_format($row['price']);
-                            $old_price = !empty($row['old_price']) ? number_format($row['old_price']) : '';
-                            $rating = $row['rating'] ?: '4.5';
-                            
-                            $desc = "A clean design asset designed for communities, profiles and achievements.";
-                            $specs = "Size: PNG / SVG / 1024px";
-                            if(strpos(strtolower($name), 'workbook') !== false) {
-                                $desc = "A practical workbook for UX learners and designers.";
-                                $specs = "Size: A4 / Digital PDF";
-                            } else if(strpos(strtolower($name), 'template') !== false) {
-                                $desc = "Premium mobile mockup with clean branding and soft fabric shadows.";
-                                $specs = "Size: Figma File / Auto Layout Ready";
-                            }
-                            
-                            echo "
-                            <div class='prod-card'>
-                                <div class='prod-img'>
-                                    <img src='$image' alt='$name' onerror=\"this.src='img/poster.webp'\" />
-                                    <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                                </div>
-                                <div class='prod-info'>
-                                    <div class='prod-header'>
-                                        <h3>$name</h3>
-                                        <div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> $rating</div>
-                                    </div>
-                                    <p class='prod-desc'>$desc</p>
-                                    <p class='prod-specs'>$specs</p>
-                                    <div class='prod-price'>
-                                        <span class='current'>₹$price</span>
-                                        " . ($old_price ? "<span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹$old_price</span><span class='discount' style='color: #8c89a0; margin-left: 0;'>(67% OFF)</span>" : "") . "
-                                    </div>
-                                    <div class='prod-actions'>
-                                        <button class='btn btn-primary btn-sm' style='width: 100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button>
-                                        <button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;' onclick=\"window.location.href='product.php?id=$id'\">View Details</button>
-                                    </div>
-                                </div>
-                            </div>
-                            ";
-                        }
-                    } else {
-                        echo "
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific Badge Pack</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A clean badge pack designed for communities, profiles, and achievements.</p>
-                                <p class='prod-specs'>Size: PNG / SVG / 1024px</p>
-                                <div class='prod-price'><span class='current'>₹199</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster1.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UI Template</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>Premium hoodie mockup with clean branding and soft fabric shadows.</p>
-                                <p class='prod-specs'>Size: Figma File / Auto Layout Ready</p>
-                                <div class='prod-price'><span class='current'>₹399</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                         <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster2.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UX Workbook</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A practical workbook for UX learners and designers.</p>
-                                <p class='prod-specs'>Size: A4 / Digital PDF</p>
-                                <div class='prod-price'><span class='current'>₹499</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster3.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UX Workbook</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A practical workbook for UX learners and designers.</p>
-                                <p class='prod-specs'>Size: A4 / Digital PDF</p>
-                                <div class='prod-price'><span class='current'>₹499</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        ";
-                    }
-                }
-                ?>
-            </div>
+            <?php include 'includes/home-products.php'; ?>
         </section>
 
         <!-- EXPLORE BY CATEGORY -->
@@ -294,7 +182,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
+                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -320,7 +208,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price">
-                            <span class="current">₹1,499</span><span class="old">₹4,999</span>
+                            <span class="current">â‚¹1,499</span><span class="old">â‚¹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -346,7 +234,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
+                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -373,7 +261,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
+                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -400,7 +288,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
+                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
