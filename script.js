@@ -3061,6 +3061,37 @@ function performHeaderSearch() {
   }
 }
 
+let headerSearchScrollPosition = null;
+
+function rememberHeaderSearchScroll() {
+  headerSearchScrollPosition = {
+    x: window.scrollX,
+    y: window.scrollY
+  };
+}
+
+function restoreHeaderSearchScroll() {
+  if (!headerSearchScrollPosition) return;
+
+  const { x, y } = headerSearchScrollPosition;
+  window.scrollTo(x, y);
+  requestAnimationFrame(() => window.scrollTo(x, y));
+}
+
+function focusHeaderSearch(input) {
+  if (!input) return;
+
+  rememberHeaderSearchScroll();
+
+  try {
+    input.focus({ preventScroll: true });
+  } catch (error) {
+    input.focus();
+  }
+
+  restoreHeaderSearchScroll();
+}
+
 // Search on Enter key
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', function() {
@@ -3069,11 +3100,24 @@ if (typeof document !== 'undefined') {
       const searchForm = searchInput.closest('.nav-search');
       const searchButton = searchForm?.querySelector('.nav-search-trigger');
 
+      searchForm?.addEventListener('pointerdown', rememberHeaderSearchScroll);
+
       searchButton?.addEventListener('click', function(e) {
-        if (searchForm && !searchForm.classList.contains('is-open') && !searchInput.value.trim()) {
-          e.preventDefault();
+        if (!searchForm) return;
+
+        e.preventDefault();
+
+        const query = searchInput.value.trim();
+        if (!searchForm.classList.contains('is-open')) {
           searchForm.classList.add('is-open');
-          searchInput.focus();
+          focusHeaderSearch(searchInput);
+          return;
+        }
+
+        if (query) {
+          performHeaderSearch();
+        } else {
+          focusHeaderSearch(searchInput);
         }
       });
 
@@ -3081,20 +3125,46 @@ if (typeof document !== 'undefined') {
         if (!searchForm.classList.contains('is-open') && e.target !== searchInput) {
           e.preventDefault();
           searchForm.classList.add('is-open');
-          searchInput.focus();
+          focusHeaderSearch(searchInput);
         }
       });
 
       searchInput.addEventListener('focus', function() {
+        rememberHeaderSearchScroll();
         searchForm?.classList.add('is-open');
+        restoreHeaderSearchScroll();
+      });
+
+      searchInput.addEventListener('input', function() {
+        restoreHeaderSearchScroll();
+      });
+
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') {
+          restoreHeaderSearchScroll();
+        }
+      });
+
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key !== 'Enter') {
+          restoreHeaderSearchScroll();
+        }
+      });
+
+      searchInput.addEventListener('blur', function() {
+        headerSearchScrollPosition = null;
       });
 
       searchForm?.addEventListener('submit', function(e) {
+        e.preventDefault();
+
         if (!searchInput.value.trim()) {
-          e.preventDefault();
           searchForm.classList.add('is-open');
-          searchInput.focus();
+          focusHeaderSearch(searchInput);
+          return;
         }
+
+        performHeaderSearch();
       });
 
       document.addEventListener('click', function(e) {
