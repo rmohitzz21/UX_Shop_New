@@ -9038,6 +9038,7 @@ body.bundles-page {
     }
 }
 
+<<<<<<< HEAD
 /* ==================== FIGMA BUNDLES PAGE EXACT ==================== */
 body.figma-bundles {
     --figma-bg: #01010d;
@@ -10399,4 +10400,207 @@ body.figma-bundles main.bundles-figma-main {
 @media (max-width: 620px) {
     .search-results-grid { grid-template-columns: 1fr; }
     .search-hero h1 { font-size: 40px; line-height: 48px; }
+=======
+/* UXP product cards (home) */
+:root {
+    --uxp-purple: #7e54eb;
+    --uxp-blue: #5b6dff;
+    --uxp-line: rgba(141, 92, 255, 0.42);
+    --uxp-line-strong: rgba(141, 92, 255, 0.78);
+}
+
+.uxp-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.uxp-product-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: 11px 11px 14px;
+    border: 1px solid var(--uxp-line);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(9, 10, 22, 0.98), rgba(6, 7, 17, 0.98));
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.uxp-product-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--uxp-line-strong);
+    background: linear-gradient(180deg, rgba(141, 92, 255, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+.uxp-product-media {
+    position: relative;
+    display: block;
+    aspect-ratio: 1.45 / 1;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.uxp-product-media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 260ms ease;
+}
+
+.uxp-product-card:hover .uxp-product-media img {
+    transform: scale(1.045);
+}
+
+.uxp-product-badge-icon {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    background: rgba(200, 185, 236, 0.68);
+    color: #ffffff;
+    backdrop-filter: blur(6px);
+}
+
+.uxp-product-badge-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.uxp-product-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 14px 1px 0;
+}
+
+.uxp-product-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+}
+
+.uxp-product-body h3 {
+    min-width: 0;
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.18rem;
+    line-height: 1.18;
+    font-weight: 500;
+}
+
+.uxp-rating {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 5px;
+    color: #ff9f2d;
+    font-size: 1.12rem;
+    line-height: 1;
+}
+
+.uxp-rating b {
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.uxp-product-body p {
+    margin: 0 0 9px;
+    color: rgba(255, 255, 255, 0.47);
+    font-size: 0.77rem;
+    line-height: 1.55;
+}
+
+.uxp-product-spec {
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.66) !important;
+    font-size: 0.72rem !important;
+}
+
+.uxp-product-meta {
+    margin-top: auto;
+    padding-top: 2px;
+}
+
+.uxp-product-price {
+    color: #ffffff;
+    font-size: 1.06rem;
+    font-weight: 800;
+}
+
+.uxp-old-price {
+    margin-left: 3px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.66rem;
+    font-weight: 400;
+    text-decoration: line-through;
+}
+
+.uxp-product-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.uxp-card-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.uxp-card-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--uxp-line-strong);
+    box-shadow: 0 20px 34px rgba(0, 0, 0, 0.22);
+}
+
+.uxp-card-btn-primary {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, var(--uxp-purple), var(--uxp-blue));
+    color: #ffffff;
+}
+
+.uxp-card-btn-secondary {
+    border-color: var(--uxp-line);
+    background: rgba(255, 255, 255, 0.06);
+    color: #eef2ff;
+}
+
+@media (max-width: 1100px) {
+    .uxp-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .uxp-product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .uxp-product-actions {
+        grid-template-columns: 1fr;
+    }
+>>>>>>> 05d1189ee6ba9e18bcfacb979690350d1c44397a
 }
