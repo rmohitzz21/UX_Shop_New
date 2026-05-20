@@ -1,11 +1,11 @@
-﻿<?php require_once 'includes/config.php'; ?>
+<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="UX Pacific Shop - Premium UX/UI design resources" />
-    <title>UX Pacific - Shop</title>
+    <title>UX Pacific – Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -106,7 +106,6 @@
                 <button class="filter-btn">Badges</button>
             </div>
             
-<<<<<<< HEAD
             <div class="products-grid">
                 <?php
                 if (!isset($conn)) {
@@ -224,9 +223,6 @@
                 }
                 ?>
             </div>
-=======
-            <?php include 'includes/home-products.php'; ?>
->>>>>>> 05d1189ee6ba9e18bcfacb979690350d1c44397a
         </section>
 
         <!-- EXPLORE BY CATEGORY -->
@@ -302,7 +298,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
+                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -328,7 +324,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price">
-                            <span class="current">â‚¹1,499</span><span class="old">â‚¹4,999</span>
+                            <span class="current">₹1,499</span><span class="old">₹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -354,7 +350,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
+                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -381,7 +377,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
+                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
@@ -408,7 +404,7 @@
                             <li>UX writing guide</li>
                         </ul>
                         <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">â‚¹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">â‚¹4,999</span>
+                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
                         </div>
                         <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
                             <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>

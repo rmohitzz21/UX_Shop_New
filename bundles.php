@@ -39,15 +39,11 @@
                     </button>
                     <div class="nav-search-suggestions" role="listbox" aria-label="Search suggestions"></div>
                 </form>
-                <a href="wishlist.php" class="icon-btn wishlist-btn" aria-label="Wishlist">
-                    <span class="wishlist-heart" aria-hidden="true">♡</span>
-                    <span id="wishlist-count" class="nav-count-badge">0</span>
-                </a>
                 <a href="cart.php" class="icon-btn cart-btn" data-cart-toggle aria-label="Cart">
                     <img src="img/ss/hugeicons_shopping-basket-secure-01.png" alt="Cart" />
                     <span id="cart-count" class="nav-count-badge">0</span>
                 </a>
-                <a href="signin.php" class="nav-cta header-signin-cta" <?php echo $headerUserId ? 'style="display:none;"' : ''; ?>>Sign In</a>
+                <a href="signin.php" class="btn-primary header-signin-cta" <?php echo $headerUserId ? 'style="display:none;"' : ''; ?>>Sign In</a>
                 <div class="user-menu profile-menu" <?php echo $headerUserId ? '' : 'style="display:none;"'; ?>>
                     <button type="button" class="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">
                         <img src="img/ss/nav/iconoir_user.png" alt="User" />
@@ -183,8 +179,6 @@
         </section>
 
         <section class="figma-explore-cta">
-            <div class="figma-cta-glow figma-cta-glow-left"></div>
-            <div class="figma-cta-glow figma-cta-glow-right"></div>
             <div class="figma-cta-content">
                 <h2>Ready to Explore More Products?</h2>
                 <p>Explore the complete UXPacific Shop collection and discover high-quality merch, mockups, UI templates, workbooks, badge packs, and creative digital assets designed especially for modern creators.</p>
@@ -230,14 +224,6 @@
     <script>
         (() => {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-            document.querySelectorAll('.figma-featured-card, .figma-product-card, .figma-grow-grid article, .figma-testimonial-track article, .figma-explore-cta').forEach((item) => {
-                item.addEventListener('pointermove', (event) => {
-                    const rect = item.getBoundingClientRect();
-                    item.style.setProperty('--mx', `${((event.clientX - rect.left) / rect.width) * 100}%`);
-                    item.style.setProperty('--my', `${((event.clientY - rect.top) / rect.height) * 100}%`);
-                });
-            });
 
             document.querySelectorAll('.figma-btn, .figma-btn-sm, .figma-cta-btn, .figma-contact-btn').forEach((button) => {
                 button.addEventListener('pointerdown', () => button.classList.add('is-clicking'));

@@ -8176,7 +8176,7 @@ html {
 .cat-title { font-size: 20px; font-weight: 600; margin: 0 0 8px 0; }
 .cat-count { color: #8c89a0; font-size: 14px; margin: 0 0 16px 0; display: block; }
 .cat-desc { color: #cfcde0; font-size: 15px; margin: 0 0 24px 0; line-height: 1.5; }
-.cat-link { color: #6D3DFF; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.cat-link { color: #6147bd; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
 
 /* Connect Section Updates */
 .contact-section { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
@@ -9038,7 +9038,6 @@ body.bundles-page {
     }
 }
 
-<<<<<<< HEAD
 /* ==================== FIGMA BUNDLES PAGE EXACT ==================== */
 body.figma-bundles {
     --figma-bg: #01010d;
@@ -9210,38 +9209,6 @@ body.figma-bundles main.bundles-figma-main {
     transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
 }
 
-.figma-featured-card::before,
-.figma-product-card::before,
-.figma-grow-grid article::before,
-.figma-testimonial-track article::before,
-.figma-explore-cta::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(97, 71, 189, 0.28), transparent 38%);
-    transition: opacity 0.25s ease;
-}
-
-.figma-featured-card:hover,
-.figma-product-card:hover,
-.figma-grow-grid article:hover,
-.figma-testimonial-track article:hover,
-.figma-explore-cta:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255, 255, 255, 0.34);
-    box-shadow: 0 24px 70px rgba(97, 71, 189, 0.20);
-}
-
-.figma-featured-card:hover::before,
-.figma-product-card:hover::before,
-.figma-grow-grid article:hover::before,
-.figma-testimonial-track article:hover::before,
-.figma-explore-cta:hover::before {
-    opacity: 1;
-}
-
 .figma-featured-image {
     width: 508.8px;
     height: 418px;
@@ -9256,12 +9223,6 @@ body.figma-bundles main.bundles-figma-main {
     height: 100%;
     object-fit: cover;
     transition: transform 0.45s ease, filter 0.45s ease;
-}
-
-.figma-featured-card:hover .figma-featured-image img,
-.figma-product-card:hover .figma-product-image img {
-    transform: scale(1.055);
-    filter: saturate(1.08) contrast(1.04);
 }
 
 .figma-featured-image span {
@@ -9283,11 +9244,6 @@ body.figma-bundles main.bundles-figma-main {
     background: linear-gradient(90deg, #ff6f47 0%, #ff7746 7%, #ff7e44 14%, #ff8542 21%, #ff8c40 29%, #ff933e 36%, #ff9a3b 43%, #ffa038 50%, #ffa735 57%, #ffad31 64%, #ffb42d 71%, #ffba28 79%, #ffc022 86%, #ffc71a 93%, #ffcd0f 100%);
     border-radius: 26843500px;
     transition: transform 0.24s ease, box-shadow 0.24s ease;
-}
-
-.figma-featured-card:hover .figma-featured-image span {
-    transform: scale(1.05);
-    box-shadow: 0 12px 24px rgba(255, 154, 59, 0.28);
 }
 
 .figma-featured-content {
@@ -9649,12 +9605,6 @@ body.figma-bundles main.bundles-figma-main {
     top: 89px;
     left: calc(100% + 0px);
     background: linear-gradient(90deg, #6147bd 0%, rgba(78, 56, 153, 0.86) 14%, rgba(59, 42, 119, 0.71) 29%, rgba(41, 28, 87, 0.57) 43%, rgba(24, 15, 56, 0.43) 57%, rgba(9, 5, 28, 0.29) 71%, rgba(1, 1, 5, 0.14) 86%, rgba(0, 0, 0, 0) 100%);
-}
-
-.figma-grow-grid article:hover {
-    transform: translateY(-7px);
-    background: rgba(97, 71, 189, 0.18);
-    box-shadow: 0 18px 42px rgba(97, 71, 189, 0.22);
 }
 
 .figma-grow-grid strong {
@@ -10102,6 +10052,7 @@ body.figma-bundles main.bundles-figma-main {
     font-size: 14px;
     font-weight: 600;
     transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    width: 110px;
 }
 .header-signin-cta:hover,
 .nav-cta:hover {
@@ -10400,207 +10351,4 @@ body.figma-bundles main.bundles-figma-main {
 @media (max-width: 620px) {
     .search-results-grid { grid-template-columns: 1fr; }
     .search-hero h1 { font-size: 40px; line-height: 48px; }
-=======
-/* UXP product cards (home) */
-:root {
-    --uxp-purple: #7e54eb;
-    --uxp-blue: #5b6dff;
-    --uxp-line: rgba(141, 92, 255, 0.42);
-    --uxp-line-strong: rgba(141, 92, 255, 0.78);
-}
-
-.uxp-product-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.uxp-product-card {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    padding: 11px 11px 14px;
-    border: 1px solid var(--uxp-line);
-    border-radius: 18px;
-    background: linear-gradient(180deg, rgba(9, 10, 22, 0.98), rgba(6, 7, 17, 0.98));
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
-    overflow: hidden;
-    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
-}
-
-.uxp-product-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--uxp-line-strong);
-    background: linear-gradient(180deg, rgba(141, 92, 255, 0.14), rgba(255, 255, 255, 0.04));
-}
-
-.uxp-product-media {
-    position: relative;
-    display: block;
-    aspect-ratio: 1.45 / 1;
-    border-radius: 14px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.uxp-product-media img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    transition: transform 260ms ease;
-}
-
-.uxp-product-card:hover .uxp-product-media img {
-    transform: scale(1.045);
-}
-
-.uxp-product-badge-icon {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    border-radius: 999px;
-    background: rgba(200, 185, 236, 0.68);
-    color: #ffffff;
-    backdrop-filter: blur(6px);
-}
-
-.uxp-product-badge-icon svg {
-    width: 20px;
-    height: 20px;
-}
-
-.uxp-product-body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 14px 1px 0;
-}
-
-.uxp-product-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 9px;
-}
-
-.uxp-product-body h3 {
-    min-width: 0;
-    margin: 0;
-    color: #ffffff;
-    font-size: 1.18rem;
-    line-height: 1.18;
-    font-weight: 500;
-}
-
-.uxp-rating {
-    display: flex;
-    align-items: center;
-    flex: 0 0 auto;
-    gap: 5px;
-    color: #ff9f2d;
-    font-size: 1.12rem;
-    line-height: 1;
-}
-
-.uxp-rating b {
-    color: #ffffff;
-    font-size: 0.78rem;
-    font-weight: 500;
-}
-
-.uxp-product-body p {
-    margin: 0 0 9px;
-    color: rgba(255, 255, 255, 0.47);
-    font-size: 0.77rem;
-    line-height: 1.55;
-}
-
-.uxp-product-spec {
-    margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.66) !important;
-    font-size: 0.72rem !important;
-}
-
-.uxp-product-meta {
-    margin-top: auto;
-    padding-top: 2px;
-}
-
-.uxp-product-price {
-    color: #ffffff;
-    font-size: 1.06rem;
-    font-weight: 800;
-}
-
-.uxp-old-price {
-    margin-left: 3px;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.66rem;
-    font-weight: 400;
-    text-decoration: line-through;
-}
-
-.uxp-product-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 14px;
-}
-
-.uxp-card-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 30px;
-    padding: 0 14px;
-    border-radius: 999px;
-    border: 1px solid transparent;
-    font-size: 0.8rem;
-    font-weight: 500;
-    white-space: nowrap;
-    text-decoration: none;
-    cursor: pointer;
-    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-}
-
-.uxp-card-btn:hover {
-    transform: translateY(-2px);
-    border-color: var(--uxp-line-strong);
-    box-shadow: 0 20px 34px rgba(0, 0, 0, 0.22);
-}
-
-.uxp-card-btn-primary {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: linear-gradient(135deg, var(--uxp-purple), var(--uxp-blue));
-    color: #ffffff;
-}
-
-.uxp-card-btn-secondary {
-    border-color: var(--uxp-line);
-    background: rgba(255, 255, 255, 0.06);
-    color: #eef2ff;
-}
-
-@media (max-width: 1100px) {
-    .uxp-product-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 640px) {
-    .uxp-product-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .uxp-product-actions {
-        grid-template-columns: 1fr;
-    }
->>>>>>> 05d1189ee6ba9e18bcfacb979690350d1c44397a
 }
