@@ -619,6 +619,7 @@ function fetchCartFromAPI() {
                          // Better to just update memory for logged in users to avoid conflicts.
                          // But for now, let's keep cart variable as source of truth.
              updateCartCount();
+             if (typeof window.renderCartDrawer === 'function') window.renderCartDrawer();
              if (window.location.pathname.includes('cart.php')) loadCartPage();
              if (window.location.pathname.includes('checkout.php')) loadCheckoutPage();
          }
@@ -666,7 +667,8 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
             product_id: productId,
             quantity: quantity,
             size: size,
-            available_type: available_type
+            available_type: available_type,
+            details: product
         };
   
         fetch('api/cart/add.php', {
@@ -3302,5 +3304,344 @@ window.signUpWithGoogle = signUpWithGoogle;
 window.checkAuthBeforeCheckout = checkAuthBeforeCheckout;
 window.loadOrderConfirmationPage = loadOrderConfirmationPage;
 
+// ==================== LOCALHOST SHOP INTERACTIONS ====================
+(function initLocalhostShop() {
+  const money = (value) => `Rs. ${Number(value || 0).toLocaleString('en-IN')}`;
+  const currentAddToCart = window.addToCart || addToCart;
+  const currentRemoveFromCart = window.removeFromCart || removeFromCart;
+  const currentUpdateCartQuantity = window.updateCartQuantity || updateCartQuantity;
 
+  function ensureCartDrawer() {
+    let drawer = document.getElementById('cart-drawer');
+    if (drawer) return drawer;
 
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="cart-drawer-overlay" data-cart-close></div>
+      <aside id="cart-drawer" class="cart-drawer" aria-hidden="true" aria-label="Shopping cart">
+        <div class="cart-drawer-head">
+          <div>
+            <span>Your Cart</span>
+            <strong id="cart-drawer-count">0 items</strong>
+          </div>
+          <button type="button" class="cart-drawer-close" data-cart-close aria-label="Close cart">x</button>
+        </div>
+        <div id="cart-drawer-items" class="cart-drawer-items"></div>
+        <div class="cart-drawer-foot">
+          <div class="cart-drawer-total"><span>Subtotal</span><strong id="cart-drawer-total">Rs. 0</strong></div>
+          <p id="cart-drawer-message" class="cart-drawer-message"></p>
+          <button type="button" id="cart-drawer-checkout" class="cart-drawer-checkout">Proceed to Checkout</button>
+        </div>
+      </aside>
+    `;
+    document.body.append(...wrap.children);
+    document.querySelectorAll('[data-cart-close]').forEach((node) => {
+      node.addEventListener('click', closeCartDrawer);
+    });
+    document.getElementById('cart-drawer-checkout')?.addEventListener('click', () => {
+      const user = getUserSession();
+      if (!user || !user.id) {
+        const msg = document.getElementById('cart-drawer-message');
+        if (msg) {
+          msg.innerHTML = 'Please <a href="signin.php?redirect=checkout.php">sign in</a> or <a href="signup.php">sign up</a> to checkout.';
+        }
+        showToast('Please sign in to proceed to checkout', 'error');
+        return;
+      }
+      window.location.href = 'checkout.php';
+    });
+    return document.getElementById('cart-drawer');
+  }
+
+  function renderCartDrawer() {
+    ensureCartDrawer();
+    const itemsEl = document.getElementById('cart-drawer-items');
+    const countEl = document.getElementById('cart-drawer-count');
+    const totalEl = document.getElementById('cart-drawer-total');
+    if (!itemsEl || !countEl || !totalEl) return;
+
+    const totalCount = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    const subtotal = cart.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+    countEl.textContent = `${totalCount} item${totalCount === 1 ? '' : 's'}`;
+    totalEl.textContent = money(subtotal);
+
+    if (!cart.length) {
+      itemsEl.innerHTML = '<div class="cart-drawer-empty">Your cart is empty.</div>';
+      return;
+    }
+
+    itemsEl.innerHTML = cart.map((item) => `
+      <article class="cart-drawer-item">
+        <img src="${esc(item.image || 'img/sticker.webp')}" alt="${esc(item.name || 'Product')}" onerror="this.src='img/sticker.webp'" />
+        <div>
+          <h4>${esc(item.name || 'Product')}</h4>
+          <p>${esc(item.available_type || 'physical')}${item.size ? ` / ${esc(item.size)}` : ''}</p>
+          <strong>${money((Number(item.price || 0) * Number(item.quantity || 1)))}</strong>
+          <div class="cart-drawer-qty">
+            <button type="button" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) - 1}">-</button>
+            <span>${Number(item.quantity || 1)}</span>
+            <button type="button" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) + 1}">+</button>
+            <button type="button" data-cart-remove="${esc(item.id)}" data-size="${esc(item.size || '')}">Remove</button>
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+    itemsEl.querySelectorAll('[data-cart-qty]').forEach((button) => {
+      button.addEventListener('click', () => window.updateCartQuantity(button.dataset.cartQty, button.dataset.size || null, Number(button.dataset.next)));
+    });
+    itemsEl.querySelectorAll('[data-cart-remove]').forEach((button) => {
+      button.addEventListener('click', () => window.removeFromCart(button.dataset.cartRemove, button.dataset.size || null));
+    });
+  }
+
+  function openCartDrawer() {
+    ensureCartDrawer();
+    renderCartDrawer();
+    document.body.classList.add('cart-drawer-open');
+    document.getElementById('cart-drawer')?.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeCartDrawer() {
+    document.body.classList.remove('cart-drawer-open');
+    document.getElementById('cart-drawer')?.setAttribute('aria-hidden', 'true');
+  }
+
+  window.openCartDrawer = openCartDrawer;
+  window.closeCartDrawer = closeCartDrawer;
+  window.renderCartDrawer = renderCartDrawer;
+
+  window.addToCart = function enhancedAddToCart(...args) {
+    const result = currentAddToCart(...args);
+    Promise.resolve(result).then(() => {
+      setTimeout(() => {
+        renderCartDrawer();
+        openCartDrawer();
+      }, 120);
+    }).catch(() => {});
+    return result;
+  };
+
+  window.removeFromCart = function enhancedRemoveFromCart(...args) {
+    const result = currentRemoveFromCart(...args);
+    setTimeout(renderCartDrawer, 180);
+    return result;
+  };
+
+  window.updateCartQuantity = function enhancedUpdateCartQuantity(...args) {
+    const result = currentUpdateCartQuantity(...args);
+    setTimeout(renderCartDrawer, 180);
+    return result;
+  };
+
+  function syncHeaderAuth(user) {
+    const signedIn = !!(user && user.id);
+    document.querySelectorAll('.header-signin-cta, .nav-cta[href="signin.php"]').forEach((el) => {
+      el.style.display = signedIn ? 'none' : 'inline-flex';
+      el.textContent = 'Sign In';
+    });
+
+    document.querySelectorAll('.profile-menu, .user-menu, .nav-user').forEach((menu) => {
+      menu.style.display = signedIn ? 'flex' : 'none';
+      const name = menu.querySelector('.user-name') || menu.querySelector('span');
+      if (name && signedIn) {
+        name.textContent = user.firstName || user.name || 'Profile';
+      }
+      const legacyDropdown = menu.querySelector('.user-dropdown');
+      if (legacyDropdown && signedIn) {
+        legacyDropdown.innerHTML = `
+          <a href="account.php" class="user-dropdown-item"><span>Edit Profile</span></a>
+          <button type="button" class="user-dropdown-item" onclick="handleSignOut()"><span>Logout</span></button>
+        `;
+      }
+      if (signedIn && menu.classList.contains('user-menu') && !menu.querySelector('.profile-dropdown')) {
+        menu.classList.add('profile-menu');
+        const anchor = menu.querySelector('a');
+        if (anchor) {
+          anchor.outerHTML = `
+            <button type="button" class="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">
+              <img src="img/ss/nav/iconoir_user.png" alt="User" />
+              <span class="user-name">${esc(user.firstName || user.name || 'Profile')}</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="profile-dropdown" role="menu">
+              <a href="account.php" role="menuitem">Edit Profile</a>
+              <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
+            </div>
+          `;
+        }
+      }
+    });
+  }
+
+  async function hydrateSession() {
+    try {
+      const response = await fetch('api/auth/session.php');
+      const data = await response.json();
+      const user = data?.data?.user || null;
+      if (user) {
+        setUserSession({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          role: user.role || 'customer'
+        });
+      } else {
+        clearUserSession();
+      }
+      syncHeaderAuth(getUserSession());
+    } catch (error) {
+      syncHeaderAuth(getUserSession());
+    }
+  }
+
+  function initProfileMenus() {
+    document.addEventListener('click', (event) => {
+      const toggle = event.target.closest('.profile-menu-toggle');
+      document.querySelectorAll('.profile-menu').forEach((menu) => {
+        if (!toggle || !menu.contains(toggle)) menu.classList.remove('is-open');
+      });
+      if (toggle) {
+        event.preventDefault();
+        const menu = toggle.closest('.profile-menu');
+        const nextState = !menu.classList.contains('is-open');
+        menu.classList.toggle('is-open', nextState);
+        toggle.setAttribute('aria-expanded', String(nextState));
+      }
+    });
+  }
+
+  function initCartLinks() {
+    document.addEventListener('click', (event) => {
+      const cartLink = event.target.closest('[data-cart-toggle], .cart-btn, .nav-cart');
+      if (!cartLink) return;
+      event.preventDefault();
+      openCartDrawer();
+    });
+  }
+
+  function initSearchSuggestions() {
+    document.querySelectorAll('.nav-search').forEach((form) => {
+      const input = form.querySelector('input[type="search"]');
+      let panel = form.querySelector('.nav-search-suggestions');
+      if (!input) return;
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.className = 'nav-search-suggestions';
+        form.appendChild(panel);
+      }
+
+      let timer = null;
+      input.addEventListener('input', () => {
+        clearTimeout(timer);
+        const q = input.value.trim();
+        if (q.length < 2) {
+          panel.classList.remove('is-visible');
+          panel.innerHTML = '';
+          return;
+        }
+        timer = setTimeout(async () => {
+          try {
+            const response = await fetch(`api/product/search.php?q=${encodeURIComponent(q)}&limit=6`);
+            const data = await response.json();
+            const items = data?.data?.items || [];
+            panel.innerHTML = items.length ? items.map((item) => `
+              <button type="button" class="nav-search-suggestion" data-query="${esc(item.name)}">
+                <img src="${esc(item.image)}" alt="" onerror="this.src='img/sticker.webp'" />
+                <span>${esc(item.name)}</span>
+                <strong>${money(item.price)}</strong>
+              </button>
+            `).join('') : '<div class="nav-search-empty">No matching products found</div>';
+            panel.classList.add('is-visible');
+          } catch (error) {
+            panel.classList.remove('is-visible');
+          }
+        }, 180);
+      });
+
+      panel.addEventListener('click', (event) => {
+        const item = event.target.closest('.nav-search-suggestion');
+        if (!item) return;
+        input.value = item.dataset.query || '';
+        window.location.href = `search.php?q=${encodeURIComponent(input.value)}`;
+      });
+    });
+  }
+
+  function initDataAddButtons() {
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-add-to-cart]');
+      if (!button) return;
+      event.preventDefault();
+      const details = {
+        name: button.dataset.name || 'Product',
+        price: Number(button.dataset.price || 0),
+        image: button.dataset.image || 'img/sticker.webp',
+        category: button.dataset.category || 'Products',
+        description: button.dataset.description || ''
+      };
+      window.addToCart(button.dataset.addToCart, null, 1, details, button.dataset.type || 'physical');
+    });
+  }
+
+  const localAddToWishlist = window.addToWishlist;
+  window.addToWishlist = function enhancedWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating) {
+    const user = getUserSession();
+    if (!user || !user.id) {
+      return localAddToWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating);
+    }
+    const payload = {
+      product_id: productId,
+      details: {
+        name: productName,
+        price: productPrice,
+        image: productImage,
+        category: productCategory,
+        description: productDescription,
+        rating: productRating || 4.5
+      }
+    };
+    return fetch('api/wishlist/add.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
+      body: JSON.stringify(payload)
+    }).then((response) => response.json()).then((data) => {
+      if (data.status === 'success') {
+        showToast('Added to wishlist', 'success');
+        syncWishlistFromAPI();
+      } else {
+        showToast(data.message || 'Could not update wishlist', 'error');
+      }
+    }).catch(() => localAddToWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating));
+  };
+
+  async function syncWishlistFromAPI() {
+    if (!getUserSession()?.id) {
+      updateWishlistCount();
+      return;
+    }
+    try {
+      const response = await fetch('api/wishlist/list.php');
+      const data = await response.json();
+      if (data.status === 'success') {
+        localStorage.setItem('wishlist', JSON.stringify(data.data || []));
+        updateWishlistCount();
+      }
+    } catch (error) {
+      updateWishlistCount();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ensureCartDrawer();
+    hydrateSession();
+    initProfileMenus();
+    initCartLinks();
+    initSearchSuggestions();
+    initDataAddButtons();
+    renderCartDrawer();
+    syncWishlistFromAPI();
+  });
+})();

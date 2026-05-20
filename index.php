@@ -124,6 +124,10 @@
                             $price = number_format($row['price']);
                             $old_price = !empty($row['old_price']) ? number_format($row['old_price']) : '';
                             $rating = $row['rating'] ?: '4.5';
+                            $available_type = htmlspecialchars($row['available_type'] ?? 'physical');
+                            $jsName = htmlspecialchars(json_encode($name), ENT_QUOTES, 'UTF-8');
+                            $jsImage = htmlspecialchars(json_encode($image), ENT_QUOTES, 'UTF-8');
+                            $jsCategory = htmlspecialchars(json_encode($category), ENT_QUOTES, 'UTF-8');
                             
                             $desc = "A clean design asset designed for communities, profiles and achievements.";
                             $specs = "Size: PNG / SVG / 1024px";
@@ -153,7 +157,7 @@
                                         " . ($old_price ? "<span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹$old_price</span><span class='discount' style='color: #8c89a0; margin-left: 0;'>(67% OFF)</span>" : "") . "
                                     </div>
                                     <div class='prod-actions'>
-                                        <button class='btn btn-primary btn-sm' style='width: 100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button>
+                                        <button class='btn btn-primary btn-sm' style='width: 100%; border-radius: 999px; background: #6147bd; border: none;' onclick='addToCart(\"$id\", null, 1, {name: $jsName, price: {$row['price']}, image: $jsImage, category: $jsCategory, description: \"$desc\"}, \"$available_type\")'>Buy Now</button>
                                         <button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;' onclick=\"window.location.href='product.php?id=$id'\">View Details</button>
                                     </div>
                                 </div>

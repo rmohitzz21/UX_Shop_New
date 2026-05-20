@@ -1,0 +1,751 @@
+<?php
+require_once '../includes/config.php';
+// Ensure admin is logged in
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: admin-login.php');
+    exit;
+}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Product – UX Pacific Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+            <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
+
+  <style>
+    /* ==================== ADD/EDIT PRODUCT PAGE STYLES ==================== */
+
+    :root {
+      --admin-bg-light: #f5f7fa;
+      --admin-bg-dark: #0f172a;
+      --admin-card-light: #ffffff;
+      --admin-card-dark: #1e293b;
+      --admin-text-light: #1a1a1a;
+      --admin-text-dark: #f1f5f9;
+      --admin-border-light: #e5e7eb;
+      --admin-border-dark: #334155;
+      --admin-accent: #667eea;
+    }
+
+    [data-theme="dark"] {
+      --admin-bg: var(--admin-bg-dark);
+      --admin-card: var(--admin-card-dark);
+      --admin-text: var(--admin-text-dark);
+      --admin-border: var(--admin-border-dark);
+    }
+
+    [data-theme="light"] {
+      --admin-bg: var(--admin-bg-light);
+      --admin-card: var(--admin-card-light);
+      --admin-text: var(--admin-text-light);
+      --admin-border: var(--admin-border-light);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--admin-bg);
+      color: var(--admin-text);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .add-product-container {
+      min-height: 100vh;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--admin-text);
+      margin: 0;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: 8px;
+      color: var(--admin-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .back-button:hover {
+      background: var(--admin-bg);
+      border-color: var(--admin-accent);
+    }
+
+    .back-button svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .form-card {
+      background: var(--admin-card);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--admin-border);
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--admin-text);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--admin-border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--admin-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-label .required {
+      color: #ef4444;
+      margin-left: 0.25rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 0.75rem;
+      border: 1px solid var(--admin-border);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: var(--admin-bg);
+      color: var(--admin-text);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--admin-accent);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-input[type="file"] {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .file-upload-area {
+      border: 2px dashed var(--admin-border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      background: var(--admin-bg);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .file-upload-area:hover {
+      border-color: var(--admin-accent);
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .file-upload-area.dragover {
+      border-color: var(--admin-accent);
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .file-upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      color: var(--admin-text);
+      opacity: 0.5;
+    }
+
+    .file-upload-text {
+      color: var(--admin-text);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .file-upload-hint {
+      color: var(--admin-text);
+      opacity: 0.6;
+      font-size: 0.75rem;
+    }
+
+    .file-preview {
+      margin-top: 1rem;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .file-preview img {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 8px;
+      border: 1px solid var(--admin-border);
+      object-fit: cover;
+    }
+
+    .existing-images {
+      margin-bottom: 1.5rem;
+    }
+
+    .existing-images h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--admin-text);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--admin-border);
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      padding: 0.75rem 1.5rem;
+      background: var(--admin-bg);
+      border: 1px solid var(--admin-border);
+      border-radius: 8px;
+      color: var(--admin-text);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover {
+      background: var(--admin-card);
+      border-color: var(--admin-accent);
+    }
+
+    .form-help-text {
+      font-size: 0.75rem;
+      color: var(--admin-text);
+      opacity: 0.6;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      cursor: pointer;
+      margin: 0;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .add-product-container {
+        padding: 1rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column-reverse;
+      }
+
+      .form-actions button,
+      .form-actions a {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="light">
+  <div class="add-product-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>Edit Product</h1>
+      <a href="admin-dashboard.php" class="back-button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <form id="edit-product-form">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <input type="hidden" id="product-id" name="id">
+
+        <!-- Basic Information -->
+        <div class="form-section">
+          <h2 class="form-section-title">Basic Information</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="product-name">
+                Product Name
+                <span class="required">*</span>
+              </label>
+              <input type="text" id="product-name" name="name" class="form-input" required
+                placeholder="e.g., UXPacific Classic T-Shirt" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-category">
+                Category
+                <span class="required">*</span>
+              </label>
+              <select id="product-category" name="category" class="form-select" required>
+                <option value="">Select Category</option>
+                <option value="T-Shirts">T-Shirts</option>
+                <option value="Stickers">Stickers</option>
+                <option value="Booklet">Booklet</option>
+                <option value="Workbook">Workbook</option>
+                <option value="Mockup">Mockup</option>
+                <option value="Badges">Badges</option>
+                <option value="Template">UI Template</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="available-type">
+                Format
+                <span class="required">*</span>
+              </label>
+              <select id="available-type" name="available_type" class="form-select" required>
+                <option value="physical">Physical Product Only</option>
+                <option value="digital">Digital Product Only</option>
+                <option value="both">Both (User Chooses)</option>
+              </select>
+              <p class="form-help-text">For Workbooks/Booklets, select "Both" to let user choose.</p>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="product-description">
+                Description
+                <span class="required">*</span>
+              </label>
+              <textarea id="product-description" name="description" class="form-textarea" required
+                placeholder="Enter detailed product description..."></textarea>
+              <p class="form-help-text">Provide a detailed description of the product features and benefits.</p>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="related-products">
+                Related Products
+              </label>
+              <input type="text" id="related-products" name="related_products" class="form-input"
+                placeholder="e.g., 5, 8, 12 (Comma separated IDs)" />
+              <p class="form-help-text">Enter product IDs of related items, separated by commas.</p>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="whats-included">
+                What's Included
+              </label>
+              <textarea id="whats-included" name="whats_included" class="form-textarea"
+                placeholder="List items included in this product..."></textarea>
+              <p class="form-help-text">Detail exactly what the customer will receive.</p>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="file-specification">
+                File Specification
+              </label>
+              <textarea id="file-specification" name="file_specification" class="form-textarea"
+                placeholder="Enter file details (e.g., PDF, 50MB, High Res)..."></textarea>
+              <p class="form-help-text">Technical details about the digital file.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing & Inventory -->
+        <div class="form-section">
+          <h2 class="form-section-title">Pricing & Inventory</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="product-price">
+                Price
+                <span class="required">*</span>
+              </label>
+              <input type="number" id="product-price" name="price" class="form-input" step="0.01" min="0" required
+                placeholder="0.00" />
+              <p class="form-help-text">Enter the selling price in USD.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-old-price">
+                Old Price (Optional)
+              </label>
+              <input type="number" id="product-old-price" name="old_price" class="form-input" step="0.01" min="0"
+                placeholder="0.00" />
+              <p class="form-help-text">Enter the original price to show discount.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="commercial-price">
+                 Commercial License Price
+              </label>
+              <input type="number" id="commercial-price" name="commercial_price" class="form-input" step="0.01" min="0"
+                placeholder="0.00" />
+              <p class="form-help-text">Leave blank to use base price + 40% default.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-stock">
+                Stock Quantity
+                <span class="required">*</span>
+              </label>
+              <input type="number" id="product-stock" name="stock" class="form-input" min="0" required
+                placeholder="0" value="0" />
+              <p class="form-help-text">Enter the available quantity in stock.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-rating">
+                Rating (Optional)
+              </label>
+              <input type="number" id="product-rating" name="rating" class="form-input" step="0.1" min="0" max="5"
+                placeholder="0.0" />
+              <p class="form-help-text">Enter initial rating (0.0 to 5.0).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Image -->
+        <div class="form-section">
+          <h2 class="form-section-title">Product Images</h2>
+          
+          <div class="existing-images" id="existing-images-container" style="display: none;">
+            <h3>Current Images:</h3>
+            <div class="file-preview" id="current-images-grid">
+              <!-- Existing images loaded here -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="product-image">
+              Upload New Images 
+            </label>
+            <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('product-image').click()">
+              <svg class="file-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <p class="file-upload-text">Click to upload or drag and drop</p>
+              <p class="file-upload-hint">PNG, JPG, WEBP up to 5MB (Uploading new images replaces existing ones)</p>
+            </div>
+            <input type="file" id="product-image" name="images[]" class="form-input" accept="image/*" multiple
+              style="display: none;" onchange="handleFileSelect(event)" />
+            <div class="file-preview" id="file-preview" style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <!-- New previews here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Options -->
+        <div class="form-section">
+          <h2 class="form-section-title">Additional Options</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="product-featured" name="featured" value="1" />
+                <label class="form-label" for="product-featured" style="margin: 0;">
+                  Featured Product
+                </label>
+              </div>
+              <p class="form-help-text">Show this product in featured section on homepage.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a href="admin-dashboard.php" class="btn-secondary">Cancel</a>
+          <button type="submit" class="btn-primary">Update Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ------------------------------
+       LOAD PRODUCT DATA
+    --------------------------------*/
+    document.addEventListener('DOMContentLoaded', async () => {
+
+      // Auth is enforced by PHP session at the top of this file.
+      // No client-side localStorage auth check — it is bypassable and misleading.
+
+      // Theme setup
+      const savedTheme = localStorage.getItem('admin-theme') || 'light';
+      document.body.setAttribute('data-theme', savedTheme);
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (!id) {
+        alert('Product ID missing');
+        location.href = 'admin-dashboard.php';
+        return;
+      }
+
+      document.getElementById('product-id').value = id;
+
+      try {
+        const res = await fetch(`../api/admin/product/get.php?id=${id}`);
+        if (!res.ok) throw new Error('Failed to fetch');
+
+        const json = await res.json();
+        if (json.status !== 'success') throw new Error(json.message);
+
+        const p = json.data;
+
+        // Fill inputs using getElementById
+        document.getElementById('product-name').value = p.name;
+        document.getElementById('product-category').value = p.category;
+        document.getElementById('available-type').value = p.available_type || 'physical';
+        document.getElementById('product-description').value = p.description;
+        document.getElementById('product-price').value = p.price;
+        document.getElementById('product-old-price').value = p.old_price || '';
+        document.getElementById('commercial-price').value = p.commercial_price || '';
+        document.getElementById('product-stock').value = p.stock;
+        document.getElementById('product-rating').value = p.rating || '';
+        document.getElementById('related-products').value = p.related_products || '';
+        document.getElementById('whats-included').value = p.whats_included || '';
+        document.getElementById('file-specification').value = p.file_specification || '';
+        if (p.is_featured == 1 || p.is_featured === '1') {
+            document.getElementById('product-featured').checked = true;
+        }
+
+        // Images
+        let images = [];
+        if (p.additional_images) {
+          try { images = JSON.parse(p.additional_images); } catch(e) {}
+        }
+        if (images.length === 0 && p.image) images.push(p.image);
+
+        if (images.length > 0) {
+          document.getElementById('existing-images-container').style.display = 'block';
+          const imageGrid = document.getElementById('current-images-grid');
+          
+          images.forEach((src, index) => {
+            const div = document.createElement('div');
+            div.style.position = 'relative';
+            div.style.display = 'inline-block';
+            div.style.marginRight = '10px';
+            div.style.marginBottom = '10px';
+
+            const img = document.createElement('img');
+            img.src = '../' + src;
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '6px';
+            img.style.border = '1px solid var(--admin-border)';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.top = '-8px';
+            removeBtn.style.right = '-8px';
+            removeBtn.style.background = '#ef4444';
+            removeBtn.style.color = 'white';
+            removeBtn.style.border = 'none';
+            removeBtn.style.borderRadius = '50%';
+            removeBtn.style.width = '24px';
+            removeBtn.style.height = '24px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.onclick = function() { 
+                div.remove();
+                // Mark as removed by removing from the 'images' array or simpler:
+                // We will collect remaining images from the DOM on submit.
+                // Or better: keep a state.
+            };
+
+            div.appendChild(img);
+            div.appendChild(removeBtn);
+            // Store original source for retrieval
+            div.dataset.src = src; 
+            imageGrid.appendChild(div);
+          });
+        }
+
+      } catch (err) {
+        alert(err.message);
+        location.href = 'admin-dashboard.php';
+      }
+    });
+
+    /* ------------------------------
+       IMAGE PREVIEW
+    --------------------------------*/
+    let selectedFiles = [];
+    // Note: The HTML has onchange="handleFileSelect(event)" inline, but we are adding listener here.
+    // To avoid duplication, we should probably remove the inline handler or stick to one approach.
+    // The user's script adds a listener. Let's stick to the user's script pattern but ensure it works with the HTML.
+    
+    const productImageInput = document.getElementById('product-image');
+    const previewContainer = document.getElementById('file-preview');
+
+    productImageInput.addEventListener('change', e => {
+      selectedFiles = [...e.target.files];
+      previewContainer.innerHTML = '';
+      selectedFiles.forEach(f => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.style.width = '100px';
+        img.style.height = '100px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '6px';
+        img.style.marginRight = '10px';
+        img.style.marginBottom = '10px';
+        previewContainer.appendChild(img);
+      });
+    });
+
+    /* ------------------------------
+       UPDATE PRODUCT
+    --------------------------------*/
+    // The form has onsubmit="handleUpdateProduct(event)". We can replace that function or remove the inline handler.
+    // The user script adds an event listener. It's cleaner to remove the inline handler from HTML if we use this.
+    // However, I can just redefine handleUpdateProduct or remove inline from HTML. 
+    // The simplier way is to let the user script take over. But the inline `onsubmit` might conflict.
+    // I will replace the inline `onsubmit` in the HTML with nothing, or just define the function globally if needed.
+    // But the user script adds a listener.
+    
+    document.getElementById('edit-product-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      // Basic check
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'Updating...';
+
+      const formData = new FormData(e.target);
+      formData.delete('images[]');
+      selectedFiles.forEach(f => formData.append('images[]', f));
+
+      // Collect existing images that haven't been removed
+      const remainingImageDivs = document.getElementById('current-images-grid').children;
+      const remainingImages = [];
+      for(let div of remainingImageDivs) {
+          if(div.dataset.src) {
+              remainingImages.push(div.dataset.src);
+          }
+      }
+      formData.append('existing_images', JSON.stringify(remainingImages));
+      
+      // Also ensure 'featured' is handled if unchecked (checkboxes don't send anything if unchecked)
+      // The update.php expects 'featured' param.
+      // If checked, it sends '1' (value="1"). If not, nothing.
+      // We can manually append it if we want to be explicit, but PHP usually handles isset.
+      // However, my previous PHP code uses `filter_var($_POST['featured'] ?? 0 ...)` so it should work fine if missing.
+
+      try {
+        const res = await fetch('../api/admin/product/update.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const json = await res.json();
+        if (!res.ok || json.status !== 'success') {
+          throw new Error(json.message || 'Update failed');
+        }
+
+        alert('Product updated successfully');
+        location.href = 'admin-dashboard.php';
+
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+      }
+    });
+    
+    // Remove the inline onsubmit behavior if it exists to avoid double submission
+    document.getElementById('edit-product-form').removeAttribute('onsubmit');
+    // Also remove inline onchange for file input
+    document.getElementById('product-image').removeAttribute('onchange');
+  </script>
+</body>
+
+</html>
