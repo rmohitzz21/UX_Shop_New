@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <?php include 'includes/auth-preload.php'; ?>
     <meta name="description" content="Server error - UX Pacific Shop" />
     <title>Server Error (500) – UX Pacific Shop</title>
     <link

@@ -1085,6 +1085,14 @@ if (empty($_SESSION['csrf_token'])) {
           </svg>
           <span>Orders</span>
         </a>
+        <a href="#" class="sidebar-nav-item" data-tab="categories" onclick="switchTab('categories', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h7v7H4z"></path><path d="M13 4h7v7h-7z"></path><path d="M4 13h7v7H4z"></path><path d="M13 13h7v7h-7z"></path></svg>
+          <span>Categories</span>
+        </a>
+        <a href="#" class="sidebar-nav-item" data-tab="bundles" onclick="switchTab('bundles', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
+          <span>Bundles</span>
+        </a>
         <a href="#" class="sidebar-nav-item" data-tab="analytics" onclick="switchTab('analytics', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -1232,13 +1240,13 @@ if (empty($_SESSION['csrf_token'])) {
                   <option value="Badges">Badges</option>
                   <option value="Template">UI Template</option>
                 </select>
-                <a href="addproduct.php" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                <button type="button" class="btn-primary" onclick="openCreateProductModal()" style="padding: 0.75rem 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                   Add Product
-                </a>
+                </button>
               </div>
             </div>
             <div class="table-container">
@@ -1302,6 +1310,47 @@ if (empty($_SESSION['csrf_token'])) {
                   <!-- Will be populated by JS -->
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tab" id="categories-tab">
+          <div class="data-table">
+            <div class="table-header">
+              <h2>Categories</h2>
+              <form class="search-filter" onsubmit="adminSaveCategory(event)" enctype="multipart/form-data">
+                <input class="search-input" name="name" placeholder="Category name" required>
+                <input class="search-input" name="description" placeholder="Description">
+                <select class="filter-select" name="accent">
+                  <option value="purple">Purple</option><option value="green">Green</option><option value="pink">Pink</option><option value="orange">Orange</option>
+                </select>
+                <input class="search-input" name="sort_order" type="number" placeholder="Order" style="max-width: 100px;">
+                <input class="search-input" name="image" type="file" accept="image/*">
+                <button class="btn-primary" type="submit">Add Category</button>
+              </form>
+            </div>
+            <div class="table-container">
+              <table><thead><tr><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody id="categories-table"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tab" id="bundles-tab">
+          <div class="data-table">
+            <div class="table-header">
+              <h2>Bundles</h2>
+              <form class="search-filter" onsubmit="adminSaveBundle(event)" enctype="multipart/form-data">
+                <input class="search-input" name="name" placeholder="Bundle name" required>
+                <input class="search-input" name="price" type="number" step="0.01" placeholder="Price" required>
+                <input class="search-input" name="stock" type="number" placeholder="Stock" style="max-width: 100px;">
+                <input class="search-input" name="included_items" placeholder="What's included, comma separated">
+                <input class="search-input" name="product_ids" placeholder="Product IDs, comma separated">
+                <input class="search-input" name="image" type="file" accept="image/*">
+                <button class="btn-primary" type="submit">Add Bundle</button>
+              </form>
+            </div>
+            <div class="table-container">
+              <table><thead><tr><th>Bundle</th><th>Price</th><th>Featured</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bundles-table"></tbody></table>
             </div>
           </div>
         </div>
@@ -1420,7 +1469,7 @@ if (empty($_SESSION['csrf_token'])) {
   <div class="modal-overlay" id="edit-product-modal-overlay" onclick="closeEditProductModal()">
     <div class="modal-dialog" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <h2>Edit Product</h2>
+        <h2 id="product-modal-title">Edit Product</h2>
         <button class="modal-close" onclick="closeEditProductModal()" aria-label="Close modal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1431,6 +1480,7 @@ if (empty($_SESSION['csrf_token'])) {
       <div class="modal-body">
         <form id="edit-product-form" onsubmit="handleUpdateProduct(event)">
           <input type="hidden" id="edit-product-id" name="id">
+          <input type="hidden" id="edit-product-existing-image" name="existing_image">
 
           <div class="form-section">
             <h3 class="form-section-title">Basic Information</h3>
@@ -1438,6 +1488,10 @@ if (empty($_SESSION['csrf_token'])) {
               <div class="form-group" style="grid-column: 1 / -1;">
                 <label class="form-label" for="edit-product-name">Product Name <span class="required">*</span></label>
                 <input type="text" id="edit-product-name" name="name" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-product-sku">SKU</label>
+                <input type="text" id="edit-product-sku" name="sku" class="form-input" />
               </div>
               <div class="form-group">
                 <label class="form-label" for="edit-product-category">Category <span class="required">*</span></label>
@@ -1456,9 +1510,29 @@ if (empty($_SESSION['csrf_token'])) {
                 <input type="number" id="edit-product-rating" name="rating" class="form-input" step="0.1" min="0"
                   max="5" />
               </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-product-available">Type</label>
+                <select id="edit-product-available" name="available_type" class="form-select">
+                  <option value="digital">Digital</option>
+                  <option value="physical">Physical</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
               <div class="form-group" style="grid-column: 1 / -1;">
                 <label class="form-label" for="edit-product-description">Description</label>
                 <textarea id="edit-product-description" name="description" class="form-textarea"></textarea>
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label" for="edit-product-whats">What's Included</label>
+                <textarea id="edit-product-whats" name="whats_included" class="form-textarea"></textarea>
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label" for="edit-product-specs">Specifications</label>
+                <textarea id="edit-product-specs" name="file_specification" class="form-textarea"></textarea>
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label" for="edit-product-tags">Tags</label>
+                <input type="text" id="edit-product-tags" name="tags" class="form-input" />
               </div>
             </div>
           </div>
@@ -1475,8 +1549,26 @@ if (empty($_SESSION['csrf_token'])) {
                 <input type="number" id="edit-product-old-price" name="old_price" class="form-input" step="0.01" />
               </div>
               <div class="form-group">
+                <label class="form-label" for="edit-product-commercial-price">Commercial Price</label>
+                <input type="number" id="edit-product-commercial-price" name="commercial_price" class="form-input" step="0.01" />
+              </div>
+              <div class="form-group">
                 <label class="form-label" for="edit-product-stock">Stock <span class="required">*</span></label>
                 <input type="number" id="edit-product-stock" name="stock" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-product-active">Status</label>
+                <select id="edit-product-active" name="is_active" class="form-select">
+                  <option value="1">Active</option>
+                  <option value="0">Archived</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-product-featured">Featured</label>
+                <select id="edit-product-featured" name="is_featured" class="form-select">
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
               </div>
             </div>
           </div>
@@ -1559,6 +1651,8 @@ if (empty($_SESSION['csrf_token'])) {
       else if (tab === 'users') loadUsers();
       else if (tab === 'products') loadProducts();
       else if (tab === 'orders') loadOrders();
+      else if (tab === 'categories') loadAdminCategories();
+      else if (tab === 'bundles') loadAdminBundles();
       else if (tab === 'analytics') loadAnalytics();
 
       // Close mobile sidebar
@@ -1585,6 +1679,64 @@ if (empty($_SESSION['csrf_token'])) {
     window.toggleSidebarCollapse = toggleSidebarCollapse;
     window.toggleSidebar = toggleSidebar;
     window.switchTab = switchTab;
+
+    async function adminJson(url, payload) {
+      const options = payload ? {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' },
+        body: JSON.stringify(payload)
+      } : {};
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (data.status !== 'success') throw new Error(data.message || 'Request failed');
+      return data.data;
+    }
+    async function loadAdminCategories() {
+      const rows = await adminJson('../api/admin/categories/list.php');
+      document.getElementById('categories-table').innerHTML = rows.map(row => `
+        <tr><td>${row.name}</td><td>${row.slug}</td><td>${row.description || ''}</td><td>${row.is_active == 1 ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Hidden</span>'}</td>
+        <td><button class="btn-small btn-edit" onclick='adminToggleCategory(${JSON.stringify(row)})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button></td></tr>
+      `).join('');
+    }
+    async function adminSaveCategory(event) {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(event.target).entries());
+      await adminJson('../api/admin/categories/save.php', payload);
+      event.target.reset();
+      loadAdminCategories();
+    }
+    async function adminToggleCategory(row) {
+      row.is_active = row.is_active == 1 ? 0 : 1;
+      await adminJson('../api/admin/categories/save.php', row);
+      loadAdminCategories();
+    }
+    async function loadAdminBundles() {
+      const rows = await adminJson('../api/admin/bundles/list.php');
+      document.getElementById('bundles-table').innerHTML = rows.map(row => `
+        <tr><td><img class="product-image" src="../${row.image || 'img/poster.webp'}" onerror="this.style.display='none'"> ${row.name}</td><td>₹${Number(row.price || 0).toLocaleString('en-IN')}</td>
+        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Featured</span>' : 'No'}</td><td>${row.is_active == 1 ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Hidden</span>'}</td>
+        <td><button class="btn-small btn-edit" onclick='adminToggleBundle(${JSON.stringify(row)}, "featured")'>Feature</button><button class="btn-small btn-delete" onclick='adminToggleBundle(${JSON.stringify(row)}, "active")'>${row.is_active == 1 ? 'Hide' : 'Show'}</button></td></tr>
+      `).join('');
+    }
+    async function adminSaveBundle(event) {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(event.target).entries());
+      await adminJson('../api/admin/bundles/save.php', payload);
+      event.target.reset();
+      loadAdminBundles();
+    }
+    async function adminToggleBundle(row, field) {
+      if (field === 'featured') row.is_featured = row.is_featured == 1 ? 0 : 1;
+      if (field === 'active') row.is_active = row.is_active == 1 ? 0 : 1;
+      await adminJson('../api/admin/bundles/save.php', row);
+      loadAdminBundles();
+    }
+    window.loadAdminCategories = loadAdminCategories;
+    window.adminSaveCategory = adminSaveCategory;
+    window.adminToggleCategory = adminToggleCategory;
+    window.loadAdminBundles = loadAdminBundles;
+    window.adminSaveBundle = adminSaveBundle;
+    window.adminToggleBundle = adminToggleBundle;
   </script>
 </body>
 

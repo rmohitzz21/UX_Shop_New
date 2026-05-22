@@ -1,0 +1,15 @@
+[20-May-2026 13:55:48 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1049): Unknown database 'uxmerchandise' in C:\xampp\htdocs\UX_Shop_New\includes\config.php on line 59
+[20-May-2026 18:41:21 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/2002): No connection could be made because the target machine actively refused it in C:\xampp\htdocs\UX_Shop_New\includes\config.php on line 59
+[20-May-2026 20:54:20 Europe/Berlin] LOGIN SUCCESSFUL - Session set for user_id=0 email=parthivvala4501a@gmail.com
+[20-May-2026 20:54:20 Europe/Berlin] Redirect value from form: empty
+[20-May-2026 20:54:33 Europe/Berlin] LOGIN SUCCESSFUL - Session set for user_id=0 email=parthivvala4501a@gmail.com
+[20-May-2026 20:54:33 Europe/Berlin] Redirect value from form: empty
+[20-May-2026 20:56:09 Europe/Berlin] LOGIN SUCCESSFUL - Session set for user_id=0 email=parthivvala4501a@gmail.com
+[20-May-2026 20:56:09 Europe/Berlin] Redirect value from form: empty
+[22-May-2026 04:45:02 Europe/Berlin] Password reset link for jj@gmail.com: http://127.0.0.1:8088/reset-password.php?token=a5914e3cc68a3d8dfb3082bd314bd1fef7e93badc5b0ec494ddf4fb5519bdee7&email=jj%40gmail.com
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 93
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 258
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 258
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 258
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 258
+[22-May-2026 07:40:37 Europe/Berlin] PHP Warning:  Undefined array key "badge_text" in C:\xampp\htdocs\UX_Shop_New\bundles.php on line 258

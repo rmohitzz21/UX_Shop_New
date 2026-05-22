@@ -36,6 +36,7 @@ async function secureFetch(url, options = {}) {
   const token = await getCsrfTokenAsync();
   return fetch(url, {
     ...options,
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRF-Token': token,
@@ -85,15 +86,8 @@ if (mobileBtn && mobileMenu) {
 
 
 
-// Active state for desktop nav links
-const navLinks = document.querySelectorAll(".nav-link");
-
-navLinks.forEach((link) => {
-  link.addEventListener("click", () => {
-    navLinks.forEach((l) => l.classList.remove("active"));
-    link.classList.add("active");
-  });
-});
+// Active state is synchronized from the current URL below, so it also works
+// after redirects, reloads, and direct deep links.
 
 
 
@@ -1134,24 +1128,12 @@ function loadCheckoutPage() {
   const codRadio = document.getElementById('cod-radio');
   const codMessage = document.getElementById('cod-disabled-message');
 
-  if (hasDigital) {
-      if (codRadio) { codRadio.disabled = true; codRadio.checked = false; }
-      if (codMessage) codMessage.style.display = 'block';
-      if (codOption) {
-          codOption.style.opacity = '0.6';
-          codOption.style.cursor = 'not-allowed';
-          codOption.style.pointerEvents = 'none';
-      }
-      const cardRadio = document.querySelector('input[name="paymentMethod"][value="card"]');
-      if (cardRadio) cardRadio.checked = true;
-  } else {
-      if (codRadio) codRadio.disabled = false;
-      if (codMessage) codMessage.style.display = 'none';
-      if (codOption) {
-          codOption.style.opacity = '1';
-          codOption.style.cursor = 'pointer';
-          codOption.style.pointerEvents = 'auto';
-      }
+  if (codRadio) codRadio.disabled = false;
+  if (codMessage) codMessage.style.display = 'none';
+  if (codOption) {
+      codOption.style.opacity = '1';
+      codOption.style.cursor = 'pointer';
+      codOption.style.pointerEvents = 'auto';
   }
 }
 
@@ -1270,29 +1252,41 @@ function clearUserSession() {
   updateUserMenu();
 }
 
+function getUserFirstName(user) {
+  if (!user) return 'Profile';
+  const firstName = String(user.firstName || '').trim();
+  if (firstName) return firstName;
+  const name = String(user.name || '').trim();
+  if (name) return name.split(/\s+/)[0];
+  const email = String(user.email || '').trim();
+  return email ? email.split('@')[0] : 'Profile';
+}
+
 function updateUserMenu() {
   const userSession = getUserSession();
-  const userMenus = document.querySelectorAll('.nav-user');
-  const signInButtons = document.querySelectorAll('.nav-cta[href="signin.php"]');
+  // Support both old (.nav-user) and new (.user-menu.profile-menu) header structures
+  const userMenus = document.querySelectorAll('.nav-user, .user-menu.profile-menu');
+  const signInButtons = document.querySelectorAll('.nav-cta[href="signin.php"], .header-signin-cta');
   
   if (userSession) {
-    // Show user menu, hide sign in button
+    // Client-side session found - show user menu, hide sign in button
     userMenus.forEach(menu => {
       menu.style.display = 'flex';
       const userName = menu.querySelector('.user-name');
       const userAvatar = menu.querySelector('.user-avatar');
+      const displayName = getUserFirstName(userSession);
       
-      // Update content only if placeholder or empty, to respect server rendering
-      if (userName && (!userName.textContent || userName.textContent === 'User')) {
-        userName.textContent = userSession.firstName || userSession.name || 'User';
+      if (userName) {
+        userName.textContent = displayName;
       }
       
       if (userAvatar) {
-         // Only update if empty to avoid overwrite
-         if (!userAvatar.textContent.trim()) {
-            const initial = (userSession.firstName || userSession.name || 'U').charAt(0).toUpperCase();
-            userAvatar.textContent = initial;
-         }
+        userAvatar.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        `;
       }
     });
     
@@ -1300,26 +1294,34 @@ function updateUserMenu() {
       btn.style.display = 'none';
     });
   } else {
-    // No local storage session found.
-    // Check if server rendered the user menu (indicating PHP session is active)
-    // If nav-user exists BUT sign-in button does NOT, it's a server-rendered auth state.
+    // No client-side session. Check if server rendered the user menu (PHP session is active).
+    // If profile menu has no display:none style and Sign In button HAS display:none, 
+    // it means server rendered auth.
     let serverRenderedAuth = false;
     
-    if (userMenus.length > 0 && signInButtons.length === 0) {
+    // Check if any sign-in button is hidden
+    const signInHidden = Array.from(signInButtons).some(btn => {
+      if (btn.style.display === 'none') return true;
+      const computed = window.getComputedStyle(btn);
+      return computed && computed.display === 'none';
+    });
+    
+    // Server auth is detected if: user menu exists AND (no sign-in buttons exist OR they're hidden)
+    if (userMenus.length > 0 && signInHidden) {
         serverRenderedAuth = true;
     }
     
     if (serverRenderedAuth) {
-        // We are logged in on the server, but localStorage is empty.
-        // Keep the user menu visible and attempt to sync localStorage
+        // Server auth detected - keep showing user menu (already visible from PHP),
+        // ensure sign-in buttons are hidden, and sync name to localStorage if present
         userMenus.forEach(menu => {
             menu.style.display = 'flex';
             
             const userNameEl = menu.querySelector('.user-name');
             const userName = userNameEl ? userNameEl.textContent.trim() : 'User';
             
-            // Re-hydrate session if we have a name
-            if (userName && userName !== 'User') {
+            // Attempt to sync to localStorage if we have a name
+            if (userName && userName !== 'User' && userName !== 'Profile') {
                  const derivedSession = {
                      name: userName,
                      firstName: userName.split(' ')[0], 
@@ -1329,8 +1331,13 @@ function updateUserMenu() {
                  localStorage.setItem('userSession', JSON.stringify(derivedSession));
             }
         });
+        
+        // Ensure sign-in buttons are hidden
+        signInButtons.forEach(btn => {
+          btn.style.display = 'none';
+        });
     } else {
-        // Standard client-side hide (Logged out and no server auth detected)
+        // Standard case: No auth detected - hide user menus, show sign-in button
         userMenus.forEach(menu => {
           menu.style.display = 'none';
         });
@@ -1342,50 +1349,39 @@ function updateUserMenu() {
   }
 }
 
-// User dropdown toggle with accessibility support
-function toggleUserDropdown(event) {
-  event.stopPropagation();
-  const userMenu = event.currentTarget.closest('.nav-user');
-  if (!userMenu) return;
-  
-  const isActive = userMenu.classList.contains('active');
-  
-  // Close all other dropdowns
-  document.querySelectorAll('.nav-user').forEach(menu => {
-    menu.classList.remove('active');
-    menu.setAttribute('aria-expanded', 'false');
-  });
-  
-  // Toggle current dropdown
-  if (!isActive) {
-    userMenu.classList.add('active');
-    userMenu.setAttribute('aria-expanded', 'true');
-  } else {
-    userMenu.setAttribute('aria-expanded', 'false');
-  }
-}
+// Simple user dropdown toggle (profile menu only)
+document.addEventListener('DOMContentLoaded', function () {
+  const toggles = document.querySelectorAll('.profile-menu-toggle');
+  if (!toggles.length) return;
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-  if (!event.target.closest('.nav-user')) {
-    document.querySelectorAll('.nav-user').forEach(menu => {
-      menu.classList.remove('active');
-      menu.setAttribute('aria-expanded', 'false');
+  toggles.forEach((toggle) => {
+    toggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      const menu = toggle.closest('.user-menu.profile-menu');
+      if (!menu) return;
+
+      const isOpen = !menu.classList.contains('is-open');
+
+      // Close any other open menus
+      document.querySelectorAll('.user-menu.profile-menu.is-open').forEach((openMenu) => {
+        if (openMenu !== menu) {
+          openMenu.classList.remove('is-open');
+          const btn = openMenu.querySelector('.profile-menu-toggle');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      menu.classList.toggle('is-open', isOpen);
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
-  }
-});
+  });
 
-// Keyboard navigation for user menu
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.nav-user').forEach(menu => {
-    menu.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleUserDropdown(e);
-      } else if (e.key === 'Escape') {
-        menu.classList.remove('active');
-        menu.setAttribute('aria-expanded', 'false');
-      }
+  // Close menu on outside click
+  document.addEventListener('click', function () {
+    document.querySelectorAll('.user-menu.profile-menu.is-open').forEach((menu) => {
+      menu.classList.remove('is-open');
+      const btn = menu.querySelector('.profile-menu-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
     });
   });
 });
@@ -1551,6 +1547,7 @@ function setupRealTimeValidation() {
 // Initialize real-time validation on page load
 document.addEventListener('DOMContentLoaded', function() {
   setupRealTimeValidation();
+  updateUserMenu(); // Sync user menu from server-rendered session
 });
 
 // Sign in handler with enhanced validation
@@ -1606,6 +1603,7 @@ function handleSignIn(event) {
   const csrfToken = getCsrfToken();
   fetch('api/auth/login.php', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json'
     },
@@ -1686,7 +1684,7 @@ function handleSignIn(event) {
 // Sign out handler
 function handleSignOut() {
   // Call server logout API to destroy PHP session
-  fetch('api/auth/logout.php')
+  fetch('api/auth/logout.php', { credentials: 'same-origin' })
     .then(response => {
         // Regardless of server response, clear client state
         clearUserSession();
@@ -1970,17 +1968,6 @@ function handleCheckout(event) {
     });
   }
 
-  function loadRazorpaySDK() {
-    return new Promise((resolve, reject) => {
-      if (window.Razorpay) { resolve(); return; }
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload  = resolve;
-      script.onerror = () => reject(new Error('Failed to load payment gateway'));
-      document.head.appendChild(script);
-    });
-  }
-
   // ── COD flow ──────────────────────────────────────────────────────────────
   if (paymentMethod === 'cod') {
     createDraftOrder()
@@ -1993,86 +1980,16 @@ function handleCheckout(event) {
     return;
   }
 
-  // ── Razorpay flow (card / upi) — amount comes from DB only (server create-order) ──
+  // Manual order simulation: payment gateways are intentionally not required.
   createDraftOrder()
-    .then(orderData => {
-      return fetch('api/payment/razorpay-create-order.php', {
-        method: 'POST',
-        headers: orderHeaders,
-        body: JSON.stringify({ order_id: orderData.data.orderId })
-      })
-        .then(res => {
-          if (res.status === 401) {
-            clearUserSession();
-            showToast('Session expired. Please sign in again.', 'error');
-            setTimeout(() => { window.location.href = 'signin.php?redirect=checkout.php'; }, 1500);
-            throw new Error('Session expired');
-          }
-          return res.json();
-        })
-        .then(rzpData => {
-          if (rzpData.status !== 'success') throw new Error(rzpData.message || 'Payment gateway error');
-          return { orderData, rzpData };
-        });
-    })
-    .then(({ orderData, rzpData }) => loadRazorpaySDK().then(() => ({ orderData, rzpData })))
-    .then(({ orderData, rzpData }) => {
-      return new Promise((resolve, reject) => {
-        const shipping = orderPayload.shipping || {};
-        const options = {
-          key:         rzpData.data.key_id,
-          amount:      rzpData.data.amount_in_paise,
-          currency:    rzpData.data.currency,
-          order_id:    rzpData.data.razorpay_order_id,
-          name:        'UX Pacific Shop',
-          description: 'Order ' + orderData.data.orderNumber,
-          prefill: {
-            name:    (shipping.firstName || '') + ' ' + (shipping.lastName || ''),
-            email:   shipping.email  || '',
-            contact: shipping.phone  || '',
-          },
-          theme: { color: '#6f4bff' },
-          modal: {
-            ondismiss: () => reject(new Error('Payment cancelled')),
-          },
-          handler: (response) => {
-            fetch('api/payment/razorpay-verify.php', {
-              method: 'POST',
-              headers: orderHeaders,
-              body: JSON.stringify({
-                razorpay_order_id:   response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature:  response.razorpay_signature,
-                order_id:            orderData.data.orderId,
-              })
-            })
-              .then(res => {
-                if (res.status === 401) {
-                  clearUserSession();
-                  showToast('Session expired. Please sign in again.', 'error');
-                  throw new Error('Session expired');
-                }
-                return res.json();
-              })
-              .then(verifyData => {
-                if (verifyData.status !== 'success') throw new Error(verifyData.message || 'Verification failed');
-                resolve({ orderData, verifyData });
-              })
-              .catch(reject);
-          },
-        };
-        new window.Razorpay(options).open();
-      });
-    })
-    .then(({ orderData, verifyData }) => handleOrderSuccess(orderPayload, orderData, verifyData))
+    .then(data => handleOrderSuccess(orderPayload, data))
     .catch(err => {
-      console.error('Payment error:', err);
-      const msg = err.message === 'Payment cancelled'
-        ? 'Payment was cancelled.'
-        : 'Payment failed: ' + err.message;
-      showToast(msg, 'error');
+      console.error(err);
+      showToast(err.message || 'Failed to place order', 'error');
       resetOrderBtn();
     });
+  return;
+
 }
 
 // Load order confirmation page with order details
@@ -2442,13 +2359,11 @@ async function handleForgotPassword(event) {
 // Social sign in
 function signInWithGoogle() {
   showToast('Google sign in coming soon!', 'success');
-  // TODO: Implement Google OAuth
 }
 
 // Social sign up
 function signUpWithGoogle() {
   showToast('Google sign up coming soon!', 'success');
-  // TODO: Implement Google OAuth
 }
 
 // Make functions globally available
@@ -3187,56 +3102,354 @@ if (typeof document !== 'undefined') {
 
 window.performHeaderSearch = performHeaderSearch;
 
-// Homepage pill navigation active states
+function initSearchModal() {
+  const modal = document.getElementById('site-search-modal');
+  const input = document.getElementById('site-search-modal-input');
+  const results = document.getElementById('site-search-modal-results');
+  const submit = document.getElementById('site-search-modal-submit');
+  if (!modal || !input || !results) return;
+
+  let timer = null;
+  let activeIndex = -1;
+
+  function openSearchModal(seed = '') {
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    input.value = seed;
+    setTimeout(() => input.focus(), 20);
+    if (seed.length >= 2) fetchSearchResults(seed);
+    else fetchSearchResults('');
+  }
+
+  function closeSearchModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    activeIndex = -1;
+  }
+
+  async function fetchSearchResults(query) {
+    const response = await fetch(`api/product/search.php?q=${encodeURIComponent(query)}&limit=8`);
+    const data = await response.json();
+    const items = data?.data?.items || [];
+    const trends = `
+      <div class="search-modal-trends">
+        ${['UI Kit', 'Mockups', 'Dashboard', 'Icons', 'Landing Page'].map(term => `<button type="button" class="search-trend-pill" data-trend="${term}">${term}</button>`).join('')}
+      </div>
+      <div class="search-result-count">${items.length} result${items.length === 1 ? '' : 's'} found</div>
+    `;
+    results.innerHTML = trends + (items.length ? items.map((item, index) => `
+      <button type="button" class="search-modal-result" data-index="${index}" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}">
+        <img src="${esc(item.image)}" alt="" onerror="this.src='img/poster.webp'">
+        <span><strong>${esc(item.name)}</strong><em>${esc(item.type || 'product')} / ${esc(item.category || '')}</em></span>
+        <b>${money(item.price).replace('₹', '$')}</b>
+      </button>
+    `).join('') : '<div class="search-modal-empty">No matching products or bundles found.</div>');
+  }
+
+  document.querySelectorAll('.nav-search-trigger').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const navInput = button.closest('.nav-search')?.querySelector('.nav-search-input');
+      openSearchModal(navInput?.value.trim() || '');
+    });
+  });
+
+  document.querySelectorAll('.nav-search').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      openSearchModal(form.querySelector('.nav-search-input')?.value.trim() || '');
+    });
+  });
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    activeIndex = -1;
+    const query = input.value.trim();
+    if (query.length < 2) {
+      results.innerHTML = '<div class="search-modal-empty">Type at least 2 characters to search.</div>';
+      return;
+    }
+    timer = setTimeout(() => fetchSearchResults(query), 180);
+  });
+
+  input.addEventListener('keydown', (event) => {
+    const options = Array.from(results.querySelectorAll('.search-modal-result'));
+    if (event.key === 'Escape') closeSearchModal();
+    if (!options.length) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      activeIndex = (activeIndex + 1) % options.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      activeIndex = (activeIndex - 1 + options.length) % options.length;
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      (options[activeIndex] || options[0]).click();
+      return;
+    } else {
+      return;
+    }
+    options.forEach((option, index) => option.classList.toggle('is-active', index === activeIndex));
+  });
+
+  results.addEventListener('click', (event) => {
+    const trend = event.target.closest('.search-trend-pill');
+    if (trend) {
+      input.value = trend.dataset.trend || '';
+      fetchSearchResults(input.value);
+      return;
+    }
+    const item = event.target.closest('.search-modal-result');
+    if (!item) return;
+    closeSearchModal();
+    if (item.dataset.type === 'bundle') {
+      window.location.href = `bundles.php?quick=bundle&id=${encodeURIComponent(item.dataset.id)}`;
+      return;
+    }
+    window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
+  });
+
+  submit?.addEventListener('click', () => {
+    const first = results.querySelector('.search-modal-result');
+    if (first) first.click();
+    else if (input.value.trim()) window.location.href = `search.php?q=${encodeURIComponent(input.value.trim())}`;
+  });
+
+  modal.querySelectorAll('[data-search-close]').forEach((el) => {
+    el.addEventListener('click', closeSearchModal);
+  });
+}
+
+function ensureMarketplaceModal() {
+  let modal = document.getElementById('marketplace-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'marketplace-modal';
+  modal.className = 'marketplace-modal';
+  modal.innerHTML = `
+    <div class="marketplace-modal-backdrop" data-close-marketplace-modal></div>
+    <section class="marketplace-modal-panel" role="dialog" aria-modal="true" aria-live="polite">
+      <button type="button" class="marketplace-modal-close" data-close-marketplace-modal aria-label="Close">×</button>
+      <div class="marketplace-modal-content skeleton">Loading...</div>
+    </section>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (event) => {
+    if (event.target.closest('[data-close-marketplace-modal]')) closeMarketplaceModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMarketplaceModal();
+  });
+  return modal;
+}
+
+async function openMarketplaceModal(type, id) {
+  const modal = ensureMarketplaceModal();
+  const content = modal.querySelector('.marketplace-modal-content');
+  modal.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  content.className = 'marketplace-modal-content skeleton';
+  content.innerHTML = 'Loading...';
+  try {
+    const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
+    const data = await response.json();
+    if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
+    const item = data.data.item;
+    const related = data.data.related || [];
+    const reviews = data.data.reviews || [];
+    const reviewHtml = reviews.length
+      ? reviews.map(review => `<div class="review-row"><strong>${esc(review.user_name || 'Customer')}</strong><span>★ ${esc(review.rating)}</span><p>${esc(review.comment || 'Verified purchase')}</p></div>`).join('')
+      : '<div class="review-row"><strong>Reviews</strong><p>No reviews yet. Be the first to review this item after purchase.</p></div>';
+    const relatedHtml = related.length
+      ? related.map(rel => `<button type="button" class="related-chip" onclick="openMarketplaceModal('${esc(rel.type || type)}', '${esc(rel.id)}')"><img src="${esc(rel.image)}" alt=""><span>${esc(rel.name)}</span><strong>${money(rel.price)}</strong></button>`).join('')
+      : '';
+    content.className = 'marketplace-modal-content';
+    content.innerHTML = `
+      <div class="marketplace-gallery">
+        <img src="${esc(item.image)}" alt="${esc(item.name)}" onerror="this.src='img/poster.webp'">
+      </div>
+      <div class="marketplace-details">
+        <div class="marketplace-kicker">${esc(item.type || type)} · ${esc(item.category || '')}</div>
+        <h2>${esc(item.name)}</h2>
+        <p>${esc(item.description || '')}</p>
+        <div class="marketplace-meta">
+          <span>★ ${esc(item.rating || '4.5')}</span>
+          <span>${Number(item.stock || 0) > 0 ? 'In stock' : 'Out of stock'}</span>
+          ${(item.tags || '').split(',').filter(Boolean).slice(0, 3).map(tag => `<span>${esc(tag.trim())}</span>`).join('')}
+        </div>
+        <div class="marketplace-price">
+          <strong>${money(item.price)}</strong>
+          ${item.old_price ? `<span>${money(item.old_price)}</span>` : ''}
+          ${item.discount_percent ? `<em>${item.discount_percent}% OFF</em>` : ''}
+        </div>
+        <div class="marketplace-qty">
+          <label for="marketplace-qty-input">Qty</label>
+          <input id="marketplace-qty-input" type="number" min="1" max="10" value="1">
+        </div>
+        <div class="marketplace-modal-actions">
+          <button type="button" class="btn btn-primary" onclick="addMarketplaceItemToCart('${esc(item.type || type)}', '${esc(item.id)}')">Add to Cart</button>
+          <button type="button" class="btn btn-outline" onclick="toggleMarketplaceWishlist('${esc(item.type || type)}', '${esc(item.id)}')">Wishlist</button>
+        </div>
+        <div class="marketplace-reviews">${reviewHtml}</div>
+        ${relatedHtml ? `<h3>Suggested for you</h3><div class="marketplace-related">${relatedHtml}</div>` : ''}
+      </div>`;
+  } catch (error) {
+    content.className = 'marketplace-modal-content';
+    content.innerHTML = `<div class="marketplace-error">${esc(error.message || 'Something went wrong.')}</div>`;
+  }
+}
+
+function closeMarketplaceModal() {
+  const modal = document.getElementById('marketplace-modal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
+}
+
+async function fetchMarketplaceItem(type, id) {
+  const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
+  const data = await response.json();
+  if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
+  return data.data.item;
+}
+
+async function addMarketplaceItemToCart(type, id) {
+  try {
+    const item = await fetchMarketplaceItem(type, id);
+    const qty = Math.max(1, Math.min(10, Number(document.getElementById('marketplace-qty-input')?.value || 1)));
+    await addToCart(type === 'bundle' ? `bundle-${item.id}` : item.id, null, qty, item, item.available_type || 'digital');
+  } catch (error) {
+    showToast(error.message || 'Could not add item.', 'error');
+  }
+}
+
+async function toggleMarketplaceWishlist(type, id) {
+  const userSession = getUserSession();
+  if (!userSession || !userSession.id) {
+    showToast('Please sign in to use wishlist.', 'error');
+    setTimeout(() => { window.location.href = 'signin.php?redirect=wishlist.php'; }, 700);
+    return;
+  }
+  try {
+    const payload = type === 'bundle' ? { item_type: 'bundle', bundle_id: Number(id) } : { item_type: 'product', product_id: Number(id) };
+    const response = await fetch('api/wishlist/add.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (data.status !== 'success') throw new Error(data.message || 'Wishlist failed.');
+    showToast('Added to wishlist.', 'success');
+    updateWishlistCount();
+  } catch (error) {
+    showToast(error.message || 'Wishlist failed.', 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSearchModal();
+  document.querySelector('.mobile-nav-toggle')?.addEventListener('click', (event) => {
+    const header = event.currentTarget.closest('.navbar');
+    const open = !header.classList.contains('mobile-open');
+    header.classList.toggle('mobile-open', open);
+    event.currentTarget.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
+
+window.openMarketplaceModal = openMarketplaceModal;
+window.closeMarketplaceModal = closeMarketplaceModal;
+window.addMarketplaceItemToCart = addMarketplaceItemToCart;
+window.toggleMarketplaceWishlist = toggleMarketplaceWishlist;
+
+// Global navbar active states for both header systems used in the project.
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = Array.from(document.querySelectorAll('.navbar .nav-links a'));
+    const navLinks = Array.from(document.querySelectorAll(
+      '.navbar .nav-links a, .navbar .mobile-nav-panel a, .site-header .nav-links a, .site-header .nav-mobile-menu a'
+    ));
     if (!navLinks.length) return;
 
-    function setActiveNav(targetHash) {
-      navLinks.forEach(link => {
-        const linkHash = new URL(link.href, window.location.href).hash;
-        let isActive = false;
-        if (targetHash) {
-          isActive = (linkHash === targetHash);
-        } else {
-          // No target hash (e.g. at the top of the page)
-          isActive = (!linkHash && link.getAttribute('href')?.includes('index.php'));
-        }
-        link.classList.toggle('active', isActive);
-      });
+    const productPages = new Set(['shopall.php', 'products.php', 'product.php', 'search.php']);
+    const categoryPages = new Set(['category.php']);
+    const bundlePages = new Set(['bundles.php']);
+    const homePages = new Set(['', '/', 'index.php']);
+
+    function cleanPath(pathname) {
+      const file = (pathname || '').split('/').filter(Boolean).pop() || 'index.php';
+      return file.toLowerCase();
     }
 
-    navLinks.forEach(link => {
-      link.addEventListener('click', function() {
-        const hash = new URL(link.href, window.location.href).hash;
-        if (hash) setActiveNav(hash);
-      });
-    });
-
-    const sections = navLinks
-      .map(link => new URL(link.href, window.location.href).hash)
-      .filter(Boolean)
-      .map(hash => document.querySelector(hash))
-      .filter(Boolean);
-
-    function syncActiveNavOnScroll() {
-      const topLimit = 260;
-      if (window.scrollY < topLimit) {
-        setActiveNav('');
-        return;
+    function pageGroup(url) {
+      const file = cleanPath(url.pathname);
+      if (productPages.has(file)) return 'products';
+      if (categoryPages.has(file)) return 'category';
+      if (bundlePages.has(file)) return 'bundles';
+      if (homePages.has(file)) {
+        if (url.hash === '#products') return 'home-products';
+        if (url.hash === '#category') return 'category';
+        return 'home';
       }
-
-      const navOffset = 145;
-      const current = sections
-        .filter(section => section.offsetTop - navOffset <= window.scrollY)
-        .sort((a, b) => b.offsetTop - a.offsetTop)[0];
-
-      setActiveNav(current ? `#${current.id}` : '');
+      return '';
     }
 
-    window.addEventListener('scroll', syncActiveNavOnScroll, { passive: true });
-    syncActiveNavOnScroll();
+    function linkGroup(link) {
+      const url = new URL(link.getAttribute('href') || '', window.location.href);
+      const file = cleanPath(url.pathname);
+      const text = (link.textContent || '').trim().toLowerCase();
+
+      if (productPages.has(file) || ['products', 'buy now', 'shop'].includes(text)) return 'products';
+      if (homePages.has(file) && url.hash === '#products') return 'home-products';
+      if (categoryPages.has(file) || text === 'category') return 'category';
+      if (bundlePages.has(file) || text === 'bundles') return 'bundles';
+      if (homePages.has(file) && !url.hash && text === 'home') return 'home';
+      if (homePages.has(file) && url.hash === '#category') return 'category';
+      return '';
+    }
+
+    function setActiveNav(group) {
+      navLinks.forEach(link => {
+        const isActive = linkGroup(link) === group;
+        link.classList.toggle('active', isActive);
+        link.classList.toggle('nav-link-active', isActive);
+        if (isActive) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+    }
+
+    function syncFromUrl() {
+      setActiveNav(pageGroup(new URL(window.location.href)));
+    }
+
+    syncFromUrl();
+    window.addEventListener('hashchange', syncFromUrl);
+
+    if (cleanPath(window.location.pathname) === 'index.php') {
+      const sectionLinks = navLinks
+        .map(link => new URL(link.href, window.location.href))
+        .filter(url => url.hash && cleanPath(url.pathname) === 'index.php');
+      const sections = sectionLinks
+        .map(url => document.querySelector(url.hash))
+        .filter(Boolean);
+
+      if (sections.length) {
+        function syncHomeSections() {
+          if (window.scrollY < 220) {
+            setActiveNav('home');
+            return;
+          }
+          const current = sections
+            .filter(section => section.offsetTop - 140 <= window.scrollY)
+            .sort((a, b) => b.offsetTop - a.offsetTop)[0];
+          if (current?.id === 'products') setActiveNav('home-products');
+          else if (current?.id === 'category') setActiveNav('category');
+          else setActiveNav('home');
+        }
+        window.addEventListener('scroll', syncHomeSections, { passive: true });
+        syncHomeSections();
+      }
+    }
   });
 }
 
@@ -3436,6 +3649,9 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
 
   function syncHeaderAuth(user) {
     const signedIn = !!(user && user.id);
+    const displayName = signedIn ? getUserFirstName(user) : '';
+    const firstInitial = (displayName || 'U').charAt(0).toUpperCase();
+
     document.querySelectorAll('.header-signin-cta, .nav-cta[href="signin.php"]').forEach((el) => {
       el.style.display = signedIn ? 'none' : 'inline-flex';
       el.textContent = 'Sign In';
@@ -3445,15 +3661,36 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
       menu.style.display = signedIn ? 'flex' : 'none';
       const name = menu.querySelector('.user-name') || menu.querySelector('span');
       if (name && signedIn) {
-        name.textContent = user.firstName || user.name || 'Profile';
+        name.textContent = displayName;
       }
+
+      const avatar = menu.querySelector('.user-avatar');
+      if (avatar && signedIn) {
+        avatar.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        `;
+        avatar.setAttribute('aria-label', displayName || firstInitial);
+      }
+
       const legacyDropdown = menu.querySelector('.user-dropdown');
       if (legacyDropdown && signedIn) {
         legacyDropdown.innerHTML = `
           <a href="account.php" class="user-dropdown-item"><span>Edit Profile</span></a>
-          <button type="button" class="user-dropdown-item" onclick="handleSignOut()"><span>Logout</span></button>
+          <button type="button" class="user-dropdown-item logout" onclick="handleSignOut()"><span>Logout</span></button>
         `;
       }
+
+      const profileDropdown = menu.querySelector('.profile-dropdown');
+      if (profileDropdown && signedIn) {
+        profileDropdown.innerHTML = `
+          <a href="account.php" role="menuitem">Edit Profile</a>
+          <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
+        `;
+      }
+
       if (signedIn && menu.classList.contains('user-menu') && !menu.querySelector('.profile-dropdown')) {
         menu.classList.add('profile-menu');
         const anchor = menu.querySelector('a');
@@ -3461,7 +3698,7 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
           anchor.outerHTML = `
             <button type="button" class="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">
               <img src="img/ss/nav/iconoir_user.png" alt="User" />
-              <span class="user-name">${esc(user.firstName || user.name || 'Profile')}</span>
+              <span class="user-name">${esc(displayName)}</span>
               <i class="ph ph-caret-down"></i>
             </button>
             <div class="profile-dropdown" role="menu">
@@ -3548,9 +3785,9 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
             const data = await response.json();
             const items = data?.data?.items || [];
             panel.innerHTML = items.length ? items.map((item) => `
-              <button type="button" class="nav-search-suggestion" data-query="${esc(item.name)}">
+              <button type="button" class="nav-search-suggestion" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}" data-query="${esc(item.name)}">
                 <img src="${esc(item.image)}" alt="" onerror="this.src='img/sticker.webp'" />
-                <span>${esc(item.name)}</span>
+                <span>${esc(item.name)} <em>${esc(item.type || 'product')}</em></span>
                 <strong>${money(item.price)}</strong>
               </button>
             `).join('') : '<div class="nav-search-empty">No matching products found</div>';
@@ -3564,8 +3801,12 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
       panel.addEventListener('click', (event) => {
         const item = event.target.closest('.nav-search-suggestion');
         if (!item) return;
-        input.value = item.dataset.query || '';
-        window.location.href = `search.php?q=${encodeURIComponent(input.value)}`;
+        panel.classList.remove('is-visible');
+        if ((item.dataset.type || 'product') === 'bundle') {
+          window.location.href = 'bundles.php';
+          return;
+        }
+        window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
       });
     });
   }

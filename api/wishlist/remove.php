@@ -6,13 +6,15 @@ $user = apiRequireUser();
 $input = apiInput();
 validateCsrf();
 
-$productId = (int) ($input['product_id'] ?? $input['id'] ?? 0);
-if ($productId <= 0) {
-    sendResponse('error', 'Invalid product.', null, 422);
+$type = ($input['item_type'] ?? $input['type'] ?? 'product') === 'bundle' ? 'bundle' : 'product';
+$itemId = (int) ($input[$type === 'bundle' ? 'bundle_id' : 'product_id'] ?? $input['id'] ?? 0);
+if ($itemId <= 0) {
+    sendResponse('error', 'Invalid wishlist item.', null, 422);
 }
 
-$stmt = $conn->prepare('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?');
-$stmt->bind_param('ii', $user['id'], $productId);
+$column = $type === 'bundle' ? 'bundle_id' : 'product_id';
+$stmt = $conn->prepare("DELETE FROM wishlist WHERE user_id = ? AND item_type = ? AND $column = ?");
+$stmt->bind_param('isi', $user['id'], $type, $itemId);
 $stmt->execute();
 
 sendResponse('success', 'Removed from wishlist.');

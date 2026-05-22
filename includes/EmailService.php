@@ -167,10 +167,11 @@ HTML;
         $items = $orderData['items'] ?? [];
         $total = $orderData['total'] ?? 0;
         $orderId = $orderData['order_id'] ?? 'N/A';
+        $orderDate = $orderData['date'] ?? date('Y-m-d');
 
         $itemsHtml = '';
         foreach ($items as $item) {
-            $itemsHtml .= '<tr><td>' . htmlspecialchars($item['name'] ?? '') . '</td><td>₹' . number_format($item['price'] ?? 0, 2) . '</td><td>' . ($item['quantity'] ?? 1) . '</td></tr>';
+            $itemsHtml .= '<tr><td>' . htmlspecialchars($item['name'] ?? '') . '</td><td>&#8377;' . number_format($item['price'] ?? 0, 2) . '</td><td>' . (int) ($item['quantity'] ?? 1) . '</td></tr>';
         }
 
         return <<<HTML
@@ -204,7 +205,7 @@ HTML;
             <div class="order-details">
                 <h2>Order Details</h2>
                 <p><strong>Order ID:</strong> {$orderId}</p>
-                <p><strong>Order Date:</strong> {$orderData['date'] ?? date('Y-m-d')}</p>
+                <p><strong>Order Date:</strong> {$orderDate}</p>
                 
                 <table>
                     <thead>
@@ -219,7 +220,7 @@ HTML;
                     </tbody>
                 </table>
                 
-                <div class="total">Total: ₹{$total}</div>
+                <div class="total">Total: &#8377;{$total}</div>
             </div>
             
             <p><a href="https://uxpacific.com/order-tracking.php?order_id={$orderId}" class="btn">Track Your Order</a></p>
@@ -240,6 +241,13 @@ HTML;
      * Email template: Contact Form Submission (for admin)
      */
     private function getContactFormTemplate(array $data): string {
+        $name = htmlspecialchars((string) ($data['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars((string) ($data['email'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $phone = htmlspecialchars((string) ($data['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $subject = htmlspecialchars((string) ($data['subject'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $message = nl2br(htmlspecialchars((string) ($data['message'] ?? ''), ENT_QUOTES, 'UTF-8'));
+        $submittedAt = htmlspecialchars((string) ($data['timestamp'] ?? date('Y-m-d H:i:s')), ENT_QUOTES, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -262,27 +270,27 @@ HTML;
         <div class="content">
             <div class="detail">
                 <strong>Name:</strong><br>
-                {$data['name']}
+                {$name}
             </div>
             <div class="detail">
                 <strong>Email:</strong><br>
-                {$data['email']}
+                {$email}
             </div>
             <div class="detail">
                 <strong>Phone:</strong><br>
-                {$data['phone']}
+                {$phone}
             </div>
             <div class="detail">
                 <strong>Subject:</strong><br>
-                {$data['subject']}
+                {$subject}
             </div>
             <div class="detail">
                 <strong>Message:</strong><br>
-                <p>{nl2br(htmlspecialchars($data['message']))}</p>
+                <p>{$message}</p>
             </div>
             <div class="detail">
                 <strong>Submitted at:</strong><br>
-                {$data['timestamp'] ?? date('Y-m-d H:i:s')}
+                {$submittedAt}
             </div>
         </div>
         <div class="footer">

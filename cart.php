@@ -8,6 +8,7 @@
     <meta name="keywords" content="shopping cart, checkout, UX Pacific, design resources, merchandise" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
+    <?php include 'includes/auth-preload.php'; ?>
     <title>Shopping Cart – UX Pacific Shop</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"

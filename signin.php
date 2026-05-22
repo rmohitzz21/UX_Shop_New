@@ -418,13 +418,18 @@ if (empty($_SESSION['csrf_token'])) {
             </p>
           </div>
 
-          <form class="auth-form-modern" id="signin-form" onsubmit="handleSignIn(event)">
-            <input type="hidden" id="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-            <div id="auth-error" class="error-message-modern" style="display: none;"></div>
-            <div id="auth-success" class="success-message-modern" style="display: none;"></div>
+          <form class="auth-form-modern" id="signin-form" method="POST" action="api/auth/login-process.php">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '') ?>">
+            <?php if (isset($_SESSION['error'])): ?>
+              <div class="error-message-modern" style="display: block; margin-bottom: 1rem;">
+                <?= htmlspecialchars($_SESSION['error']) ?>
+              </div>
+              <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
 
             <div class="form-field-modern">
-              <label for="login-input">Email Address or Phone Number</label>
+              <label for="email">Email Address</label>
               <div class="input-wrapper">
                 <span class="input-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -433,20 +438,18 @@ if (empty($_SESSION['csrf_token'])) {
                   </svg>
                 </span>
                 <input
-                  id="login-input"
-                  name="loginInput"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   class="input-modern"
-                  placeholder="Enter email or phone"
+                  placeholder="Enter your email"
                   required
-                  oninput="handleLoginInput(this.value)"
                 />
               </div>
               <span class="field-error-modern"></span>
             </div>
 
-            <!-- Password Container (Hidden by default, shown for Email) -->
-            <div class="form-field-modern" id="password-container" style="display:none;">
+            <div class="form-field-modern">
               <label for="password">Password</label>
               <div class="input-wrapper">
                 <span class="input-icon">
@@ -463,6 +466,7 @@ if (empty($_SESSION['csrf_token'])) {
                   placeholder="Enter your password"
                   autocomplete="current-password"
                   minlength="6"
+                  required
                 />
                 <button type="button" class="password-toggle" onclick="togglePassword('password')">
                   <svg id="password-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -483,7 +487,7 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
 
             <button type="submit" class="btn-primary-modern" id="signin-btn">
-              <span id="signin-text">Continue</span>
+              <span id="signin-text">Sign In</span>
               <span id="signin-loader" style="display:none;">Processing...</span>
             </button>
           </form>
@@ -532,188 +536,6 @@ if (empty($_SESSION['csrf_token'])) {
         }
       }
       window.togglePassword = togglePassword;
-
-      // Handle input change: detect email or phone
-      function handleLoginInput(value) {
-        const container = document.getElementById('password-container');
-        const loginInput = document.getElementById('login-input');
-        // Simple patterns
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        const isPhone = /^\d[\d\s\-\+\(\)]{8,}$/.test(value); // Allow some formatting, check later for strict 10 digit
-
-        const errorSpan = loginInput.parentElement.parentElement.querySelector('.field-error-modern');
-        if (errorSpan) errorSpan.style.display = 'none';
-        loginInput.style.borderColor = '';
-
-        if (isEmail) {
-            container.style.display = 'block';
-            document.getElementById('password').setAttribute('required', 'required');
-        } else if (isPhone) {
-            container.style.display = 'none';
-            document.getElementById('password').removeAttribute('required');
-        } else {
-            // Default state
-            container.style.display = 'none';
-            document.getElementById('password').removeAttribute('required');
-        }
-      }
-      window.handleLoginInput = handleLoginInput;
-
-      // Override default form submit to handle phone vs email
-      const originalSignIn = window.handleSignIn; 
-
-      // Replace generic handleSignIn with specific one for this page
-      window.handleSignIn = function(event) {
-          event.preventDefault();
-          const loginInputField = document.getElementById('login-input');
-          const loginInput = loginInputField.value.trim();
-          
-          let errorMsg = '';
-          
-          // Strict Validation Check
-          const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginInput);
-          const isPhone = /^\d{10}$/; // Strict 10 digit check for login submission
-          
-          if (isEmail) {
-              loginWithEmail(loginInput);
-          } else {
-              // Check if valid phone number (strip non-digits for check)
-              const cleanPhone = loginInput.replace(/[\s\-\+\(\)]/g, '');
-              
-              if (/^\d{10}$/.test(cleanPhone)) {
-                  showOtpModal(cleanPhone);
-              } else {
-                  // Not a valid email OR phone
-                  const errorSpan = loginInputField.parentElement.parentElement.querySelector('.field-error-modern');
-                  if (errorSpan) {
-                      errorSpan.textContent = 'Please enter a valid email or 10-digit phone number';
-                      errorSpan.style.display = 'block';
-                  }
-                  loginInputField.style.borderColor = '#ef4444';
-              }
-          }
-      };
-
-      function loginWithEmail(email) {
-          const passwordField = document.getElementById('password');
-          const password = passwordField.value;
-          
-          if (!password) { 
-              const errorSpan = passwordField.parentElement.parentElement.querySelector('.field-error-modern');
-              if (errorSpan) {
-                  errorSpan.textContent = 'Password is required';
-                  errorSpan.style.display = 'block';
-              }
-              passwordField.style.borderColor = '#ef4444';
-              return; 
-          }
-          
-          // Use fetch to existing API
-           const btn = document.getElementById('signin-btn');
-           const btnText = document.getElementById('signin-text');
-           const btnLoader = document.getElementById('signin-loader');
-           
-           btn.disabled = true;
-           btnText.style.display = 'none';
-           btnLoader.style.display = 'inline';
-
-           fetch('api/auth/login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: email, 
-                    password: password,
-                    csrf_token: document.getElementById('csrf_token').value
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Success logic similar to script.js
-                    const user = data.data.user;
-                    const userData = {
-                        id: user.id,
-                        email: user.email,
-                        firstName: user.firstName,
-                        name: `${user.firstName} ${user.lastName}`,
-                        loginTime: new Date().toISOString()
-                    };
-                    localStorage.setItem('userSession', JSON.stringify(userData));
-                    
-                    // Check for redirect param
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect');
-                    if (redirect) {
-                        window.location.href = redirect;
-                    } else {
-                        window.location.href = 'index.php';
-                    }
-                } else {
-                    const errorDiv = document.getElementById('auth-error');
-                    if (errorDiv) {
-                        errorDiv.textContent = data.message;
-                        errorDiv.style.display = 'block';
-                    } else {
-                        alert(data.message);
-                    }
-                    btn.disabled = false;
-                    btnText.style.display = 'inline';
-                    btnLoader.style.display = 'none';
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoader.style.display = 'none';
-            });
-      }
-
-      function showOtpModal(phone) {
-          // OTP login is not yet implemented on the backend
-          const errorDiv = document.getElementById('auth-error');
-          if (errorDiv) {
-              errorDiv.textContent = 'Phone login is coming soon. Please use your email and password to sign in.';
-              errorDiv.style.display = 'block';
-          }
-      }
-
-      function closeOtpModal() {
-          document.getElementById('otp-modal').style.display = 'none';
-      }
-      window.closeOtpModal = closeOtpModal;
-
-      function verifyOtp() {
-          // OTP verification not yet implemented
-          closeOtpModal();
-          const errorDiv = document.getElementById('auth-error');
-          if (errorDiv) {
-              errorDiv.textContent = 'Phone login is not yet available. Please use email login.';
-              errorDiv.style.display = 'block';
-          }
-      }
-      window.verifyOtp = verifyOtp;
-
-      document.addEventListener('DOMContentLoaded', function() {
-          const urlParams = new URLSearchParams(window.location.search);
-          const message = urlParams.get('message');
-          if (message) {
-              // Show as success if it's a registration message, otherwise as error/info
-              if (message.toLowerCase().includes('successful') || message.toLowerCase().includes('success')) {
-                  const successDiv = document.getElementById('auth-success');
-                  if (successDiv) {
-                      successDiv.textContent = message;
-                      successDiv.style.display = 'block';
-                  }
-              } else {
-                  const errorDiv = document.getElementById('auth-error');
-                  if (errorDiv) {
-                      errorDiv.textContent = message;
-                      errorDiv.style.display = 'block';
-                  }
-              }
-          }
-      });
     </script>
   </body>
 </html>

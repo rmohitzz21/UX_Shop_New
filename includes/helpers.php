@@ -318,3 +318,9 @@ HTML;
         $content
     );
 }
+
+function validateCsrfFromToken(string $token): void {
+    if (empty($_SESSION['csrf_token']) || !$token || !hash_equals($_SESSION['csrf_token'], $token)) {
+        sendResponse("error", "Invalid CSRF token", null, 403);
+    }
+}

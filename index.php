@@ -140,28 +140,115 @@
                             }
                             
                             echo "
-                            <div class='prod-card'>
-                                <div class='prod-img'>
-                                    <img src='$image' alt='$name' onerror=\"this.src='img/poster.webp'\" />
-                                    <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                                </div>
-                                <div class='prod-info'>
-                                    <div class='prod-header'>
-                                        <h3>$name</h3>
-                                        <div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> $rating</div>
-                                    </div>
-                                    <p class='prod-desc'>$desc</p>
-                                    <p class='prod-specs'>$specs</p>
-                                    <div class='prod-price'>
-                                        <span class='current'>₹$price</span>
-                                        " . ($old_price ? "<span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹$old_price</span><span class='discount' style='color: #8c89a0; margin-left: 0;'>(67% OFF)</span>" : "") . "
-                                    </div>
-                                    <div class='prod-actions'>
-                                        <button class='btn btn-primary btn-sm' style='width: 100%; border-radius: 999px; background: #6147bd; border: none;' onclick='addToCart(\"$id\", null, 1, {name: $jsName, price: {$row['price']}, image: $jsImage, category: $jsCategory, description: \"$desc\"}, \"$available_type\")'>Buy Now</button>
-                                        <button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;' onclick=\"window.location.href='product.php?id=$id'\">View Details</button>
-                                    </div>
-                                </div>
-                            </div>
+                            <article class='uxp-product-card'
+    data-product-id='$id'
+    data-category='$category'
+    data-type='$available_type'
+    data-price='{$row['price']}'
+    data-rating='$rating'>
+
+    <a href='product.php?id=$id'
+       class='uxp-product-media'
+       aria-label='View $name'>
+
+        <img
+            src='$image'
+            alt='$name'
+            loading='lazy'
+            width='480'
+            height='360'
+            onerror=\"this.src='img/poster.webp'\"
+        />
+
+        <span class='uxp-product-badge-icon' aria-hidden='true'>
+            <svg viewBox='0 0 24 24'
+                 fill='none'
+                 stroke='currentColor'
+                 stroke-width='1.8'>
+
+                <path d='M12 3v18M3 12h18'></path>
+                <circle cx='12' cy='12' r='8'></circle>
+
+            </svg>
+        </span>
+    </a>
+
+    <div class='uxp-product-body'>
+
+        <div class='uxp-product-title-row'>
+
+            <h3>$name</h3>
+
+            <div class='uxp-rating'
+                 aria-label='Rating $rating out of 5'>
+
+                <span aria-hidden='true'>&#9733;</span>
+                <b>$rating</b>
+
+            </div>
+
+        </div>
+
+        <p>$desc</p>
+
+        <p class='uxp-product-spec'>$specs</p>
+
+        <div class='uxp-product-meta'>
+
+            <div class='uxp-product-price'>
+
+                ₹$price
+
+                " . ($old_price ? "
+                    <span class='uxp-old-price'>
+                        ₹$old_price (67% OFF)
+                    </span>
+                " : "") . "
+
+            </div>
+
+        </div>
+
+        <div class='uxp-product-actions'>
+
+            <a href='product.php?id=$id'
+               class='uxp-card-btn uxp-card-btn-primary'>
+
+               Buy Now
+
+            </a>
+
+            <button
+                class='uxp-card-btn uxp-card-btn-secondary'
+                type='button'
+
+                onclick='addToCart(
+                    \"$id\",
+                    null,
+                    1,
+                    {
+                        name: $jsName,
+                        price: {$row['price']},
+                        image: $jsImage,
+                        category: $jsCategory,
+                        description: \"$desc\"
+                    },
+                    \"$available_type\"
+                )'
+
+                " . ($row['stock'] <= 0 && $available_type === 'physical'
+                    ? 'disabled'
+                    : '') . ">
+
+                Add to Cart
+
+            </button>
+
+        </div>
+
+    </div>
+
+</article>
                             ";
                         }
                     } else {
@@ -226,203 +313,229 @@
         </section>
 
         <!-- EXPLORE BY CATEGORY -->
-        <section id="category" class="categories-section">
-            <h2 class="section-heading">Explore by Category</h2>
-            <p style="color: #8c89a0; margin-bottom: 48px;">Browse our curated collection of premium resources organized by your needs.</p>
-            <div class="cat-grid">
-                <div class="cat-card">
-                    <div class="cat-gradient green">
-                        <div class="cat-icon-container"><img src="img/ss/newsec/Vector-1.png" alt="" /></div>
-                    </div>
-                    <div class="cat-content">
-                        <h3 class="cat-title">Templates</h3>
-                        <span class="cat-count">150+ templates</span>
-                        <p class="cat-desc">Get hired with ready-to-use templates</p>
-                        <a href="shopAll.php?cat=templates" class="cat-link">Explore <img src="img/ss/newsec/Vector2.png" alt="" /></a>
-                    </div>
-                </div>
-                <div class="cat-card">
-                    <div class="cat-gradient pink">
-                        <div class="cat-icon-container"><img src="img/ss/Vector.png" alt="" /></div>
-                    </div>
-                    <div class="cat-content">
-                        <h3 class="cat-title">UI Kits</h3>
-                        <span class="cat-count">80+ UI kits</span>
-                        <p class="cat-desc">Build stunning interfaces faster</p>
-                        <a href="shopAll.php?cat=uikits" class="cat-link">Explore <img src="img/ss/newsec/Vector2.png" alt="" /></a>
-                    </div>
-                </div>
-                <div class="cat-card">
-                    <div class="cat-gradient purple">
-                        <div class="cat-icon-container"><img src="img/ss/newsec/Vector2.png" alt="" /></div>
-                    </div>
-                    <div class="cat-content">
-                        <h3 class="cat-title">Mockups</h3>
-                        <span class="cat-count">120+ mockups</span>
-                        <p class="cat-desc">Present your work professionally</p>
-                        <a href="shopAll.php?cat=mockups" class="cat-link">Explore <img src="img/ss/newsec/Vector2.png" alt="" /></a>
-                    </div>
-                </div>
-                <div class="cat-card">
-                    <div class="cat-gradient orange">
-                        <div class="cat-icon-container"><img src="img/ss/newsec/Vector-1.png" alt="" /></div>
-                    </div>
-                    <div class="cat-content">
-                        <h3 class="cat-title">UX Resources</h3>
-                        <span class="cat-count">100+ resources</span>
-                        <p class="cat-desc">Master UX research and strategy</p>
-                        <a href="shopAll.php?cat=resources" class="cat-link">Explore <img src="img/ss/newsec/Vector2.png" alt="" /></a>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <section class="uxp-category-section" aria-labelledby="category-title">
+  <div class="uxp-container">
 
-        <section id="bundles" class="bundles-section">
-            <h2 class="section-heading">Ready-Made Career Bundles</h2>
-            <div class="bundles-grid">
-                <div class="bundle-card">
-                    <div class="bundle-img">
-                        <img src="img/poster.webp" onerror="this.src='img/booklet.webp'" alt="Bundle" />
-                        <span class="tag">Most Popular</span>
-                    </div>
-                    <div class="bundle-body">
-                        <div class="bundle-header">
-                            <h3>Portfolio Builder Kit</h3>
-                            <div class="rating"><i class="ph-fill ph-star" style="color: #F8B84E"></i> 4.5</div>
+    <div class="uxp-category-heading">
+        <h2 id="category-title">Explore by Category</h2>
+        <p>
+            Browse our curated collection of premium resources organized by your needs.
+        </p>
+    </div>
+
+    <div class="uxp-category-grid">
+
+        <?php
+        if (!isset($conn)) {
+            @require_once 'includes/config.php';
+        }
+
+        $fallbackImages = [
+            'img/poster.webp',
+            'img/poster1.webp',
+            'img/poster2.webp',
+            'img/poster3.webp'
+        ];
+
+        $colorClasses = [
+            'uxp-category-teal',
+            'uxp-category-pink',
+            'uxp-category-purple',
+            'uxp-category-orange'
+        ];
+
+        if (isset($conn)) {
+
+            $sql = "
+                SELECT 
+                    c.*,
+                    COUNT(p.id) as product_count,
+                    MIN(p.image) as product_image
+                FROM categories c
+                LEFT JOIN products p 
+                    ON p.category = c.name
+                GROUP BY c.id
+                ORDER BY c.id ASC
+                LIMIT 4
+            ";
+
+            $result = $conn->query($sql);
+
+            if ($result && $result->num_rows > 0) {
+
+                $index = 0;
+
+                while($cat = $result->fetch_assoc()) {
+
+                    $name = htmlspecialchars($cat['name']);
+                    $slug = htmlspecialchars($cat['slug']);
+                    $description = htmlspecialchars(
+                        $cat['description'] 
+                        ?: 'Explore premium curated design resources.'
+                    );
+
+                    $productCount = (int)$cat['product_count'];
+
+                    $image = !empty($cat['product_image'])
+                        ? htmlspecialchars($cat['product_image'])
+                        : $fallbackImages[$index % count($fallbackImages)];
+
+                    $colorClass = $colorClasses[$index % count($colorClasses)];
+
+                    echo "
+
+                    <a href='shopAll.php?category=$slug'
+                       class='uxp-category-card $colorClass'>
+
+                        <div class='uxp-category-art' aria-hidden='true'>
+
+                            <span class='uxp-category-bubble'></span>
+
+                            <span class='uxp-category-icon'>
+
+                                <img 
+                                    src='$image'
+                                    alt='$name'
+                                    loading='lazy'
+                                    onerror=\"this.src='img/poster.webp'\"
+                                />
+
+                            </span>
+
                         </div>
-                        <p class="bundle-subtitle">Build a recruiter-ready UI/UX portfolio in 5 days</p>
-                        <ul class="bundle-features">
-                            <li>Complete, polished case study</li>
-                            <li>Portfolio website layout</li>
-                            <li>Typography & grid system</li>
-                            <li>UX writing guide</li>
-                        </ul>
-                        <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
+
+                        <div class='uxp-category-body'>
+
+                            <h3>$name</h3>
+
+                            <span>$productCount+ items</span>
+
+                            <p>$description</p>
+
+                            <strong>
+
+                                Explore
+
+                                <svg viewBox='0 0 24 24'
+                                     fill='none'
+                                     stroke='currentColor'
+                                     stroke-width='2'>
+
+                                    <path d='M5 12h14'></path>
+                                    <path d='m13 6 6 6-6 6'></path>
+
+                                </svg>
+
+                            </strong>
+
                         </div>
-                        <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
-                            <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
-                            <button class="btn btn-outline btn-sm" style="width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;">View Details</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="bundle-card">
-                    <div class="bundle-img">
-                        <img src="img/poster1.webp" onerror="this.src='img/booklet.webp'" alt="Bundle" />
-                        <span class="tag">Most Popular</span>
-                    </div>
-                    <div class="bundle-body">
-                        <div class="bundle-header">
-                            <h3>Portfolio Builder Kit</h3>
-                            <div class="rating"><i class="ph-fill ph-star" style="color: #F8B84E"></i> 4.5</div>
-                        </div>
-                        <p class="bundle-subtitle">Build a recruiter-ready UI/UX portfolio in 5 days</p>
-                        <ul class="bundle-features">
-                            <li>Complete, polished case study</li>
-                            <li>Portfolio website layout</li>
-                            <li>Typography & grid system</li>
-                            <li>UX writing guide</li>
-                        </ul>
-                        <div class="prod-price">
-                            <span class="current">₹1,499</span><span class="old">₹4,999</span>
-                        </div>
-                        <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
-                            <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
-                            <button class="btn btn-outline btn-sm" style="width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;">View Details</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="bundle-card">
-                    <div class="bundle-img">
-                        <img src="img/poster2.webp" onerror="this.src='img/booklet.webp'" alt="Bundle" />
-                        <span class="tag">Most Popular</span>
-                    </div>
-                    <div class="bundle-body">
-                        <div class="bundle-header">
-                            <h3>Portfolio Builder Kit</h3>
-                            <div class="rating"><i class="ph-fill ph-star" style="color: #F8B84E"></i> 4.5</div>
-                        </div>
-                        <p class="bundle-subtitle">Build a recruiter-ready UI/UX portfolio in 5 days</p>
-                        <ul class="bundle-features">
-                            <li>Complete, polished case study</li>
-                            <li>Portfolio website layout</li>
-                            <li>Typography & grid system</li>
-                            <li>UX writing guide</li>
-                        </ul>
-                        <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
-                        </div>
-                        <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
-                            <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
-                            <button class="btn btn-outline btn-sm" style="width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;">View Details</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Fourth Card -->
-                <div class="bundle-card">
-                    <div class="bundle-img">
-                        <img src="img/poster.webp" onerror="this.src='img/booklet.webp'" alt="Bundle" />
-                        <span class="tag">Most Popular</span>
-                    </div>
-                    <div class="bundle-body">
-                        <div class="bundle-header">
-                            <h3>Portfolio Builder Kit</h3>
-                            <div class="rating"><i class="ph-fill ph-star" style="color: #F8B84E"></i> 4.5</div>
-                        </div>
-                        <p class="bundle-subtitle">Build a recruiter-ready UI/UX portfolio in 5 days</p>
-                        <ul class="bundle-features">
-                            <li>Complete, polished case study</li>
-                            <li>Portfolio website layout</li>
-                            <li>Typography & grid system</li>
-                            <li>UX writing guide</li>
-                        </ul>
-                        <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
-                        </div>
-                        <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
-                            <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
-                            <button class="btn btn-outline btn-sm" style="width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;">View Details</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Fifth Card -->
-                <div class="bundle-card">
-                    <div class="bundle-img">
-                        <img src="img/poster1.webp" onerror="this.src='img/booklet.webp'" alt="Bundle" />
-                        <span class="tag">Most Popular</span>
-                    </div>
-                    <div class="bundle-body">
-                        <div class="bundle-header">
-                            <h3>Portfolio Builder Kit</h3>
-                            <div class="rating"><i class="ph-fill ph-star" style="color: #F8B84E"></i> 4.5</div>
-                        </div>
-                        <p class="bundle-subtitle">Build a recruiter-ready UI/UX portfolio in 5 days</p>
-                        <ul class="bundle-features">
-                            <li>Complete, polished case study</li>
-                            <li>Portfolio website layout</li>
-                            <li>Typography & grid system</li>
-                            <li>UX writing guide</li>
-                        </ul>
-                        <div class="prod-price" style="display:flex; align-items:center; gap: 8px;">
-                            <span class="current" style="font-size: 18px;">₹1,499</span><span class="old" style="text-decoration: line-through; color: #8c89a0; font-size: 14px;">₹4,999</span>
-                        </div>
-                        <div class="prod-actions" style="margin-top:20px; display:flex; gap: 10px;">
-                            <button class="btn btn-primary btn-sm" style="width:100%; border-radius: 999px; background: #6147bd; border: none; font-size: 13px;">Buy Now</button>
-                            <button class="btn btn-outline btn-sm" style="width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white; font-size: 13px;">View Details</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="see-all-wrapper">
-                    <a href="bundles.php" class="see-all-btn-container">
-                        <div class="see-all-btn">
-                            <img src="img/ss/newsec/Vector2.png" alt="" />
-                        </div>
-                        <span style="font-size: 14px;">See all</span>
+
                     </a>
-                </div>
+                    ";
+
+                    $index++;
+                }
+
+            } else {
+
+                echo "<p>No categories found.</p>";
+
+            }
+        }
+        ?>
+
+    </div>
+
+</div>
+</section>
+
+        <section class="uxp-bundles-section" aria-labelledby="bundles-title">
+  <div class="uxp-container">
+    <div class="uxp-bundle-heading">
+      <h2 id="bundles-title">Ready-Made Career Bundles</h2>
+    </div>
+
+    <div class="uxp-bundle-grid">
+      <article class="uxp-bundle-card">
+        <div class="uxp-bundle-image">
+          <img src="img/poster1.webp" alt="Portfolio Builder Kit preview" loading="lazy" />
+          <span>Most Popular</span>
+        </div>
+
+        <div class="uxp-bundle-content">
+          <div class="uxp-bundle-title-row">
+            <h3>Portfolio Builder Kit</h3>
+            <span class="uxp-bundle-rating" aria-label="Rated 4.5 out of 5">
+              &#9733; <b>4.5</b>
+            </span>
+          </div>
+
+          <p>Build a recruiter-ready UI/UX portfolio in 5 days</p>
+
+          <ul>
+            <li>Complete, polished case study</li>
+            <li>Portfolio website layout</li>
+            <li>Typography &amp; grid system</li>
+            <li>UX writing guide</li>
+          </ul>
+
+          <div class="uxp-bundle-footer">
+            <strong>&#8377;1,499 <span>&#8377;4,999</span></strong>
+
+            <div>
+              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-primary">View Templates</a>
+              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-secondary">Buy Now</a>
             </div>
-        </section>
+          </div>
+        </div>
+      </article>
+
+      <article class="uxp-bundle-card">
+        <div class="uxp-bundle-image">
+          <img src="img/poster1.webp" alt="Portfolio Builder Kit preview" loading="lazy" />
+          <span>Most Popular</span>
+        </div>
+
+        <div class="uxp-bundle-content">
+          <div class="uxp-bundle-title-row">
+            <h3>Portfolio Builder Kit</h3>
+            <span class="uxp-bundle-rating" aria-label="Rated 4.5 out of 5">
+              &#9733; <b>4.5</b>
+            </span>
+          </div>
+
+          <p>Build a recruiter-ready UI/UX portfolio in 5 days</p>
+
+          <ul>
+            <li>Complete, polished case study</li>
+            <li>Portfolio website layout</li>
+            <li>Typography &amp; grid system</li>
+            <li>UX writing guide</li>
+          </ul>
+
+          <div class="uxp-bundle-footer">
+            <strong>&#8377;1,499 <span>&#8377;4,999</span></strong>
+
+            <div>
+              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-primary">View Templates</a>
+              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-secondary">Buy Now</a>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <a href="shopAll.php" class="uxp-bundle-see-all" aria-label="See all bundles">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M7 17 17 7"></path>
+            <path d="M8 7h9v9"></path>
+          </svg>
+        </span>
+        <b>See all</b>
+      </a>
+    </div>
+  </div>
+</section>
     </main>
 
     <section class="achieve-section">
