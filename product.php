@@ -36,6 +36,16 @@ $stock = $product['stock'];
 $category = htmlspecialchars($product['category']);
 $available_type = $product['available_type'] ?? 'physical'; // physical, digital, both
 
+$category_lower_raw = strtolower((string) ($product['category'] ?? ''));
+$fit_is_cover = ($available_type !== 'digital') && (
+    strpos($category_lower_raw, 't-shirt') !== false ||
+    strpos($category_lower_raw, 'hoodie') !== false ||
+    strpos($category_lower_raw, 'tee') !== false ||
+    strpos($category_lower_raw, 'apparel') !== false ||
+    strpos($category_lower_raw, 'merch') !== false
+);
+$fit_class = $fit_is_cover ? 'fit-cover' : 'fit-contain';
+
 // Handle Images
 $images = [];
 
@@ -68,8 +78,35 @@ if (empty($images)) {
 $images = array_values($images);
 
 // Handle Tabs Data
-$whats_included = !empty($product['whats_included']) ? nl2br(htmlspecialchars($product['whats_included'])) : '<li>No details available.</li>';
-$file_specs = !empty($product['file_specification']) ? nl2br(htmlspecialchars($product['file_specification'])) : '<li>No specifications available.</li>';
+function renderBulletHtml($raw, string $fallbackText): string {
+    $text = trim((string) $raw);
+    if ($text === '') {
+        return '<div class="empty-state">Not specified</div>';
+    }
+
+    $lines = preg_split('/\r?\n/', $text) ?: [];
+    $items = [];
+    foreach ($lines as $line) {
+        $line = trim((string) $line);
+        $line = preg_replace('/^[-•*]\s*/', '', $line);
+        if ($line !== '') $items[] = $line;
+    }
+
+    if (!count($items)) {
+        return '<div class="empty-state">Not specified</div>';
+    }
+
+    $lis = '';
+    foreach ($items as $it) {
+        $lis .= '<li>' . htmlspecialchars($it, ENT_QUOTES, 'UTF-8') . '</li>';
+    }
+
+    return '<ul class="feature-bullets">' . $lis . '</ul>';
+}
+
+$whats_included = renderBulletHtml($product['whats_included'] ?? '', 'Not specified');
+$file_specs = renderBulletHtml($product['file_specification'] ?? '', 'Not specified');
+
 
 // Fetch Related Products
 $related_html = '';
@@ -120,20 +157,19 @@ function getRelatedProducts($conn, $product) {
                 $jsRAvailableType = addslashes($rel['available_type'] ?? 'physical');
                 
                 $related_html .= "
-                  <article class='product-card' data-category='$r_cat'>
-                    <div class='product-img'>
+                  <article class='product-related-card' data-category='$r_cat'>
+                    <a class='product-related-media' href='product.php?id=$r_id' aria-label='View $r_name'>
                       <img src='$r_img' alt='$r_name' onerror=\"this.src='img/sticker.webp'\" />
-                      <span class='product-tag'>$r_cat</span>
-                    </div>
-                    <div class='product-body'>
+                      <span class='product-related-tag'>$r_cat</span>
+                    </a>
+                    <div class='product-related-body'>
                       <h3>$r_name</h3>
-                      <p style='margin-bottom: 0.5rem; font-size: 0.95rem;'>$r_desc</p>
-                      
-                      <div class='product-meta'>
-                        <div class='product-price'>$$r_price " . ($r_old ? "<span>$$r_old</span>" : "") . "</div>
-                        <div class='product-rating'>★ $r_rating</div>
+                      <p>$r_desc</p>
+                      <div class='product-related-meta'>
+                        <div class='product-related-price'>₹$r_price " . ($r_old ? "<span>₹$r_old</span>" : "") . "</div>
+                        <div class='product-related-rating'>★ $r_rating</div>
                       </div>
-                      <div class='product-actions'>
+                      <div class='product-related-actions'>
                         <button onclick=\"addToCart('$r_id', null, 1, {name: '$jsRName', price: {$rel['price']}, image: '$jsRImage', category: '$jsRCategory'}, '$jsRAvailableType')\" class='btn-primary small' aria-label='Add to cart'>Add to Cart</button>
                         <a href='product.php?id=$r_id' class='btn-ghost small'>View Details</a>
                       </div>
@@ -162,69 +198,24 @@ $related_html = getRelatedProducts($conn, $product);
     />
       <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
     <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
   <body>
-    <!-- NAVBAR -->
-    <header class="site-header" id="navbar">
-      <nav class="nav-bar">
-        <!-- Logo -->
-        <div class="nav-logo">
-          <!-- replace with your logo -->
-          <a href="index.php">
-            <img src="img/logo1.webp" alt="UX Pacific" />
-          </a>
-        </div>
-        <!-- Desktop Menu -->
-        <ul class="nav-links">
-          <li><a href="index.php" class="nav-link ">Home</a></li>
-          <li><a href="index.php#story" class="nav-link">About Us</a></li>
-          <li><a href="index.php#products" class="nav-link">New</a></li>
-          <li><a href="shopAll.php" class="nav-link">Buy Now</a></li>
-        </ul>
-        <div class="nav-actions">
-          <a href="cart.php" class="nav-cart">
-            <img src="img/cart-icon.webp" alt="Shopping cart" />
-            <span id="cart-count">0</span>
-          </a>
-          <?php if (isset($_SESSION['user_id'])): ?>
-             <div class="nav-user">
-               <div class="user-avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-               </div>
-               <div class="user-info">
-                 <span class="user-name"><?php echo htmlspecialchars(trim(($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '')) ?: ($_SESSION['user_email'] ?? 'User')); ?></span>
-               </div>
-               <div class="user-dropdown">
-                 <a href="orders.php" class="user-dropdown-item">My Orders</a>
-                 <a href="#" onclick="handleSignOut(); return false;" class="user-dropdown-item logout">Sign Out</a>
-               </div>
-             </div>
-          <?php else: ?>
-             <a href="signin.php" class="nav-cta">Sign in</a>
-          <?php endif; ?>
-        </div>
-        <button id="mobile-menu-btn" class="nav-toggle" aria-label="Toggle navigation">
-          <span></span><span></span><span></span>
-        </button>
-      </nav>
-      <!-- Mobile Menu -->
-      <div id="mobile-menu" class="nav-mobile-menu">
-        <a href="index.php" class="nav-mobile-link">Home</a>
-        <a href="index.php#story" class="nav-mobile-link">About Us</a>
-        <a href="index.php#products" class="nav-mobile-link">New</a>
-        <a href="shopAll.php" class="nav-mobile-link">Buy Now</a>
-        <a href="signin.php" class="nav-mobile-link nav-mobile-cta">Sign in</a>
-      </div>
-    </header>
+    <?php include 'includes/header.php'; ?>
 
     <div class="product-page">
       <!-- LEFT : IMAGE GALLERY -->
       <div class="product-gallery">
         <div class="main-image">
-          <img id="mainProductImage" src="<?php echo $images[0]; ?>" alt="<?php echo $name; ?>" />
+          <span class="slide-badge" aria-label="Image count">
+            <span id="slideCount">1 / <?php echo count($images); ?></span>
+          </span>
+          <img
+            id="mainProductImage"
+            class="<?php echo $fit_class; ?>"
+            src="<?php echo $images[0]; ?>"
+            alt="<?php echo $name; ?>"
+          />
           <?php if (count($images) > 1): ?>
           <button class="nav prev" onclick="changeImage(-1)">‹</button>
           <button class="nav next" onclick="changeImage(1)">›</button>
@@ -235,30 +226,36 @@ $related_html = getRelatedProducts($conn, $product);
              <?php endforeach; ?>
           </div>
         </div>
-        <div class="thumbnail-row">
+        <div class="thumbnail-row" aria-label="Thumbnails">
           <?php foreach ($images as $i => $img): ?>
-            <img src="<?php echo $img; ?>" class="thumb <?php echo $i === 0 ? 'active' : ''; ?>" onclick="setImage(<?php echo $i; ?>)" />
+            <img
+              src="<?php echo $img; ?>"
+              class="thumb <?php echo $i === 0 ? 'active' : ''; ?> <?php echo $fit_class; ?>"
+              onclick="setImage(<?php echo $i; ?>)"
+              alt="Thumbnail <?php echo $i + 1; ?>"
+            />
           <?php endforeach; ?>
-        </div>
-        <div class="slider-indicator">
-          <span id="slideCount">1 / <?php echo count($images); ?></span>
         </div>
       </div>
 
       <!-- RIGHT : PRODUCT INFO -->
-      <div class="product-info">
+      <div class="product-info modern-product-info">
+        <div class="product-head-kicker">
+          <span class="product-chip"><?php echo $category; ?></span>
+          <span class="product-chip product-chip-muted"><?php echo htmlspecialchars(ucfirst($available_type)); ?></span>
+        </div>
         <h1><?php echo $name; ?></h1>
         <p class="description"><?php echo $description; ?></p>
         <div class="rating">★★★★★ <span><?php echo $rating; ?> (<?php echo rand(50, 500); ?> reviews)</span></div>
         <div class="price">
-          <span class="current">$<?php echo $price; ?></span>
+          <span class="current">₹<?php echo $price; ?></span>
           <?php if ($old_price): ?>
-            <span class="old">$<?php echo $old_price; ?></span>
+            <span class="old">₹<?php echo $old_price; ?></span>
             <span class="badge">SALE</span>
           <?php endif; ?>
         </div>
 
-         <div>
+         <div class="product-config-card">
           <!-- Dynamic Options based on Available Type -->
           
           <!-- Format Selection (Physical vs Digital) -->
@@ -320,7 +317,7 @@ $related_html = getRelatedProducts($conn, $product);
           </div>
         </div>
 
-        <div class="product-buttons">
+        <div class="product-buttons modern-product-buttons">
           <?php if ($stock <= 0 && $available_type === 'physical'): ?>
             <button class="btn-primary product-page-btn" disabled style="opacity:0.45; cursor:not-allowed;">Out of Stock</button>
           <?php else: ?>
@@ -369,12 +366,12 @@ $related_html = getRelatedProducts($conn, $product);
         <p><?php echo nl2br($description); ?></p>
       </div>
       <div class="tab-box" id="included">
-        <div class="feature-list" style="line-height: 1.6;">
+        <div class="feature-list">
             <?php echo $whats_included; ?>
         </div>
       </div>
       <div class="tab-box" id="specs">
-         <div class="feature-list" style="line-height: 1.6;">
+         <div class="feature-list">
             <?php echo $file_specs; ?>
         </div>
       </div>
@@ -384,7 +381,7 @@ $related_html = getRelatedProducts($conn, $product);
     <?php if ($related_html): ?>
     <section class="related-section">
       <h2 class="section-title">Related Products</h2>
-      <div class="product-grid">
+      <div class="related-products-grid">
         <?php echo $related_html; ?>
       </div>
     </section>
@@ -478,10 +475,10 @@ $related_html = getRelatedProducts($conn, $product);
           const priceDisplay = document.querySelector('.price .current');
           
           if (format === 'digital' && license === 'Commercial') {
-              priceDisplay.innerText = '$' + commercialPrice.toFixed(2);
+              priceDisplay.innerText = '₹' + commercialPrice.toFixed(2);
           } else {
               // Default or Physical
-              priceDisplay.innerText = '$' + basePrice.toFixed(2);
+              priceDisplay.innerText = '₹' + basePrice.toFixed(2);
           }
       }
 

@@ -40,11 +40,15 @@ if (!headers_sent()) {
 
 // ── 3. Session configuration ──────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+               || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+               || (($_SERVER['SERVER_PORT'] ?? 80) == 443);
     session_set_cookie_params([
-        'lifetime' => 86400,     // 24 hours
+        'lifetime' => 86400,
         'path'     => '/',
-        'httponly' => true,       // Block JS access to cookie
-        'samesite' => 'Lax',      // CSRF mitigation
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure'   => $isHttps,
     ]);
     session_start();
 }

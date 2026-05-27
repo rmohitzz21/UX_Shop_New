@@ -38,7 +38,7 @@ function escapeHtml(value) {
 }
 
 function money(value) {
-  return '$' + Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 }
 
 function normalizeStatus(status) {
@@ -150,6 +150,8 @@ async function loadOverview() {
     setText('stat-products-change', stats.products?.change || 'No change');
     setText('stat-orders-change', stats.orders?.change || 'No change');
     setText('stat-revenue-change', stats.revenue?.change || 'No change');
+    setText('stat-pending-orders', stats.orders?.pending ?? 0);
+    setText('stat-low-stock', stats.inventory?.low_stock_count ?? 0);
     renderRecentOrders(stats.recent_orders || []);
     renderTopProducts(stats.top_products || []);
   } catch (err) {
@@ -162,16 +164,31 @@ function renderRecentOrders(orders) {
   const table = document.getElementById('recent-orders-table');
   if (!table) return;
   if (!orders.length) {
-    table.innerHTML = '<tr><td colspan="5" class="empty-state">No orders yet</td></tr>';
+    table.innerHTML = '<tr><td colspan="4" class="empty-state">No orders yet</td></tr>';
     return;
   }
   table.innerHTML = orders.map(o => `
     <tr>
       <td>${escapeHtml(o.order_number || 'N/A')}</td>
       <td>${escapeHtml(getOrderCustomerName(o))}</td>
-      <td>${new Date(o.created_at || Date.now()).toLocaleDateString()}</td>
       <td>${money(o.total)}</td>
       <td>${getStatusBadge(o.status)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderTopProducts(rows) {
+  const table = document.getElementById('top-products-table');
+  if (!table) return;
+  if (!rows.length) {
+    table.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+    return;
+  }
+  table.innerHTML = rows.slice(0, 6).map(row => `
+    <tr>
+      <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(row.category || '')}</div></td>
+      <td>${Number(row.units_sold || 0).toLocaleString('en-IN')}</td>
+      <td>${money(row.revenue)}</td>
     </tr>
   `).join('');
 }
@@ -193,28 +210,26 @@ async function loadAnalytics() {
     setText('analytics-month-revenue', money(total(monthOrders)));
     setText('analytics-avg-order', money(orders.length ? total(orders) / orders.length : 0));
     setText('analytics-conversion', `${users.length ? ((orders.length / users.length) * 100).toFixed(1) : '0.0'}%`);
-    renderTopProducts(stats.top_products || []);
+    const topRows = stats.top_products || [];
+    const analyticsTable = document.getElementById('analytics-top-products-table');
+    if (analyticsTable) {
+      if (!topRows.length) {
+        analyticsTable.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+      } else {
+        analyticsTable.innerHTML = topRows.map(row => `
+          <tr>
+            <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(row.category || '')}</div></td>
+            <td>${Number(row.units_sold || 0).toLocaleString('en-IN')}</td>
+            <td>${money(row.revenue)}</td>
+          </tr>
+        `).join('');
+      }
+    }
   } catch (err) {
     console.error(err);
   }
 }
 
-function renderTopProducts(rows) {
-  const table = document.getElementById('top-products-table');
-  if (!table) return;
-  if (!rows.length) {
-    table.innerHTML = '<tr><td colspan="4" class="empty-state">No order item data yet</td></tr>';
-    return;
-  }
-  table.innerHTML = rows.map(row => `
-    <tr>
-      <td>${escapeHtml(row.name || 'Catalog item')}</td>
-      <td>${escapeHtml(row.category || 'Products')}</td>
-      <td>${Number(row.units_sold || 0).toLocaleString()}</td>
-      <td>${money(row.revenue)}</td>
-    </tr>
-  `).join('');
-}
 
 async function loadProducts() {
   const table = document.getElementById('products-table');
@@ -453,10 +468,11 @@ async function loadAdminBundles() {
           <div style="font-size:.78rem;opacity:.7;">${Number(row.product_count || 0)} products</div>
         </td>
         <td>${money(row.price)}</td>
-        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Featured</span>' : 'No'}</td>
+        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Best Seller</span>' : '—'}</td>
         <td>${row.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
-          <button class="btn-small btn-edit" onclick='adminToggleBundle(${Number(row.id)}, "is_featured")'>Feature</button>
+          <button class="btn-small btn-edit" onclick='adminEditBundle(${Number(row.id)})'>Edit</button>
+          <button class="btn-small btn-edit" onclick='adminToggleBundle(${Number(row.id)}, "is_featured")'>${row.is_featured == 1 ? 'Remove Best Seller' : 'Set Best Seller'}</button>
           <button class="btn-small btn-edit" onclick='adminToggleBundle(${Number(row.id)}, "is_active")'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
           <button class="btn-small btn-delete" onclick='adminDeleteBundle(${Number(row.id)})'>Delete</button>
         </td>
@@ -471,6 +487,12 @@ async function adminSaveBundle(event) {
   event.preventDefault();
   const form = event.target;
   const fd = new FormData(form);
+  // Checkboxes do not submit when unchecked, so we normalize values here.
+  const isFeaturedEl = form.querySelector('input[name="is_featured"]');
+  const isActiveEl = form.querySelector('input[name="is_active"]');
+  fd.set('is_featured', isFeaturedEl && isFeaturedEl.checked ? '1' : '0');
+  fd.set('is_active', isActiveEl && isActiveEl.checked ? '1' : '0');
+
   const included = String(fd.get('included_items') || '')
     .split(',')
     .map(label => label.trim())
@@ -480,11 +502,70 @@ async function adminSaveBundle(event) {
   try {
     await fetchJson('../api/admin/bundles/save.php', { method: 'POST', body: fd });
     form.reset();
+    adminCancelBundleEdit();
     await Promise.all([loadAdminBundles(), loadOverview()]);
     showToast('Bundle saved.', 'success');
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function adminEditBundle(id) {
+  const row = state.bundles.find(b => Number(b.id) === Number(id));
+  if (!row) return;
+
+  const form = document.getElementById('bundle-editor-form');
+  if (!form) return;
+
+  form.elements['id'].value = String(row.id);
+  form.elements['existing_image'].value = row.image || '';
+  form.elements['name'].value = row.name || '';
+  form.elements['price'].value = row.price ?? '';
+  form.elements['old_price'].value = row.old_price ?? '';
+  form.elements['category'].value = row.category || '';
+  form.elements['tags'].value = row.tags || '';
+  form.elements['stock'].value = row.stock ?? '';
+  form.elements['rating'].value = row.rating ?? '';
+  form.elements['description'].value = row.description || '';
+
+  const includedList = row.included_items_list || [];
+  const normalizedIncluded = Array.isArray(includedList)
+    ? includedList
+        .map(it => {
+          if (typeof it === 'string') return it;
+          if (it && typeof it === 'object') return String(it.label ?? it.name ?? '').trim();
+          return '';
+        })
+        .filter(Boolean)
+    : [];
+  form.elements['included_items'].value = normalizedIncluded.join(', ');
+
+  // Leave product_ids empty unless the admin explicitly wants to update bundle contents.
+  form.elements['product_ids'].value = '';
+
+  const isFeaturedEl = form.querySelector('input[name="is_featured"]');
+  const isActiveEl = form.querySelector('input[name="is_active"]');
+  if (isFeaturedEl) isFeaturedEl.checked = Number(row.is_featured) === 1;
+  if (isActiveEl) isActiveEl.checked = Number(row.is_active) === 1;
+
+  const submitBtn = document.getElementById('bundle-submit-btn');
+  const cancelBtn = document.getElementById('bundle-cancel-btn');
+  if (submitBtn) submitBtn.textContent = 'Update Bundle';
+  if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+}
+
+function adminCancelBundleEdit() {
+  const form = document.getElementById('bundle-editor-form');
+  if (!form) return;
+
+  form.reset();
+  form.elements['id'].value = '';
+  form.elements['existing_image'].value = '';
+
+  const submitBtn = document.getElementById('bundle-submit-btn');
+  const cancelBtn = document.getElementById('bundle-cancel-btn');
+  if (submitBtn) submitBtn.textContent = 'Add Bundle';
+  if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
 async function adminToggleBundle(id, field) {
@@ -514,6 +595,111 @@ async function adminDeleteBundle(id) {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+async function loadReviews() {
+  const table = document.getElementById('reviews-table');
+  if (!table) return;
+  table.innerHTML = '<tr><td colspan="6" class="empty-state">Loading reviews...</td></tr>';
+  try {
+    const rows = await fetchJson('../api/admin/reviews/list.php');
+    if (!rows.length) {
+      table.innerHTML = '<tr><td colspan="6" class="empty-state">No reviews found</td></tr>';
+      return;
+    }
+    table.innerHTML = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.product_name || 'N/A')}</td>
+        <td>${escapeHtml(r.user_name || r.reviewer_name || 'Guest')}</td>
+        <td>${'★'.repeat(Math.min(5, Math.max(0, Number(r.rating || 0))))}${'☆'.repeat(Math.max(0, 5 - Math.min(5, Number(r.rating || 0))))}</td>
+        <td style="max-width:260px;white-space:normal;">${escapeHtml(r.comment || r.body || '')}</td>
+        <td>${r.is_approved == 1 ? getStatusBadge('active') : getStatusBadge('pending')}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-small ${r.is_approved == 1 ? 'btn-delete' : 'btn-success'}" onclick="toggleReviewApproval(${Number(r.id)}, ${r.is_approved == 1 ? 0 : 1})">${r.is_approved == 1 ? 'Unapprove' : 'Approve'}</button>
+            <button class="btn-small btn-delete" onclick="deleteReview(${Number(r.id)})">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    table.innerHTML = `<tr><td colspan="6" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+async function toggleReviewApproval(id, approve) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/reviews/moderate.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, approve, csrf_token: csrfToken }),
+  });
+  await loadReviews();
+  showToast(approve ? 'Review approved.' : 'Review unapproved.', 'success');
+}
+
+async function deleteReview(id) {
+  if (!confirm('Delete this review permanently?')) return;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/reviews/moderate.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, delete: 1, csrf_token: csrfToken }),
+  });
+  await loadReviews();
+  showToast('Review deleted.', 'success');
+}
+
+async function loadMessages() {
+  const table = document.getElementById('messages-table');
+  if (!table) return;
+  table.innerHTML = '<tr><td colspan="6" class="empty-state">Loading messages...</td></tr>';
+  try {
+    const rows = await fetchJson('../api/admin/messages/list.php');
+    if (!rows.length) {
+      table.innerHTML = '<tr><td colspan="6" class="empty-state">No messages found</td></tr>';
+      return;
+    }
+    table.innerHTML = rows.map(m => `
+      <tr>
+        <td>${escapeHtml(m.name || 'N/A')}</td>
+        <td>${escapeHtml(m.email || 'N/A')}</td>
+        <td>${escapeHtml(m.subject || 'General')}</td>
+        <td style="max-width:260px;white-space:normal;">${escapeHtml(String(m.message || '').substring(0, 120))}${String(m.message || '').length > 120 ? '…' : ''}</td>
+        <td>${new Date(m.created_at || Date.now()).toLocaleDateString()}</td>
+        <td>
+          <div class="action-buttons">
+            ${m.is_read == 1 ? '' : `<button class="btn-small btn-success" onclick="markMessageRead(${Number(m.id)})">Mark Read</button>`}
+            <button class="btn-small btn-delete" onclick="deleteMessage(${Number(m.id)})">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    table.innerHTML = `<tr><td colspan="6" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+async function markMessageRead(id) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/messages/update.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, action: 'read', csrf_token: csrfToken }),
+  });
+  await loadMessages();
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Delete this message permanently?')) return;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/messages/update.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, action: 'delete', csrf_token: csrfToken }),
+  });
+  await loadMessages();
+  showToast('Message deleted.', 'success');
 }
 
 async function loadOrders() {
@@ -713,10 +899,6 @@ function handleAdminLogout() {
 function initDashboard() {
   Promise.allSettled([getCategories()]).then(populateCategoryControls);
   loadOverview();
-  loadUsers();
-  loadProducts();
-  loadOrders();
-  loadAnalytics();
 }
 
 function bindDashboard() {
@@ -747,8 +929,16 @@ const exported = {
   adminToggleCategory,
   adminDeleteCategory,
   adminSaveBundle,
+  adminEditBundle,
+  adminCancelBundleEdit,
   adminToggleBundle,
   adminDeleteBundle,
+  loadReviews,
+  toggleReviewApproval,
+  deleteReview,
+  loadMessages,
+  markMessageRead,
+  deleteMessage,
   filterUsers,
   filterProducts,
   filterOrders,

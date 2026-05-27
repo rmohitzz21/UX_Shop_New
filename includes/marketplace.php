@@ -85,6 +85,13 @@ function marketplaceEnsureSchema(mysqli $conn): void {
     addColumnIfMissing($conn, 'products', 'file_specification', "`file_specification` TEXT NULL AFTER `whats_included`");
     addColumnIfMissing($conn, 'products', 'related_products', "`related_products` VARCHAR(255) NULL AFTER `tags`");
     addColumnIfMissing($conn, 'products', 'sku', "`sku` VARCHAR(80) NULL AFTER `slug`");
+    addColumnIfMissing($conn, 'products', 'high_resolution', "`high_resolution` VARCHAR(80) NULL DEFAULT 'Yes' AFTER `file_specification`");
+    addColumnIfMissing($conn, 'products', 'compatible_software', "`compatible_software` VARCHAR(255) NULL AFTER `high_resolution`");
+    addColumnIfMissing($conn, 'products', 'software_version', "`software_version` VARCHAR(120) NULL AFTER `compatible_software`");
+    addColumnIfMissing($conn, 'products', 'files_included', "`files_included` VARCHAR(255) NULL AFTER `software_version`");
+    addColumnIfMissing($conn, 'products', 'grid_columns', "`grid_columns` VARCHAR(80) NULL AFTER `files_included`");
+    addColumnIfMissing($conn, 'products', 'layout_type', "`layout_type` VARCHAR(120) NULL AFTER `grid_columns`");
+    addColumnIfMissing($conn, 'products', 'license_type', "`license_type` VARCHAR(80) NULL DEFAULT 'Premium' AFTER `layout_type`");
 
     $conn->query("CREATE TABLE IF NOT EXISTS bundles (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -107,6 +114,11 @@ function marketplaceEnsureSchema(mysqli $conn): void {
         INDEX idx_bundle_category (category)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     addColumnIfMissing($conn, 'bundles', 'included_items', "`included_items` TEXT NULL AFTER `tags`");
+    addColumnIfMissing($conn, 'bundles', 'view_count', "`view_count` INT NOT NULL DEFAULT 0 AFTER `sales_count`");
+    addColumnIfMissing($conn, 'bundles', 'additional_images', "`additional_images` TEXT NULL AFTER `image`");
+    addColumnIfMissing($conn, 'bundles', 'whats_included', "`whats_included` TEXT NULL AFTER `description`");
+    addColumnIfMissing($conn, 'bundles', 'file_specification', "`file_specification` TEXT NULL AFTER `whats_included`");
+    addColumnIfMissing($conn, 'bundles', 'badge_text', "`badge_text` VARCHAR(80) NULL DEFAULT 'Best Seller' AFTER `image`");
 
     $conn->query("CREATE TABLE IF NOT EXISTS bundle_items (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -258,6 +270,23 @@ function marketplaceEnsureSchema(mysqli $conn): void {
     $bundleCount = (int) ($conn->query('SELECT COUNT(*) AS c FROM bundles')->fetch_assoc()['c'] ?? 0);
     if ($bundleCount === 0) {
         marketplaceSeedBundles($conn);
+    } else {
+        marketplaceUpdateBundlesWhatsIncluded($conn);
+    }
+}
+
+function marketplaceUpdateBundlesWhatsIncluded(mysqli $conn): void {
+    $defaults = [
+        'Portfolio Builder Kit' => "- Complete, polished case study\n- Portfolio website layout\n- Typography & grid system\n- UX writing guide",
+        'UX Interview Prep Bundle' => "- Interview question bank\n- Whiteboard challenge templates\n- Presentation deck\n- Self-assessment scorecard",
+        'SaaS Launch Bundle' => "- Landing page template\n- Dashboard UI kit\n- Email sequence templates\n- Launch checklist & timeline",
+        'Research Sprint Bundle' => "- User interview scripts\n- Analysis spreadsheets\n- Journey map templates\n- Research report format",
+        'Creator Starter Bundle' => "- Brand identity kit\n- Social media templates\n- Device mockups\n- Portfolio section blocks",
+    ];
+    $stmt = $conn->prepare('UPDATE bundles SET whats_included = ? WHERE name = ? AND (whats_included IS NULL OR whats_included = "")');
+    foreach ($defaults as $name => $content) {
+        $stmt->bind_param('ss', $content, $name);
+        $stmt->execute();
     }
 }
 
@@ -308,16 +337,61 @@ function marketplaceSeedProducts(mysqli $conn): void {
 
 function marketplaceSeedBundles(mysqli $conn): void {
     $rows = [
-        ['Portfolio Builder Kit', 'Build a recruiter-ready UI/UX portfolio with templates, writing prompts, and mockups.', 'Bundles', 'portfolio,career,case-study', 999, 2499, 'img/poster.webp', 4.8, 1],
-        ['UX Interview Prep Bundle', 'Research prompts, whiteboard exercises, presentation templates, and interview scorecards.', 'Bundles', 'career,interview,ux', 899, 1999, 'img/poster1.webp', 4.7, 1],
-        ['SaaS Launch Bundle', 'Landing page, SaaS dashboard, email templates, and launch checklist in one pack.', 'Bundles', 'saas,launch,template', 1299, 2999, 'img/poster2.webp', 4.9, 1],
-        ['Research Sprint Bundle', 'Scripts, analysis sheets, journey maps, and reporting templates for fast UX research.', 'Bundles', 'research,sprint,journey-map', 799, 1799, 'img/poster3.webp', 4.6, 1],
-        ['Creator Starter Bundle', 'Brand assets, social templates, mockups, and portfolio blocks for digital creators.', 'Bundles', 'creator,brand,social', 1099, 2599, 'img/poster4.webp', 4.8, 0],
+        [
+            'Portfolio Builder Kit',
+            'Build a recruiter-ready UI/UX portfolio with templates, writing prompts, and mockups.',
+            'Bundles',
+            'portfolio,career,case-study',
+            999, 2499,
+            'img/poster.webp',
+            4.8, 1,
+            "- Complete, polished case study\n- Portfolio website layout\n- Typography & grid system\n- UX writing guide"
+        ],
+        [
+            'UX Interview Prep Bundle',
+            'Research prompts, whiteboard exercises, presentation templates, and interview scorecards.',
+            'Bundles',
+            'career,interview,ux',
+            899, 1999,
+            'img/poster1.webp',
+            4.7, 1,
+            "- Interview question bank\n- Whiteboard challenge templates\n- Presentation deck\n- Self-assessment scorecard"
+        ],
+        [
+            'SaaS Launch Bundle',
+            'Landing page, SaaS dashboard, email templates, and launch checklist in one pack.',
+            'Bundles',
+            'saas,launch,template',
+            1299, 2999,
+            'img/poster2.webp',
+            4.9, 1,
+            "- Landing page template\n- Dashboard UI kit\n- Email sequence templates\n- Launch checklist & timeline"
+        ],
+        [
+            'Research Sprint Bundle',
+            'Scripts, analysis sheets, journey maps, and reporting templates for fast UX research.',
+            'Bundles',
+            'research,sprint,journey-map',
+            799, 1799,
+            'img/poster3.webp',
+            4.6, 1,
+            "- User interview scripts\n- Analysis spreadsheets\n- Journey map templates\n- Research report format"
+        ],
+        [
+            'Creator Starter Bundle',
+            'Brand assets, social templates, mockups, and portfolio blocks for digital creators.',
+            'Bundles',
+            'creator,brand,social',
+            1099, 2599,
+            'img/poster4.webp',
+            4.8, 0,
+            "- Brand identity kit\n- Social media templates\n- Device mockups\n- Portfolio section blocks"
+        ],
     ];
-    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, price, old_price, image, rating, is_active, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)');
+    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, price, old_price, image, rating, is_active, is_featured, whats_included) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)');
     foreach ($rows as $row) {
         $slug = slugify($row[0]);
-        $stmt->bind_param('sssssddsdi', $row[0], $slug, $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[8]);
+        $stmt->bind_param('sssssddsdis', $row[0], $slug, $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9]);
         $stmt->execute();
     }
 }
@@ -340,6 +414,144 @@ function marketplaceImage(?string $image): string {
     return $image !== '' ? $image : 'img/poster.webp';
 }
 
+function marketplaceParseAdditionalImages(?string $json): array {
+    if ($json === null || $json === '') {
+        return [];
+    }
+    $decoded = json_decode($json, true);
+    if (!is_array($decoded)) {
+        return [];
+    }
+    $images = [];
+    foreach ($decoded as $img) {
+        $img = marketplaceImage(is_string($img) ? $img : '');
+        if ($img !== '' && !in_array($img, $images, true)) {
+            $images[] = $img;
+        }
+    }
+    return $images;
+}
+
+function marketplaceProductSpecs(array $row): array {
+    $category = strtolower((string) ($row['category'] ?? ''));
+    $availableType = (string) ($row['available_type'] ?? 'digital');
+    $fileSpec = trim((string) ($row['file_specification'] ?? ''));
+
+    $filesIncluded = trim((string) ($row['files_included'] ?? ''));
+    if ($filesIncluded === '' && $fileSpec !== '') {
+        if (preg_match('/files?\s*:\s*([^\n]+)/i', $fileSpec, $m)) {
+            $filesIncluded = trim($m[1]);
+        } elseif (preg_match('/(FIG|Figma|PNG|SVG|PDF|PSD|XD|AI)/i', $fileSpec, $m)) {
+            $filesIncluded = trim($m[0]);
+        }
+    }
+    if ($filesIncluded === '') {
+        $filesIncluded = $availableType === 'physical' ? 'Physical product' : 'FIG, PNG, PDF, SVG';
+    }
+
+    $compatible = trim((string) ($row['compatible_software'] ?? ''));
+    if ($compatible === '') {
+        if (str_contains($category, 'template') || str_contains($category, 'ui')) {
+            $compatible = 'Figma, Adobe XD, Sketch';
+        } elseif (str_contains($category, 'mockup')) {
+            $compatible = 'Photoshop, Figma';
+        } else {
+            $compatible = 'All modern design tools';
+        }
+    }
+
+    $updatedAt = $row['updated_at'] ?? $row['created_at'] ?? null;
+    $lastUpdate = $updatedAt ? date('M j, Y', strtotime((string) $updatedAt)) : date('M j, Y');
+
+    return [
+        'last_update' => $lastUpdate,
+        'high_resolution' => trim((string) ($row['high_resolution'] ?? '')) ?: ($availableType === 'physical' ? 'Print ready' : 'Yes'),
+        'compatible_software' => $compatible,
+        'software_version' => trim((string) ($row['software_version'] ?? '')) ?: 'Latest',
+        'files_included' => $filesIncluded,
+        'grid_columns' => trim((string) ($row['grid_columns'] ?? '')) ?: '12 Column',
+        'layout_type' => trim((string) ($row['layout_type'] ?? '')) ?: 'Responsive',
+        'license_type' => trim((string) ($row['license_type'] ?? '')) ?: 'Premium',
+    ];
+}
+
+function uxpIndexProductCard(array $row): string {
+    $id = (int) $row['id'];
+    $name = htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8');
+    $categoryRaw = trim((string) ($row['category'] ?? ''));
+    $category = htmlspecialchars($categoryRaw, ENT_QUOTES, 'UTF-8');
+    $categoryFilter = htmlspecialchars(strtolower($categoryRaw), ENT_QUOTES, 'UTF-8');
+    $isFeatured = !empty($row['is_featured']);
+    $image = htmlspecialchars(marketplaceImage($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $price = number_format((float) $row['price'], 0);
+    $oldPrice = !empty($row['old_price']) ? (float) $row['old_price'] : 0;
+    $oldPriceFmt = $oldPrice > 0 ? number_format($oldPrice, 0) : '';
+    $discount = ($oldPrice > 0 && (float) $row['price'] < $oldPrice)
+        ? max(0, round((1 - ((float) $row['price'] / $oldPrice)) * 100))
+        : 0;
+    $rating = number_format((float) ($row['rating'] ?: 4.5), 1);
+    $availableType = htmlspecialchars($row['available_type'] ?? 'physical', ENT_QUOTES, 'UTF-8');
+    $stock = (int) ($row['stock'] ?? 0);
+
+    $rawDesc = strip_tags($row['description'] ?? 'Premium UX Pacific design resource.');
+    if (strlen($rawDesc) > 90) {
+        $rawDesc = substr($rawDesc, 0, 90) . '…';
+    }
+    $desc = htmlspecialchars($rawDesc, ENT_QUOTES, 'UTF-8');
+    $specs = 'Digital asset';
+    $nameLower = strtolower($row['name'] ?? '');
+    if (str_contains($nameLower, 'workbook')) {
+        $specs = 'Size: A4 / Digital PDF';
+    } elseif (str_contains($nameLower, 'template') || str_contains($nameLower, 'ui')) {
+        $specs = 'Figma / Auto Layout Ready';
+    } elseif (str_contains($nameLower, 'mockup')) {
+        $specs = 'High-res mockup files';
+    } elseif (!empty($row['category'])) {
+        $specs = htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8');
+    }
+
+    $jsName = htmlspecialchars(json_encode($row['name']), ENT_QUOTES, 'UTF-8');
+    $jsImage = htmlspecialchars(json_encode($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $jsCategory = htmlspecialchars(json_encode($row['category'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $jsDesc = htmlspecialchars(json_encode($row['description'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+    $oldHtml = $oldPriceFmt
+        ? '<span class="uxp-old-price">₹' . $oldPriceFmt . ($discount ? " ({$discount}% OFF)" : '') . '</span>'
+        : '';
+
+    $disabled = ($stock <= 0 && $availableType === 'physical') ? ' disabled' : '';
+    $featuredBadge = $isFeatured
+        ? '<span class="uxp-product-featured-pill">Featured</span>'
+        : '';
+
+    return <<<HTML
+<article class="uxp-product-card" data-product-id="{$id}" data-name="{$name}" data-image="{$image}" data-category="{$category}" data-category-filter="{$categoryFilter}" data-type="{$availableType}" data-price="{$row['price']}" data-old-price="{$row['old_price']}" data-rating="{$rating}">
+  <a href="product.php?id={$id}" class="uxp-product-media js-product-popup" data-product-id="{$id}" aria-label="View {$name}">
+    <img src="{$image}" alt="{$name}" loading="lazy" width="480" height="360" onerror="this.src='img/poster.webp'">
+    {$featuredBadge}
+    <span class="uxp-product-badge-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"></path><circle cx="12" cy="12" r="8"></circle></svg>
+    </span>
+  </a>
+  <div class="uxp-product-body">
+    <div class="uxp-product-title-row">
+      <h3>{$name}</h3>
+      <div class="uxp-rating" aria-label="Rating {$rating} out of 5"><span aria-hidden="true">&#9733;</span><b>{$rating}</b></div>
+    </div>
+    <p>{$desc}</p>
+    <p class="uxp-product-spec">{$specs}</p>
+    <div class="uxp-product-meta">
+      <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
+    </div>
+    <div class="uxp-product-actions">
+      <a href="product.php?id={$id}" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$id}">View Details</a>
+      <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$row['price']}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}}, '{$availableType}')"{$disabled}>Add to Cart</button>
+    </div>
+  </div>
+</article>
+HTML;
+}
+
 function marketplaceProductCard(array $item, string $type = 'product'): string {
     $id = (int) $item['id'];
     $name = e($item['name'] ?? 'Untitled');
@@ -351,9 +563,10 @@ function marketplaceProductCard(array $item, string $type = 'product'): string {
     $rating = number_format((float) ($item['rating'] ?? 4.5), 1);
     $stock = (int) ($item['stock'] ?? 999);
     $stockLabel = $stock > 0 ? 'In stock' : 'Out of stock';
-    $detailsUrl = $type === 'bundle' ? 'bundles.php' : "product.php?id={$id}";
+    $priceRaw = (float) ($item['price'] ?? 0);
+    $oldRaw = !empty($item['old_price']) ? (float) $item['old_price'] : '';
     return <<<HTML
-<article class="prod-card marketplace-card" data-type="{$type}" data-id="{$id}" data-category="{$category}">
+<article class="prod-card marketplace-card" data-type="{$type}" data-id="{$id}" data-product-id="{$id}" data-name="{$name}" data-image="{$image}" data-category="{$category}" data-price="{$priceRaw}" data-old-price="{$oldRaw}" data-rating="{$rating}">
   <button type="button" class="wishlist-float" aria-label="Add to wishlist" onclick="toggleMarketplaceWishlist('{$type}', {$id})">♡</button>
   <div class="prod-img">
     <img src="{$image}" alt="{$name}" loading="lazy" onerror="this.src='img/poster.webp'" />
@@ -369,7 +582,7 @@ function marketplaceProductCard(array $item, string $type = 'product'): string {
     <div class="prod-price"><span class="current">{$price}</span>{$old}</div>
     <div class="prod-actions">
       <button class="btn btn-primary btn-sm" type="button" onclick="addMarketplaceItemToCart('{$type}', {$id})">Add to Cart</button>
-      <a class="btn btn-outline btn-sm" href="{$detailsUrl}">View Details</a>
+      <button class="btn btn-outline btn-sm js-product-popup" type="button" data-product-id="{$id}" data-item-type="{$type}">View Details</button>
     </div>
   </div>
 </article>

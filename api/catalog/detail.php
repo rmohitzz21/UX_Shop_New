@@ -12,16 +12,44 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 if (!$row) sendResponse('error', 'Item not found.', null, 404);
 
-$metric = $type === 'bundle' ? 'sales_count' : 'view_count';
-$conn->query("UPDATE `$table` SET `$metric` = `$metric` + 1 WHERE id = " . (int) $id);
-
 $item = apiProductPayload($row);
 $item['type'] = $type;
 if ($type === 'bundle') $item['available_type'] = 'digital';
 $item['tags'] = $row['tags'] ?? '';
+$item['whats_included'] = $row['whats_included'] ?? '';
+$item['file_specification'] = $row['file_specification'] ?? '';
+$item['view_count'] = (int) ($row['view_count'] ?? 0);
+$item['sales_count'] = (int) ($row['sales_count'] ?? 0);
+$item['slug'] = $row['slug'] ?? '';
+$item['is_featured'] = !empty($row['is_featured']);
+$item['additional_images'] = marketplaceParseAdditionalImages($row['additional_images'] ?? null);
+if ($type === 'product') {
+    $item = array_merge($item, marketplaceProductSpecs($row));
+} else {
+    $updatedAt = $row['updated_at'] ?? $row['created_at'] ?? null;
+    $item['last_update'] = $updatedAt ? date('M j, Y', strtotime((string) $updatedAt)) : date('M j, Y');
+    $item['high_resolution'] = 'Yes';
+    $item['compatible_software'] = 'All UX Pacific resources';
+    $item['software_version'] = 'Latest';
+    $item['files_included'] = 'Bundle download';
+    $item['grid_columns'] = '—';
+    $item['layout_type'] = 'Curated pack';
+    $item['license_type'] = 'Premium';
+}
 $item['discount_percent'] = (!empty($row['old_price']) && (float) $row['old_price'] > 0)
     ? max(0, round((1 - ((float) $row['price'] / (float) $row['old_price'])) * 100))
     : 0;
+
+$reviewCount = 0;
+$reviewCol = $type === 'bundle' ? 'bundle_id' : 'product_id';
+$reviewStmt = $conn->prepare("SELECT COUNT(*) AS c FROM reviews WHERE `$reviewCol` = ? AND is_approved = 1");
+if ($reviewStmt) {
+    $reviewStmt->bind_param('i', $id);
+    $reviewStmt->execute();
+    $reviewRow = $reviewStmt->get_result()->fetch_assoc();
+    $reviewCount = (int) ($reviewRow['c'] ?? 0);
+}
+$item['review_count'] = $reviewCount;
 
 $related = [];
 $relatedTable = $type === 'bundle' ? 'bundles' : 'products';
@@ -47,12 +75,4 @@ while ($rel = $relRes->fetch_assoc()) {
     $related[] = $payload;
 }
 
-$reviews = [];
-$col = $type === 'bundle' ? 'bundle_id' : 'product_id';
-$reviewStmt = $conn->prepare("SELECT r.rating, r.comment, r.created_at, COALESCE(NULLIF(CONCAT(u.first_name, ' ', u.last_name), ' '), 'Customer') AS user_name FROM reviews r LEFT JOIN users u ON u.id = r.user_id WHERE r.$col = ? AND r.is_approved = 1 ORDER BY r.created_at DESC LIMIT 5");
-$reviewStmt->bind_param('i', $id);
-$reviewStmt->execute();
-$reviewRes = $reviewStmt->get_result();
-while ($review = $reviewRes->fetch_assoc()) $reviews[] = $review;
-
-sendResponse('success', 'Item loaded.', ['item' => $item, 'related' => $related, 'reviews' => $reviews, 'tag_tokens' => $tags]);
+sendResponse('success', 'Item loaded.', ['item' => $item, 'related' => $related, 'tag_tokens' => $tags]);

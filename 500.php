@@ -1,3 +1,4 @@
+<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,55 +13,12 @@
     />
       <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
     <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
 
   <body>
     <div class="page">
-      <!-- NAVBAR -->
-      <header class="site-header" id="navbar">
-        <nav class="nav-bar">
-          <div class="nav-logo">
-            <a href="index.php">
-              <img src="img/logo1.webp" alt="UX Pacific" />
-            </a>
-          </div>
-
-          <ul class="nav-links">
-            <li><a href="index.php" class="nav-link">Home</a></li>
-            <li><a href="index.php#story" class="nav-link">About Us</a></li>
-            <li><a href="index.php#products" class="nav-link">New</a></li>
-            <li><a href="shopAll.php" class="nav-link">Buy Now</a></li>
-          </ul>
-
-          <div class="nav-actions">
-            <a href="cart.php" class="nav-cart">
-              <img src="img/cart-icon.webp" alt="Shopping cart" />
-              <span id="cart-count">0</span>
-            </a>
-            <a href="signin.php" class="nav-cta">Sign in</a>
-          </div>
-
-          <button
-            id="mobile-menu-btn"
-            class="nav-toggle"
-            aria-label="Toggle navigation"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </nav>
-
-        <div id="mobile-menu" class="nav-mobile-menu">
-          <a href="index.php" class="nav-mobile-link">Home</a>
-          <a href="index.php#story" class="nav-mobile-link">About Us</a>
-          <a href="index.php#products" class="nav-mobile-link">New</a>
-          <a href="shopAll.php" class="nav-mobile-link">Buy Now</a>
-          <a href="signin.php" class="nav-mobile-link nav-mobile-cta">
-            Sign in
-          </a>
-        </div>
-      </header>
+      <?php include 'includes/header.php'; ?>
 
       <!-- MAIN CONTENT -->
       <main class="main">

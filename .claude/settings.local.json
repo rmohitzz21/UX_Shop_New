@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/includes/config.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/includes/helpers.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/admin/admin-login.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/admin/admin-dashboard.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/stats/overview.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/bundles/save.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/categories/save.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/product/save.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/order/update_status.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/auth/admin-login.php\")"
+    ]
+  }
+}

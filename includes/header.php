@@ -7,8 +7,8 @@
     $headerCurrent = basename(parse_url($_SERVER['REQUEST_URI'] ?? 'index.php', PHP_URL_PATH) ?: 'index.php');
     $isHome = $headerCurrent === '' || $headerCurrent === 'index.php';
     $isShop = in_array($headerCurrent, ['shopAll.php', 'search.php', 'products.php', 'product.php'], true);
-    $isCategory = $headerCurrent === 'category.php';
     $isBundles = $headerCurrent === 'bundles.php';
+    $isFreebies = $headerCurrent === 'freebies.php';
     $isWishlist = $headerCurrent === 'wishlist.php';
     $headerWishlistCount = 0;
     if ($headerUserId && isset($conn)) {
@@ -29,8 +29,8 @@
         <nav class="nav-links" id="site-nav-links">
             <a href="index.php" class="<?php echo $isHome ? 'active' : ''; ?>">Home</a>
             <a href="shopAll.php" class="<?php echo $isShop ? 'active' : ''; ?>">Products</a>
-            <a href="category.php" class="<?php echo $isCategory ? 'active' : ''; ?>">Category</a>
             <a href="bundles.php" class="<?php echo $isBundles ? 'active' : ''; ?>">Bundles</a>
+            <a href="freebies.php" class="<?php echo $isFreebies ? 'active' : ''; ?>">Freebies</a>
         </nav>
         <div class="nav-actions">
             <form class="nav-search" action="search.php" method="get" role="search">
@@ -66,8 +66,8 @@
     <div class="mobile-nav-panel">
         <a href="index.php">Home</a>
         <a href="shopAll.php">Products</a>
-        <a href="category.php">Category</a>
         <a href="bundles.php">Bundles</a>
+        <a href="freebies.php">Freebies</a>
         <a href="wishlist.php">Wishlist</a>
         <a href="cart.php">Cart</a>
     </div>

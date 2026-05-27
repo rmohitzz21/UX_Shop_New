@@ -1,4 +1,4 @@
-<?php require_once 'includes/config.php'; ?>
+﻿<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +60,7 @@
             </div>
         </section>
 
-        <section class="how-works">
+        <!-- <section class="how-works">
             <h2 class="section-heading">How UX Pacific Shop Works</h2>
             <div class="works-grid">
                 <div class="work-card">
@@ -85,230 +85,61 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
 
-        <section id="products" class="top-products">
-            <h2 class="section-heading">Shop Top UX Pacific Products</h2>
-            <div class="product-filters" style="margin-bottom: 20px;">
-                <button class="filter-btn active" style="background: #6D3DFF; border-color: #6D3DFF;">All</button>
-                <button class="filter-btn">Templates</button>
-                <button class="filter-btn">UI Kit</button>
-                <button class="filter-btn">Video Tutorials</button>
-                <button class="filter-btn">Poster</button>
-                <button class="filter-btn">Mockup</button>
-                <button class="filter-btn">Layout</button>
-            </div>
-            <div class="product-filters">
-                <button class="filter-btn">Bundles</button>
-                <button class="filter-btn">Books</button>
-                <button class="filter-btn">Workbook</button>
-                <button class="filter-btn">Tshirts</button>
-                <button class="filter-btn">Badges</button>
-            </div>
-            
-            <div class="products-grid">
+        <section id="products" class="uxp-top-products-section" aria-labelledby="top-products-title">
+            <div class="uxp-container">
+                <div class="uxp-top-products-heading">
+                    <h2 id="top-products-title">Top UX Pacific Products</h2>
+                    <p>Hand-picked design resources, templates, and tools trusted by creators worldwide.</p>
+                </div>
+
                 <?php
-                if (!isset($conn)) {
-                    @require_once 'includes/config.php';
-                }
-                
+                // Top products: active only, featured first (managed in Admin → Products → Featured)
+                $topProducts = [];
+                $topCategories = [];
                 if (isset($conn)) {
-                    $sql = "SELECT * FROM products WHERE is_active = 1 ORDER BY id ASC LIMIT 4";
+                    $sql = 'SELECT * FROM products WHERE is_active = 1 ORDER BY is_featured DESC, rating DESC, COALESCE(view_count, 0) DESC, id DESC LIMIT 8';
                     $result = $conn->query($sql);
-                    if ($result && $result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            $id = $row['id'];
-                            $name = htmlspecialchars($row['name']);
-                            $category = htmlspecialchars($row['category']);
-                            $image = htmlspecialchars($row['image']);
-                            $price = number_format($row['price']);
-                            $old_price = !empty($row['old_price']) ? number_format($row['old_price']) : '';
-                            $rating = $row['rating'] ?: '4.5';
-                            $available_type = htmlspecialchars($row['available_type'] ?? 'physical');
-                            $jsName = htmlspecialchars(json_encode($name), ENT_QUOTES, 'UTF-8');
-                            $jsImage = htmlspecialchars(json_encode($image), ENT_QUOTES, 'UTF-8');
-                            $jsCategory = htmlspecialchars(json_encode($category), ENT_QUOTES, 'UTF-8');
-                            
-                            $desc = "A clean design asset designed for communities, profiles and achievements.";
-                            $specs = "Size: PNG / SVG / 1024px";
-                            if(strpos(strtolower($name), 'workbook') !== false) {
-                                $desc = "A practical workbook for UX learners and designers.";
-                                $specs = "Size: A4 / Digital PDF";
-                            } else if(strpos(strtolower($name), 'template') !== false) {
-                                $desc = "Premium mobile mockup with clean branding and soft fabric shadows.";
-                                $specs = "Size: Figma File / Auto Layout Ready";
+                    if ($result) {
+                        while ($row = $result->fetch_assoc()) {
+                            $topProducts[] = $row;
+                            $catLabel = trim((string) ($row['category'] ?? ''));
+                            if ($catLabel !== '' && !in_array($catLabel, $topCategories, true)) {
+                                $topCategories[] = $catLabel;
                             }
-                            
-                            echo "
-                            <article class='uxp-product-card'
-    data-product-id='$id'
-    data-category='$category'
-    data-type='$available_type'
-    data-price='{$row['price']}'
-    data-rating='$rating'>
-
-    <a href='product.php?id=$id'
-       class='uxp-product-media'
-       aria-label='View $name'>
-
-        <img
-            src='$image'
-            alt='$name'
-            loading='lazy'
-            width='480'
-            height='360'
-            onerror=\"this.src='img/poster.webp'\"
-        />
-
-        <span class='uxp-product-badge-icon' aria-hidden='true'>
-            <svg viewBox='0 0 24 24'
-                 fill='none'
-                 stroke='currentColor'
-                 stroke-width='1.8'>
-
-                <path d='M12 3v18M3 12h18'></path>
-                <circle cx='12' cy='12' r='8'></circle>
-
-            </svg>
-        </span>
-    </a>
-
-    <div class='uxp-product-body'>
-
-        <div class='uxp-product-title-row'>
-
-            <h3>$name</h3>
-
-            <div class='uxp-rating'
-                 aria-label='Rating $rating out of 5'>
-
-                <span aria-hidden='true'>&#9733;</span>
-                <b>$rating</b>
-
-            </div>
-
-        </div>
-
-        <p>$desc</p>
-
-        <p class='uxp-product-spec'>$specs</p>
-
-        <div class='uxp-product-meta'>
-
-            <div class='uxp-product-price'>
-
-                ₹$price
-
-                " . ($old_price ? "
-                    <span class='uxp-old-price'>
-                        ₹$old_price (67% OFF)
-                    </span>
-                " : "") . "
-
-            </div>
-
-        </div>
-
-        <div class='uxp-product-actions'>
-
-            <a href='product.php?id=$id'
-               class='uxp-card-btn uxp-card-btn-primary'>
-
-               Buy Now
-
-            </a>
-
-            <button
-                class='uxp-card-btn uxp-card-btn-secondary'
-                type='button'
-
-                onclick='addToCart(
-                    \"$id\",
-                    null,
-                    1,
-                    {
-                        name: $jsName,
-                        price: {$row['price']},
-                        image: $jsImage,
-                        category: $jsCategory,
-                        description: \"$desc\"
-                    },
-                    \"$available_type\"
-                )'
-
-                " . ($row['stock'] <= 0 && $available_type === 'physical'
-                    ? 'disabled'
-                    : '') . ">
-
-                Add to Cart
-
-            </button>
-
-        </div>
-
-    </div>
-
-</article>
-                            ";
                         }
-                    } else {
-                        echo "
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific Badge Pack</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A clean badge pack designed for communities, profiles, and achievements.</p>
-                                <p class='prod-specs'>Size: PNG / SVG / 1024px</p>
-                                <div class='prod-price'><span class='current'>₹199</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster1.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UI Template</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>Premium hoodie mockup with clean branding and soft fabric shadows.</p>
-                                <p class='prod-specs'>Size: Figma File / Auto Layout Ready</p>
-                                <div class='prod-price'><span class='current'>₹399</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                         <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster2.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UX Workbook</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A practical workbook for UX learners and designers.</p>
-                                <p class='prod-specs'>Size: A4 / Digital PDF</p>
-                                <div class='prod-price'><span class='current'>₹499</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        <div class='prod-card'>
-                            <div class='prod-img'>
-                                <img src='img/poster3.webp' onerror=\"this.src='img/sticker.webp'\" />
-                                <div class='prod-badge'><img src='img/ss/Vector.png' alt='' /></div>
-                            </div>
-                            <div class='prod-info'>
-                                <div class='prod-header'><h3>UXPacific UX Workbook</h3><div class='rating'><i class='ph-fill ph-star' style='color:#F8B84E'></i> 4.5</div></div>
-                                <p class='prod-desc'>A practical workbook for UX learners and designers.</p>
-                                <p class='prod-specs'>Size: A4 / Digital PDF</p>
-                                <div class='prod-price'><span class='current'>₹499</span><span class='old' style='text-decoration: line-through; color: #8c89a0;'>₹499</span><span class='discount' style='color: #8c89a0;'>(67% OFF)</span></div>
-                                <div class='prod-actions'><button class='btn btn-primary btn-sm' style='width:100%; border-radius: 999px; background: #6147bd; border: none;'>Buy Now</button><button class='btn btn-outline btn-sm' style='width:100%; border-radius: 999px; border: 1px solid #6147bd; background: transparent; color: white;'>View Details</button></div>
-                            </div>
-                        </div>
-                        ";
                     }
+                    sort($topCategories, SORT_NATURAL | SORT_FLAG_CASE);
                 }
                 ?>
+
+                <?php if (count($topCategories) > 1): ?>
+                <div class="uxp-product-filters" role="tablist" aria-label="Filter products by category">
+                    <button type="button" class="filter-btn active" data-filter="all">All</button>
+                    <?php foreach ($topCategories as $catName): ?>
+                        <button type="button" class="filter-btn" data-filter="<?php echo htmlspecialchars(strtolower($catName)); ?>">
+                            <?php echo htmlspecialchars($catName); ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+
+                <div class="uxp-product-grid" id="top-products-grid">
+                    <?php
+                    if ($topProducts) {
+                        foreach ($topProducts as $row) {
+                            echo uxpIndexProductCard($row);
+                        }
+                    } elseif (isset($conn)) {
+                        echo '<p class="uxp-top-products-empty">No products available yet. Add active products in the admin panel.</p>';
+                    }
+                    ?>
+                </div>
+
+                <div class="uxp-top-products-cta">
+                    <a href="shopAll.php" class="btn btn-primary">Shop All Products</a>
+                </div>
             </div>
         </section>
 
@@ -317,214 +148,208 @@
   <div class="uxp-container">
 
     <div class="uxp-category-heading">
-        <h2 id="category-title">Explore by Category</h2>
+        <h2 id="category-title">Browse by Category</h2>
         <p>
             Browse our curated collection of premium resources organized by your needs.
         </p>
     </div>
 
-    <div class="uxp-category-grid">
+    <?php
+    if (!isset($conn)) {
+        @require_once 'includes/config.php';
+    }
 
-        <?php
-        if (!isset($conn)) {
-            @require_once 'includes/config.php';
-        }
+    $fallbackImages = [
+        'img/poster.webp',
+        'img/poster1.webp',
+        'img/poster2.webp',
+        'img/poster3.webp'
+    ];
 
-        $fallbackImages = [
-            'img/poster.webp',
-            'img/poster1.webp',
-            'img/poster2.webp',
-            'img/poster3.webp'
-        ];
+    $colorClasses = [
+        'uxp-category-teal',
+        'uxp-category-pink',
+        'uxp-category-purple',
+        'uxp-category-orange'
+    ];
 
-        $colorClasses = [
-            'uxp-category-teal',
-            'uxp-category-pink',
-            'uxp-category-purple',
-            'uxp-category-orange'
-        ];
+    $featuredCategories = [];
+    $pillCategories = [];
 
-        if (isset($conn)) {
-
-            $sql = "
-                SELECT 
-                    c.*,
-                    COUNT(p.id) as product_count,
-                    MIN(p.image) as product_image
-                FROM categories c
-                LEFT JOIN products p 
-                    ON p.category = c.name
-                GROUP BY c.id
-                ORDER BY c.id ASC
-                LIMIT 4
-            ";
-
-            $result = $conn->query($sql);
-
-            if ($result && $result->num_rows > 0) {
-
-                $index = 0;
-
-                while($cat = $result->fetch_assoc()) {
-
-                    $name = htmlspecialchars($cat['name']);
-                    $slug = htmlspecialchars($cat['slug']);
-                    $description = htmlspecialchars(
-                        $cat['description'] 
-                        ?: 'Explore premium curated design resources.'
-                    );
-
-                    $productCount = (int)$cat['product_count'];
-
-                    $image = !empty($cat['product_image'])
-                        ? htmlspecialchars($cat['product_image'])
-                        : $fallbackImages[$index % count($fallbackImages)];
-
-                    $colorClass = $colorClasses[$index % count($colorClasses)];
-
-                    echo "
-
-                    <a href='shopAll.php?category=$slug'
-                       class='uxp-category-card $colorClass'>
-
-                        <div class='uxp-category-art' aria-hidden='true'>
-
-                            <span class='uxp-category-bubble'></span>
-
-                            <span class='uxp-category-icon'>
-
-                                <img 
-                                    src='$image'
-                                    alt='$name'
-                                    loading='lazy'
-                                    onerror=\"this.src='img/poster.webp'\"
-                                />
-
-                            </span>
-
-                        </div>
-
-                        <div class='uxp-category-body'>
-
-                            <h3>$name</h3>
-
-                            <span>$productCount+ items</span>
-
-                            <p>$description</p>
-
-                            <strong>
-
-                                Explore
-
-                                <svg viewBox='0 0 24 24'
-                                     fill='none'
-                                     stroke='currentColor'
-                                     stroke-width='2'>
-
-                                    <path d='M5 12h14'></path>
-                                    <path d='m13 6 6 6-6 6'></path>
-
-                                </svg>
-
-                            </strong>
-
-                        </div>
-
-                    </a>
-                    ";
-
-                    $index++;
-                }
-
-            } else {
-
-                echo "<p>No categories found.</p>";
-
+    if (isset($conn)) {
+        $catSql = "
+            SELECT
+                c.*,
+                COUNT(p.id) AS product_count,
+                MIN(p.image) AS product_image
+            FROM categories c
+            LEFT JOIN products p ON p.category = c.name AND p.is_active = 1
+            WHERE c.is_active = 1
+            GROUP BY c.id
+            ORDER BY c.sort_order ASC, c.id ASC
+        ";
+        $catResult = $conn->query($catSql);
+        if ($catResult && $catResult->num_rows > 0) {
+            while ($row = $catResult->fetch_assoc()) {
+                $featuredCategories[] = $row;
             }
         }
-        ?>
+    }
 
+    $gridCategories = array_slice($featuredCategories, 0, 4);
+    $pillCategories = array_slice($featuredCategories, 4);
+    ?>
+
+    <div class="uxp-category-grid" role="list">
+        <?php if (!empty($gridCategories)): ?>
+            <?php foreach ($gridCategories as $index => $cat):
+                $name = htmlspecialchars($cat['name']);
+                $slug = htmlspecialchars($cat['slug']);
+                $description = htmlspecialchars($cat['description'] ?: 'Explore premium curated design resources.');
+                $productCount = (int) $cat['product_count'];
+                $image = !empty($cat['product_image'])
+                    ? htmlspecialchars($cat['product_image'])
+                    : $fallbackImages[$index % count($fallbackImages)];
+                $colorClass = $colorClasses[$index % count($colorClasses)];
+            ?>
+                <a href="shopAll.php?category=<?php echo $slug; ?>"
+                   class="uxp-category-card <?php echo $colorClass; ?>"
+                   role="listitem"
+                   aria-label="Browse <?php echo $name; ?>">
+
+                    <div class="uxp-category-art" aria-hidden="true">
+                        <span class="uxp-category-bubble"></span>
+                        <span class="uxp-category-icon">
+                            <img
+                                src="<?php echo $image; ?>"
+                                alt="<?php echo $name; ?>"
+                                loading="lazy"
+                                onerror="this.src='img/poster.webp'"
+                            />
+                        </span>
+                    </div>
+
+                    <div class="uxp-category-body">
+                        <h3><?php echo $name; ?></h3>
+                        <span><?php echo $productCount; ?>+ items</span>
+                        <p><?php echo $description; ?></p>
+                        <strong>
+                            Browse
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M5 12h14"></path>
+                                <path d="m13 6 6 6-6 6"></path>
+                            </svg>
+                        </strong>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="uxp-category-empty">No categories found.</p>
+        <?php endif; ?>
     </div>
 
-</div>
+    <?php if (!empty($pillCategories)): ?>
+        <div class="uxp-category-pills" aria-label="More categories">
+            <a class="uxp-category-pill" href="shopAll.php">All</a>
+            <?php foreach ($pillCategories as $pill):
+                $pillName = htmlspecialchars($pill['name']);
+                $pillSlug = htmlspecialchars($pill['slug']);
+            ?>
+                <a class="uxp-category-pill" href="shopAll.php?category=<?php echo $pillSlug; ?>">
+                    <?php echo $pillName; ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+  </div>
 </section>
 
-        <section class="uxp-bundles-section" aria-labelledby="bundles-title">
+        <section id="bundles" class="uxp-bundles-section" aria-labelledby="bundles-title">
   <div class="uxp-container">
     <div class="uxp-bundle-heading">
       <h2 id="bundles-title">Ready-Made Career Bundles</h2>
     </div>
 
     <div class="uxp-bundle-grid">
-      <article class="uxp-bundle-card">
+      <?php
+      if (isset($conn)) {
+          $bundleSql = "SELECT * FROM bundles WHERE is_active = 1 ORDER BY is_featured DESC, sales_count DESC, rating DESC LIMIT 2";
+          $bundleResult = $conn->query($bundleSql);
+          if ($bundleResult && $bundleResult->num_rows > 0) {
+              while ($bundle = $bundleResult->fetch_assoc()) {
+                  $bId = (int) $bundle['id'];
+                  $bName = htmlspecialchars($bundle['name'], ENT_QUOTES, 'UTF-8');
+                  $bDesc = htmlspecialchars($bundle['description'] ?? '', ENT_QUOTES, 'UTF-8');
+                  $bImage = htmlspecialchars(marketplaceImage($bundle['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+                  $bPrice = number_format((float) $bundle['price'], 0);
+                  $bOldPrice = !empty($bundle['old_price']) ? number_format((float) $bundle['old_price'], 0) : '';
+                  $bRating = number_format((float) ($bundle['rating'] ?? 4.5), 1);
+                  $bFeatured = !empty($bundle['is_featured']);
+                  $badgeText = $bFeatured ? 'Most Popular' : 'Bundle';
+
+                  $includedItems = [];
+                  if (!empty($bundle['whats_included'])) {
+                      $lines = explode("\n", $bundle['whats_included']);
+                      foreach ($lines as $line) {
+                          $line = trim(str_replace(['- ', '* '], '', $line));
+                          if ($line !== '') $includedItems[] = htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
+                      }
+                  }
+                  if (empty($includedItems)) {
+                      $includedItems = ['Premium design resources', 'Editable source files', 'Bonus templates', 'Personal & commercial license'];
+                  }
+                  $includedItems = array_slice($includedItems, 0, 4);
+
+                  $jsName = htmlspecialchars(json_encode($bundle['name']), ENT_QUOTES, 'UTF-8');
+                  $jsImage = htmlspecialchars(json_encode($bundle['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+                  echo <<<HTML
+      <article class="uxp-bundle-card" data-type="bundle" data-id="{$bId}" data-product-id="{$bId}" data-name="{$bName}" data-image="{$bImage}" data-price="{$bundle['price']}" data-old-price="{$bundle['old_price']}" data-rating="{$bRating}">
         <div class="uxp-bundle-image">
-          <img src="img/poster1.webp" alt="Portfolio Builder Kit preview" loading="lazy" />
-          <span>Most Popular</span>
+          <img src="{$bImage}" alt="{$bName} preview" loading="lazy" onerror="this.src='img/poster.webp'" />
+          <span>{$badgeText}</span>
         </div>
 
         <div class="uxp-bundle-content">
           <div class="uxp-bundle-title-row">
-            <h3>Portfolio Builder Kit</h3>
-            <span class="uxp-bundle-rating" aria-label="Rated 4.5 out of 5">
-              &#9733; <b>4.5</b>
+            <h3>{$bName}</h3>
+            <span class="uxp-bundle-rating" aria-label="Rated {$bRating} out of 5">
+              &#9733; <b>{$bRating}</b>
             </span>
           </div>
 
-          <p>Build a recruiter-ready UI/UX portfolio in 5 days</p>
+          <p>{$bDesc}</p>
 
           <ul>
-            <li>Complete, polished case study</li>
-            <li>Portfolio website layout</li>
-            <li>Typography &amp; grid system</li>
-            <li>UX writing guide</li>
+HTML;
+                  foreach ($includedItems as $item) {
+                      echo "<li>{$item}</li>";
+                  }
+
+                  $oldHtml = $bOldPrice ? "<span>&#8377;{$bOldPrice}</span>" : '';
+                  echo <<<HTML
           </ul>
 
           <div class="uxp-bundle-footer">
-            <strong>&#8377;1,499 <span>&#8377;4,999</span></strong>
+            <strong>&#8377;{$bPrice} {$oldHtml}</strong>
 
             <div>
-              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-primary">View Templates</a>
-              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-secondary">Buy Now</a>
+              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$bId}" data-item-type="bundle">View Details</button>
+              <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart('bundle-{$bId}', null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}}, 'digital')">Add to Cart</button>
             </div>
           </div>
         </div>
       </article>
+HTML;
+              }
+          } else {
+              echo '<p class="uxp-bundle-empty">No bundles available yet. Check back soon.</p>';
+          }
+      }
+      ?>
 
-      <article class="uxp-bundle-card">
-        <div class="uxp-bundle-image">
-          <img src="img/poster1.webp" alt="Portfolio Builder Kit preview" loading="lazy" />
-          <span>Most Popular</span>
-        </div>
-
-        <div class="uxp-bundle-content">
-          <div class="uxp-bundle-title-row">
-            <h3>Portfolio Builder Kit</h3>
-            <span class="uxp-bundle-rating" aria-label="Rated 4.5 out of 5">
-              &#9733; <b>4.5</b>
-            </span>
-          </div>
-
-          <p>Build a recruiter-ready UI/UX portfolio in 5 days</p>
-
-          <ul>
-            <li>Complete, polished case study</li>
-            <li>Portfolio website layout</li>
-            <li>Typography &amp; grid system</li>
-            <li>UX writing guide</li>
-          </ul>
-
-          <div class="uxp-bundle-footer">
-            <strong>&#8377;1,499 <span>&#8377;4,999</span></strong>
-
-            <div>
-              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-primary">View Templates</a>
-              <a href="shopAll.php" class="uxp-card-btn uxp-card-btn-secondary">Buy Now</a>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <a href="shopAll.php" class="uxp-bundle-see-all" aria-label="See all bundles">
+      <a href="bundles.php" class="uxp-bundle-see-all" aria-label="See all bundles">
         <span aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
             <path d="M7 17 17 7"></path>

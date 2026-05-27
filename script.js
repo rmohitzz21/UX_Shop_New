@@ -1414,6 +1414,7 @@ function showFieldError(field, message) {
   // Try to find error span (supports both .field-error and .field-error-modern)
   const errorSpan = field.parentElement?.querySelector('.field-error-modern') || 
                    field.parentElement?.querySelector('.field-error') ||
+                   field.closest('.auth-premium-field')?.querySelector('.field-error-modern') ||
                    field.closest('.form-field-modern')?.querySelector('.field-error-modern') ||
                    field.closest('.form-field')?.querySelector('.field-error');
   
@@ -1433,6 +1434,7 @@ function clearFieldError(field) {
   // Try to find error span (supports both .field-error and .field-error-modern)
   const errorSpan = field.parentElement?.querySelector('.field-error-modern') || 
                    field.parentElement?.querySelector('.field-error') ||
+                   field.closest('.auth-premium-field')?.querySelector('.field-error-modern') ||
                    field.closest('.form-field-modern')?.querySelector('.field-error-modern') ||
                    field.closest('.form-field')?.querySelector('.field-error');
   
@@ -3209,7 +3211,11 @@ function initSearchModal() {
       window.location.href = `bundles.php?quick=bundle&id=${encodeURIComponent(item.dataset.id)}`;
       return;
     }
-    window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
+    if (typeof openMarketplaceModal === 'function') {
+      openMarketplaceModal('product', item.dataset.id, item);
+    } else {
+      window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
+    }
   });
 
   submit?.addEventListener('click', () => {
@@ -3223,17 +3229,77 @@ function initSearchModal() {
   });
 }
 
+function formatMoney(value) {
+  return '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+const marketplaceDetailCache = new Map();
+const marketplacePrefetching = new Set();
+let marketplaceOpenToken = 0;
+
+function getCardPreviewData(card) {
+  if (!card) return null;
+  const img = card.querySelector('.uxp-product-media img, .prod-img img, img');
+  return {
+    id: card.dataset.productId || card.dataset.id,
+    type: card.dataset.type === 'bundle' ? 'bundle' : 'product',
+    name: card.dataset.name || card.querySelector('h3')?.textContent?.trim() || 'Product',
+    image: card.dataset.image || img?.getAttribute('src') || 'img/poster.webp',
+    price: Number(card.dataset.price || 0),
+    old_price: card.dataset.oldPrice ? Number(card.dataset.oldPrice) : null,
+    category: card.dataset.category || '',
+    rating: card.dataset.rating || '4.5',
+  };
+}
+
+function marketplaceCacheKey(type, id) {
+  return `${type}:${id}`;
+}
+
+function prefetchMarketplaceDetail(type, id) {
+  const key = marketplaceCacheKey(type, id);
+  if (marketplaceDetailCache.has(key) || marketplacePrefetching.has(key)) return;
+  marketplacePrefetching.add(key);
+  fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
+    credentials: 'same-origin',
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      if (data.status === 'success') marketplaceDetailCache.set(key, data.data);
+    })
+    .catch(() => {})
+    .finally(() => marketplacePrefetching.delete(key));
+}
+
+function trackMarketplaceView(type, id) {
+  fetch(`api/catalog/view.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
+    credentials: 'same-origin',
+    keepalive: true,
+  }).catch(() => {});
+}
+
 function ensureMarketplaceModal() {
   let modal = document.getElementById('marketplace-modal');
+  if (modal && !modal.querySelector('.mp-modal-toolbar')) {
+    modal.remove();
+    modal = null;
+  }
   if (modal) return modal;
   modal = document.createElement('div');
   modal.id = 'marketplace-modal';
   modal.className = 'marketplace-modal';
   modal.innerHTML = `
     <div class="marketplace-modal-backdrop" data-close-marketplace-modal></div>
-    <section class="marketplace-modal-panel" role="dialog" aria-modal="true" aria-live="polite">
-      <button type="button" class="marketplace-modal-close" data-close-marketplace-modal aria-label="Close">×</button>
-      <div class="marketplace-modal-content skeleton">Loading...</div>
+    <section class="marketplace-modal-panel" role="dialog" aria-modal="true" aria-labelledby="marketplace-modal-title" aria-live="polite">
+      <div class="mp-modal-toolbar">
+        <a href="#" id="mp-external-link" class="mp-toolbar-btn" target="_blank" rel="noopener noreferrer" aria-label="Open full product page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <button type="button" class="marketplace-modal-close mp-toolbar-btn" data-close-marketplace-modal aria-label="Close">×</button>
+      </div>
+      <div class="marketplace-modal-content is-loading">
+        <div class="marketplace-modal-body"></div>
+      </div>
     </section>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', (event) => {
@@ -3245,68 +3311,563 @@ function ensureMarketplaceModal() {
   return modal;
 }
 
-async function openMarketplaceModal(type, id) {
+function renderInstantModalShell(preview, type) {
+  const itemType = preview.type || type;
+  const typeLabel = itemType === 'bundle' ? 'Bundle' : 'Product';
+  return `
+    <div class="mp-gallery-col mp-scroll-col" data-mp-scroll>
+      <div class="mp-gallery-inner">
+        <div class="mp-gallery-stage">
+          <div class="mp-gallery-frame">
+            <img id="mp-main-image" src="${esc(preview.image)}" alt="${esc(preview.name)}" decoding="async" onerror="this.src='img/poster.webp'">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll>
+      <div class="mp-details is-hydrating">
+        <div class="mp-tags">
+          <span class="mp-tag-pill">${esc(preview.category || typeLabel)}</span>
+        </div>
+        <h2 id="marketplace-modal-title">${esc(preview.name)}</h2>
+        <div class="mp-rating-row mp-rating-row--loading">
+          <span class="mp-rating-text">★ ${esc(preview.rating || '4.5')}</span>
+        </div>
+        <div class="mp-price-row">
+          <strong>${formatMoney(preview.price)}</strong>
+        </div>
+        <div class="mp-shimmer-block">
+          <div class="mp-shimmer-line"></div>
+          <div class="mp-shimmer-line short"></div>
+          <div class="mp-shimmer-line"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function mpProductShowsSizes(item) {
+  const cat = String(item.category || '').toLowerCase();
+  const physical = item.available_type === 'physical' || item.available_type === 'both';
+  if (!physical) return false;
+  return /t-?shirt|hoodie|apparel|merch|tee/.test(cat);
+}
+
+function mpProductTypeLabel(item, itemType) {
+  if (itemType === 'bundle') return 'Bundle';
+  const map = { physical: 'Physical Product', digital: 'Digital Product', both: 'Digital & Physical' };
+  return map[item.available_type] || 'Digital Product';
+}
+
+function renderMpStarRating(rating, reviewCount) {
+  const value = Math.min(5, Math.max(0, parseFloat(rating) || 0));
+  const full = Math.round(value);
+  let stars = '';
+  for (let i = 1; i <= 5; i += 1) {
+    stars += `<span class="mp-star${i <= full ? ' is-filled' : ''}" aria-hidden="true">★</span>`;
+  }
+  const reviews = reviewCount > 0 ? ` (${reviewCount} reviews)` : '';
+  return `<div class="mp-rating-row" aria-label="Rated ${value.toFixed(1)} out of 5">${stars}<span class="mp-rating-text">${value.toFixed(1)}${reviews}</span></div>`;
+}
+
+function renderMpSizeSelector(item) {
+  if (!mpProductShowsSizes(item)) return '';
+  const sizes = ['S', 'M', 'L', 'XL'];
+  return `
+    <div class="mp-field">
+      <span class="mp-field-label">Select Size</span>
+      <div class="mp-size-grid" role="group" aria-label="Select size">
+        ${sizes.map((size) => `<button type="button" class="mp-size-btn${size === 'L' ? ' is-active' : ''}" data-mp-size="${size}">${size}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderMpGalleryCol(uniqueGallery, itemName) {
+  const images = uniqueGallery.length ? uniqueGallery : ['img/poster.webp'];
+  const imageData = images.map((s) => esc(s)).join('||');
+  const hasMany = images.length > 1;
+  const dots = hasMany
+    ? `<div class="mp-gallery-dots" data-mp-dots>${images.map((_, i) => `<span class="mp-dot${i === 0 ? ' is-active' : ''}"></span>`).join('')}</div>`
+    : '';
+  const thumbs = hasMany
+    ? `<div class="mp-gallery-thumbs">${images.map((src, i) => `<button type="button" class="mp-thumb${i === 0 ? ' is-active' : ''}" data-gallery-index="${i}" aria-label="Image ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy" decoding="async" onerror="this.src='img/poster.webp'"></button>`).join('')}</div>`
+    : '';
+  const nav = hasMany
+    ? `<button type="button" class="mp-gallery-nav mp-gallery-prev" data-mp-prev aria-label="Previous image">‹</button>
+       <button type="button" class="mp-gallery-nav mp-gallery-next" data-mp-next aria-label="Next image">›</button>`
+    : '';
+  const counter = hasMany ? `<span class="mp-gallery-counter" data-mp-counter>1/${images.length}</span>` : '';
+
+  return `
+    <div class="mp-gallery-col mp-scroll-col" data-mp-gallery data-images="${imageData}" data-mp-gallery-scroll>
+      <div class="mp-gallery-inner">
+        <div class="mp-gallery-stage">
+          ${counter}
+          ${nav}
+          <div class="mp-gallery-frame">
+            <img id="mp-main-image" src="${esc(images[0])}" alt="${esc(itemName)}" decoding="async" onerror="this.src='img/poster.webp'">
+          </div>
+          ${dots}
+        </div>
+        ${thumbs}
+      </div>
+    </div>`;
+}
+
+function renderMpCompactProductInfo(item) {
+  const rows = [
+    ['Last Update', item.last_update],
+    ['High Resolution', item.high_resolution],
+    ['Compatible With', item.compatible_software],
+    ['Software Version', item.software_version],
+  ].filter(([, v]) => v != null && String(v).trim() !== '' && String(v) !== '—');
+  if (!rows.length) return '';
+  return `
+    <section class="mp-info-card">
+      <h4 class="mp-info-card-title">Product Information</h4>
+      <dl class="mp-info-card-table">
+        ${rows.map(([label, value]) => renderProductInfoRow(label, value)).join('')}
+      </dl>
+    </section>`;
+}
+
+function getMpModalQty() {
+  return Math.max(1, Math.min(10, Number(document.getElementById('marketplace-qty-input')?.value || 1)));
+}
+
+function getMpModalSize() {
+  const active = document.querySelector('.mp-size-btn.is-active');
+  if (active?.dataset.mpSize) return active.dataset.mpSize;
+  const grid = document.querySelector('.mp-size-grid');
+  return grid ? null : 'One Size';
+}
+
+function parseProductTextList(text) {
+  if (!text) return [];
+  return String(text)
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[-•*]\s*/, '').trim())
+    .filter(Boolean);
+}
+
+function renderProductInfoRow(label, value) {
+  if (value === null || value === undefined || value === '' || value === '—') return '';
+  return `
+    <div class="mp-info-row">
+      <dt class="mp-info-label">${esc(label)}</dt>
+      <dd class="mp-info-value">${esc(value)}</dd>
+    </div>`;
+}
+
+function renderProductInfoPanels(item, itemType, skipMainInfo = false) {
+  const typeLabels = {
+    physical: 'Physical Product',
+    digital: 'Digital Download',
+    both: 'Digital & Physical',
+  };
+  const stockNum = Number(item.stock || 0);
+  const availability = stockNum > 0 ? `In stock (${stockNum} available)` : 'Out of stock';
+  const productType = typeLabels[item.available_type] || item.available_type || 'Digital Product';
+
+  const infoRows = [
+    renderProductInfoRow('Category', item.category || (itemType === 'bundle' ? 'Bundle' : '—')),
+    renderProductInfoRow('Product Type', productType),
+    renderProductInfoRow('Availability', availability),
+    renderProductInfoRow('Last Update', item.last_update),
+    renderProductInfoRow('High Resolution', item.high_resolution),
+    renderProductInfoRow('Compatible With', item.compatible_software),
+    renderProductInfoRow('Software Version', item.software_version),
+    renderProductInfoRow('Files Included', item.files_included),
+    renderProductInfoRow('Column', item.grid_columns),
+    renderProductInfoRow('Layout', item.layout_type),
+    renderProductInfoRow('License', item.license_type || 'Premium'),
+  ].filter(Boolean).join('');
+
+  const whatsIncluded = parseProductTextList(item.whats_included);
+  const fileSpecs = parseProductTextList(item.file_specification);
+
+  const includedHtml = whatsIncluded.length
+    ? `<section class="mp-panel">
+        <header class="mp-panel-head"><h3>What&rsquo;s Included</h3></header>
+        <ul class="mp-bullet-list">${whatsIncluded.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+      </section>`
+    : '';
+
+  const fileSpecHtml = fileSpecs.length
+    ? `<section class="mp-panel">
+        <header class="mp-panel-head"><h3>File Specifications</h3></header>
+        <ul class="mp-bullet-list">${fileSpecs.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+      </section>`
+    : '';
+
+  return `
+    ${item.description ? `
+    <section class="mp-panel mp-panel--about">
+      <header class="mp-panel-head"><h3>About this product</h3></header>
+      <p class="mp-about-text">${esc(item.description)}</p>
+    </section>` : ''}
+    ${skipMainInfo ? '' : `
+    <section class="mp-panel mp-panel--info">
+      <header class="mp-panel-head">
+        <h3>Product Information</h3>
+        <span class="mp-panel-sub">Technical details &amp; specifications</span>
+      </header>
+      <dl class="mp-info-table">${infoRows}</dl>
+    </section>`}
+    ${includedHtml}
+    ${fileSpecHtml}`;
+}
+
+function renderProductDetailModal(item, type, related, tagTokens) {
+  const itemType = item.type || type;
+  const gallery = [item.image, ...(item.additional_images || [])].filter(Boolean);
+  const uniqueGallery = [...new Set(gallery)];
+  const detailUrl = itemType === 'bundle'
+    ? 'bundles.php'
+    : `product.php?id=${encodeURIComponent(item.id)}`;
+  const categoryLabel = esc(item.category || (itemType === 'bundle' ? 'Bundle' : 'Product'));
+  const typePill = esc(mpProductTypeLabel(item, itemType));
+  const reviewCount = Number(item.review_count || 0);
+  const ratingHtml = renderMpStarRating(item.rating || '4.5', reviewCount);
+  const sizeHtml = renderMpSizeSelector(item);
+  const compactInfo = renderMpCompactProductInfo(item);
+  const fullDetailsHtml = renderProductInfoPanels(item, itemType, true);
+
+  const relatedHtml = related.length
+    ? `<section class="mp-related mp-related--compact">
+        <div class="mp-related-head">
+          <h3>You may also like</h3>
+          <div class="mp-related-nav">
+            <button type="button" class="mp-related-arrow" data-related-prev aria-label="Scroll related left">‹</button>
+            <button type="button" class="mp-related-arrow" data-related-next aria-label="Scroll related right">›</button>
+          </div>
+        </div>
+        <div class="mp-related-track" data-related-track>
+          ${related.slice(0, 8).map((rel) => {
+            const relType = rel.type || itemType;
+            const relCat = esc(rel.category || 'Product');
+            const relRating = esc(rel.rating || '4.5');
+            return `<button type="button" class="mp-related-item" onclick="openMarketplaceModal('${esc(relType)}', '${esc(rel.id)}')">
+              <div class="mp-related-item-media">
+                <img src="${esc(rel.image)}" alt="" loading="lazy" decoding="async" onerror="this.src='img/poster.webp'">
+                <span class="mp-related-item-cat">${relCat}</span>
+              </div>
+              <div class="mp-related-item-body">
+                <span class="mp-related-item-name">${esc(rel.name)}</span>
+                <div class="mp-related-item-meta">
+                  <strong>${formatMoney(rel.price)}</strong>
+                  <em>★ ${relRating}</em>
+                </div>
+              </div>
+            </button>`;
+          }).join('')}
+        </div>
+      </section>`
+    : '';
+
+  return `
+    ${renderMpGalleryCol(uniqueGallery, item.name)}
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="${esc(detailUrl)}">
+      <div class="mp-details">
+        <div class="mp-tags">
+          <span class="mp-tag-pill">${categoryLabel}</span>
+          <span class="mp-tag-pill mp-tag-pill--muted">${typePill}</span>
+          ${item.is_featured ? '<span class="mp-tag-pill mp-tag-pill--accent">Featured</span>' : ''}
+        </div>
+        <h2 id="marketplace-modal-title">${esc(item.name)}</h2>
+        ${ratingHtml}
+
+        <div class="mp-price-row">
+          <strong>${formatMoney(item.price)}</strong>
+          ${item.old_price ? `<span class="mp-old-price">${formatMoney(item.old_price)}</span>` : ''}
+          ${item.discount_percent ? `<em class="mp-discount">${item.discount_percent}% OFF</em>` : ''}
+        </div>
+
+        ${sizeHtml}
+
+        <div class="mp-field">
+          <span class="mp-field-label">Quantity</span>
+          <div class="mp-qty-stepper">
+            <button type="button" class="mp-qty-btn" data-mp-qty-minus aria-label="Decrease quantity">−</button>
+            <span class="mp-qty-value" id="mp-qty-display">1</span>
+            <input type="hidden" id="marketplace-qty-input" value="1">
+            <button type="button" class="mp-qty-btn" data-mp-qty-plus aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <div class="mp-action-stack">
+          <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('${esc(itemType)}', '${esc(item.id)}')">Add to Cart</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}')">Buy Now</button>
+        </div>
+
+        <button type="button" class="mp-details-link" data-mp-toggle-details>View description &amp; full details →</button>
+
+        <div class="mp-full-details" data-mp-full-details hidden>
+          ${fullDetailsHtml}
+          <div class="mp-secondary-actions">
+            <button type="button" class="mp-btn-ghost" onclick="toggleMarketplaceWishlist('${esc(itemType)}', '${esc(item.id)}')">Save to Wishlist</button>
+            <a href="${detailUrl}" class="mp-btn-ghost">Open full product page</a>
+          </div>
+        </div>
+
+        ${compactInfo}
+        ${relatedHtml}
+      </div>
+    </div>`;
+}
+
+function initMarketplaceGallery() {
+  const gallery = document.querySelector('[data-mp-gallery]');
+  if (!gallery) return;
+  const raw = gallery.dataset.images || '';
+  const images = raw ? raw.split('||').filter(Boolean) : [];
+  if (!images.length) return;
+
+  let index = 0;
+  const main = document.getElementById('mp-main-image');
+  const counter = gallery.querySelector('[data-mp-counter]');
+  const dots = gallery.querySelectorAll('.mp-dot');
+  const thumbs = gallery.querySelectorAll('.mp-thumb');
+
+  const setIndex = (next) => {
+    index = (next + images.length) % images.length;
+    if (main) {
+      main.src = images[index];
+      main.onerror = () => { main.src = 'img/poster.webp'; };
+    }
+    if (counter) counter.textContent = `${index + 1}/${images.length}`;
+    dots.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+    thumbs.forEach((thumb, i) => thumb.classList.toggle('is-active', i === index));
+  };
+
+  gallery.querySelector('[data-mp-prev]')?.addEventListener('click', () => setIndex(index - 1));
+  gallery.querySelector('[data-mp-next]')?.addEventListener('click', () => setIndex(index + 1));
+  thumbs.forEach((thumb, i) => {
+    thumb.addEventListener('click', () => setIndex(i));
+  });
+}
+
+function initMpModalControls() {
+  const qtyInput = document.getElementById('marketplace-qty-input');
+  const qtyDisplay = document.getElementById('mp-qty-display');
+  const syncQty = (value) => {
+    const qty = Math.max(1, Math.min(10, value));
+    if (qtyInput) qtyInput.value = String(qty);
+    if (qtyDisplay) qtyDisplay.textContent = String(qty);
+  };
+  document.querySelector('[data-mp-qty-minus]')?.addEventListener('click', () => {
+    syncQty(getMpModalQty() - 1);
+  });
+  document.querySelector('[data-mp-qty-plus]')?.addEventListener('click', () => {
+    syncQty(getMpModalQty() + 1);
+  });
+
+  document.querySelectorAll('.mp-size-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mp-size-btn').forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+  });
+
+  document.querySelector('[data-mp-toggle-details]')?.addEventListener('click', () => {
+    const panel = document.querySelector('[data-mp-full-details]');
+    const link = document.querySelector('[data-mp-toggle-details]');
+    const scrollEl = document.querySelector('.mp-details-scroll');
+    if (!panel) return;
+    const open = panel.hasAttribute('hidden');
+    if (open) {
+      panel.removeAttribute('hidden');
+      if (link) link.textContent = 'Hide full details ↑';
+      requestAnimationFrame(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+      });
+    } else {
+      panel.setAttribute('hidden', '');
+      if (link) link.textContent = 'View description & full details →';
+    }
+  });
+}
+
+async function mpModalBuyNow(type, id) {
+  const buyBtn = document.querySelector('.mp-btn-buy');
+  const cartBtn = document.querySelector('.mp-btn-cart');
+  
+  try {
+    if (buyBtn) {
+      buyBtn.classList.add('is-loading');
+      buyBtn.disabled = true;
+    }
+    if (cartBtn) cartBtn.disabled = true;
+    
+    const qty = getMpModalQty();
+    const size = getMpModalSize();
+    
+    if (type === 'bundle') {
+      await addMarketplaceItemToCart(type, id);
+      setTimeout(() => { window.location.href = 'checkout.php'; }, 500);
+      return;
+    }
+    
+    buyNow(id, size, qty);
+  } catch (error) {
+    showToast(error.message || 'Could not process request.', 'error');
+    if (buyBtn) {
+      buyBtn.classList.remove('is-loading');
+      buyBtn.disabled = false;
+    }
+    if (cartBtn) cartBtn.disabled = false;
+  }
+}
+window.mpModalBuyNow = mpModalBuyNow;
+
+function initRelatedCarousel() {
+  const track = document.querySelector('[data-related-track]');
+  if (!track) return;
+  const step = () => Math.max(220, track.clientWidth * 0.75);
+  document.querySelector('[data-related-prev]')?.addEventListener('click', () => {
+    track.scrollBy({ left: -step(), behavior: 'smooth' });
+  });
+  document.querySelector('[data-related-next]')?.addEventListener('click', () => {
+    track.scrollBy({ left: step(), behavior: 'smooth' });
+  });
+}
+
+function initProductCardPopups() {
+  document.addEventListener('mouseenter', (event) => {
+    const card = event.target.closest?.('.uxp-product-card, .shop-product-card, .marketplace-card');
+    if (!card) return;
+    const preview = getCardPreviewData(card);
+    if (preview?.id) prefetchMarketplaceDetail(preview.type, preview.id);
+  }, true);
+
+  document.addEventListener('focusin', (event) => {
+    const card = event.target.closest?.('.uxp-product-card, .shop-product-card, .marketplace-card');
+    if (!card) return;
+    const preview = getCardPreviewData(card);
+    if (preview?.id) prefetchMarketplaceDetail(preview.type, preview.id);
+  });
+
+  document.addEventListener('click', (event) => {
+    const popupLink = event.target.closest('a.js-product-popup');
+    if (popupLink) {
+      event.preventDefault();
+      const card = popupLink.closest('[data-product-id], [data-id]');
+      const id = popupLink.dataset.productId || card?.dataset.productId || card?.dataset.id;
+      const itemType = popupLink.dataset.itemType || card?.dataset.type || 'product';
+      if (id && typeof openMarketplaceModal === 'function') {
+        openMarketplaceModal(itemType === 'bundle' ? 'bundle' : 'product', id, popupLink);
+      }
+      return;
+    }
+
+    const popupBtn = event.target.closest('button.js-product-popup');
+    if (popupBtn) {
+      event.preventDefault();
+      const id = popupBtn.dataset.productId || popupBtn.closest('[data-product-id]')?.dataset.productId;
+      const itemType = popupBtn.dataset.itemType || 'product';
+      if (id && typeof openMarketplaceModal === 'function') {
+        openMarketplaceModal(itemType === 'bundle' ? 'bundle' : 'product', id, popupBtn);
+      }
+      return;
+    }
+
+    const card = event.target.closest('.uxp-product-card, .shop-product-card, .marketplace-card');
+    if (!card) return;
+    if (event.target.closest('button, .wishlist-float')) return;
+    const plainLink = event.target.closest('a');
+    if (plainLink && !plainLink.classList.contains('js-product-popup')) return;
+
+    const id = card.dataset.productId || card.dataset.id;
+    if (!id) return;
+    const itemType = card.dataset.type === 'bundle' ? 'bundle' : 'product';
+    event.preventDefault();
+    if (typeof openMarketplaceModal === 'function') {
+      openMarketplaceModal(itemType, id, card);
+    }
+  });
+}
+
+async function openMarketplaceModal(type, id, triggerEl) {
+  marketplaceTriggerEl = triggerEl || document.activeElement;
   const modal = ensureMarketplaceModal();
   const content = modal.querySelector('.marketplace-modal-content');
+  let body = content.querySelector('.marketplace-modal-body');
+  if (!body) {
+    body = document.createElement('div');
+    body.className = 'marketplace-modal-body';
+    body.innerHTML = content.innerHTML;
+    content.innerHTML = '';
+    content.appendChild(body);
+  }
+  const openToken = ++marketplaceOpenToken;
+  const card = triggerEl?.closest?.('[data-product-id], [data-id]') || document.querySelector(`[data-product-id="${id}"]`);
+  const preview = getCardPreviewData(card) || { id, name: 'Product', image: 'img/poster.webp', price: 0, category: '', rating: '4.5', type };
+
   modal.classList.add('is-open');
   document.body.classList.add('modal-open');
-  content.className = 'marketplace-modal-content skeleton';
-  content.innerHTML = 'Loading...';
-  try {
-    const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
+  content.className = 'marketplace-modal-content is-loading';
+  body.innerHTML = renderInstantModalShell(preview, type);
+
+  trackMarketplaceView(type, id);
+
+  const cacheKey = marketplaceCacheKey(type, id);
+  const loadFull = async () => {
+    if (marketplaceDetailCache.has(cacheKey)) {
+      return marketplaceDetailCache.get(cacheKey);
+    }
+    const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
+      credentials: 'same-origin',
+    });
     const data = await response.json();
     if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
-    const item = data.data.item;
-    const related = data.data.related || [];
-    const reviews = data.data.reviews || [];
-    const reviewHtml = reviews.length
-      ? reviews.map(review => `<div class="review-row"><strong>${esc(review.user_name || 'Customer')}</strong><span>★ ${esc(review.rating)}</span><p>${esc(review.comment || 'Verified purchase')}</p></div>`).join('')
-      : '<div class="review-row"><strong>Reviews</strong><p>No reviews yet. Be the first to review this item after purchase.</p></div>';
-    const relatedHtml = related.length
-      ? related.map(rel => `<button type="button" class="related-chip" onclick="openMarketplaceModal('${esc(rel.type || type)}', '${esc(rel.id)}')"><img src="${esc(rel.image)}" alt=""><span>${esc(rel.name)}</span><strong>${money(rel.price)}</strong></button>`).join('')
-      : '';
+    marketplaceDetailCache.set(cacheKey, data.data);
+    return data.data;
+  };
+
+  try {
+    const payload = await loadFull();
+    if (openToken !== marketplaceOpenToken) return;
+    const item = payload.item;
+    const related = payload.related || [];
+    const tagTokens = payload.tag_tokens || [];
     content.className = 'marketplace-modal-content';
-    content.innerHTML = `
-      <div class="marketplace-gallery">
-        <img src="${esc(item.image)}" alt="${esc(item.name)}" onerror="this.src='img/poster.webp'">
-      </div>
-      <div class="marketplace-details">
-        <div class="marketplace-kicker">${esc(item.type || type)} · ${esc(item.category || '')}</div>
-        <h2>${esc(item.name)}</h2>
-        <p>${esc(item.description || '')}</p>
-        <div class="marketplace-meta">
-          <span>★ ${esc(item.rating || '4.5')}</span>
-          <span>${Number(item.stock || 0) > 0 ? 'In stock' : 'Out of stock'}</span>
-          ${(item.tags || '').split(',').filter(Boolean).slice(0, 3).map(tag => `<span>${esc(tag.trim())}</span>`).join('')}
-        </div>
-        <div class="marketplace-price">
-          <strong>${money(item.price)}</strong>
-          ${item.old_price ? `<span>${money(item.old_price)}</span>` : ''}
-          ${item.discount_percent ? `<em>${item.discount_percent}% OFF</em>` : ''}
-        </div>
-        <div class="marketplace-qty">
-          <label for="marketplace-qty-input">Qty</label>
-          <input id="marketplace-qty-input" type="number" min="1" max="10" value="1">
-        </div>
-        <div class="marketplace-modal-actions">
-          <button type="button" class="btn btn-primary" onclick="addMarketplaceItemToCart('${esc(item.type || type)}', '${esc(item.id)}')">Add to Cart</button>
-          <button type="button" class="btn btn-outline" onclick="toggleMarketplaceWishlist('${esc(item.type || type)}', '${esc(item.id)}')">Wishlist</button>
-        </div>
-        <div class="marketplace-reviews">${reviewHtml}</div>
-        ${relatedHtml ? `<h3>Suggested for you</h3><div class="marketplace-related">${relatedHtml}</div>` : ''}
-      </div>`;
+    body.innerHTML = renderProductDetailModal(item, type, related, tagTokens);
+    initMarketplaceGallery();
+    initMpModalControls();
+    initRelatedCarousel();
+    const detailScroll = body.querySelector('.mp-details-scroll[data-mp-detail-url]');
+    const extLink = modal.querySelector('#mp-external-link');
+    if (extLink && detailScroll?.dataset.mpDetailUrl) extLink.href = detailScroll.dataset.mpDetailUrl;
+    body.querySelectorAll('.mp-scroll-col').forEach((el) => { el.scrollTop = 0; });
+    
+    const closeBtn = modal.querySelector('.marketplace-modal-close');
+    if (closeBtn) closeBtn.focus();
   } catch (error) {
-    content.className = 'marketplace-modal-content';
-    content.innerHTML = `<div class="marketplace-error">${esc(error.message || 'Something went wrong.')}</div>`;
+    if (openToken !== marketplaceOpenToken) return;
+    content.className = 'marketplace-modal-content marketplace-modal-content--error';
+    body.innerHTML = `<div class="marketplace-error">${esc(error.message || 'Something went wrong.')}</div>`;
   }
 }
 
 function closeMarketplaceModal() {
   const modal = document.getElementById('marketplace-modal');
-  if (!modal) return;
-  modal.classList.remove('is-open');
-  document.body.classList.remove('modal-open');
+  if (!modal || !modal.classList.contains('is-open')) return;
+  
+  marketplaceOpenToken += 1;
+  modal.classList.add('is-closing');
+  
+  setTimeout(() => {
+    modal.classList.remove('is-open', 'is-closing');
+    document.body.classList.remove('modal-open');
+    
+    if (marketplaceTriggerEl && typeof marketplaceTriggerEl.focus === 'function') {
+      marketplaceTriggerEl.focus();
+      marketplaceTriggerEl = null;
+    }
+  }, 200);
 }
+
+let marketplaceTriggerEl = null;
 
 async function fetchMarketplaceItem(type, id) {
   const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
@@ -3316,12 +3877,35 @@ async function fetchMarketplaceItem(type, id) {
 }
 
 async function addMarketplaceItemToCart(type, id) {
+  const cartBtn = document.querySelector('.mp-btn-cart');
+  const buyBtn = document.querySelector('.mp-btn-buy');
+  
   try {
+    if (cartBtn) {
+      cartBtn.classList.add('is-loading');
+      cartBtn.disabled = true;
+    }
+    if (buyBtn) buyBtn.disabled = true;
+    
     const item = await fetchMarketplaceItem(type, id);
-    const qty = Math.max(1, Math.min(10, Number(document.getElementById('marketplace-qty-input')?.value || 1)));
-    await addToCart(type === 'bundle' ? `bundle-${item.id}` : item.id, null, qty, item, item.available_type || 'digital');
+    const qty = getMpModalQty();
+    const size = getMpModalSize();
+    await addToCart(
+      type === 'bundle' ? `bundle-${item.id}` : item.id,
+      size,
+      qty,
+      item,
+      item.available_type || 'digital',
+    );
+    showToast('Added to cart!', 'success');
   } catch (error) {
     showToast(error.message || 'Could not add item.', 'error');
+  } finally {
+    if (cartBtn) {
+      cartBtn.classList.remove('is-loading');
+      cartBtn.disabled = false;
+    }
+    if (buyBtn) buyBtn.disabled = false;
   }
 }
 
@@ -3348,8 +3932,34 @@ async function toggleMarketplaceWishlist(type, id) {
   }
 }
 
+function initTopProductsFilters() {
+  const section = document.querySelector('.uxp-top-products-section');
+  if (!section) return;
+  const buttons = section.querySelectorAll('.uxp-product-filters .filter-btn');
+  const cards = section.querySelectorAll('.uxp-product-card');
+  if (!buttons.length || !cards.length) return;
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = (btn.dataset.filter || 'all').toLowerCase();
+      buttons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      cards.forEach((card) => {
+        const cat = (card.dataset.categoryFilter || card.dataset.category || '').toLowerCase();
+        const show = filter === 'all' || cat === filter;
+        card.classList.toggle('is-filter-hidden', !show);
+      });
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSearchModal();
+  initProductCardPopups();
+  initTopProductsFilters();
   document.querySelector('.mobile-nav-toggle')?.addEventListener('click', (event) => {
     const header = event.currentTarget.closest('.navbar');
     const open = !header.classList.contains('mobile-open');

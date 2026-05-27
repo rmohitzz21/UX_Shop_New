@@ -1093,6 +1093,14 @@ if (empty($_SESSION['csrf_token'])) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
           <span>Bundles</span>
         </a>
+        <a href="#" class="sidebar-nav-item" data-tab="reviews" onclick="switchTab('reviews', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>Reviews</span>
+        </a>
+        <a href="#" class="sidebar-nav-item" data-tab="messages" onclick="switchTab('messages', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          <span>Messages</span>
+        </a>
         <a href="#" class="sidebar-nav-item" data-tab="analytics" onclick="switchTab('analytics', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -1146,7 +1154,7 @@ if (empty($_SESSION['csrf_token'])) {
         <div class="admin-tab active" id="overview-tab">
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-card-title">Total Users</div>
+              <div class="stat-card-title">Total Customers</div>
               <div class="stat-card-value" id="stat-total-users">0</div>
               <div class="stat-card-change" id="stat-users-change">—</div>
             </div>
@@ -1162,30 +1170,59 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
             <div class="stat-card">
               <div class="stat-card-title">Total Revenue</div>
-              <div class="stat-card-value" id="stat-total-revenue">$0</div>
+              <div class="stat-card-value" id="stat-total-revenue">₹0</div>
               <div class="stat-card-change" id="stat-revenue-change">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-title">Pending Orders</div>
+              <div class="stat-card-value" id="stat-pending-orders" style="color:#f59e0b;">0</div>
+              <div class="stat-card-change">Awaiting action</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-title">Low Stock Items</div>
+              <div class="stat-card-value" id="stat-low-stock" style="color:#ef4444;">0</div>
+              <div class="stat-card-change">Stock &le; 5 units</div>
             </div>
           </div>
 
-          <div class="data-table">
-            <div class="table-header">
-              <h2>Recent Orders</h2>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.5rem;margin-top:1.5rem;">
+            <div class="data-table">
+              <div class="table-header">
+                <h2>Recent Orders</h2>
+                <a href="#" class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;" onclick="switchTab('orders', document.querySelector('[data-tab=orders]'));return false;">View All</a>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Amount (₹)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-orders-table">
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="recent-orders-table">
-                  <!-- Will be populated by JS -->
-                </tbody>
-              </table>
+            <div class="data-table">
+              <div class="table-header">
+                <h2>Top Products</h2>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Units Sold</th>
+                      <th>Revenue (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-products-table">
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -1339,18 +1376,96 @@ if (empty($_SESSION['csrf_token'])) {
           <div class="data-table">
             <div class="table-header">
               <h2>Bundles</h2>
-              <form class="search-filter" onsubmit="adminSaveBundle(event)" enctype="multipart/form-data">
+              <form id="bundle-editor-form" class="search-filter" onsubmit="adminSaveBundle(event)" enctype="multipart/form-data" style="flex-wrap:wrap;align-items:center;">
+                <input type="hidden" name="id" value="">
+                <input type="hidden" name="existing_image" value="">
+
                 <input class="search-input" name="name" placeholder="Bundle name" required>
                 <input class="search-input" name="price" type="number" step="0.01" placeholder="Price" required>
+                <input class="search-input" name="old_price" type="number" step="0.01" placeholder="Old price" style="max-width:120px;">
+                <input class="search-input" name="category" placeholder="Category (e.g. Career Pack)">
+                <input class="search-input" name="tags" placeholder="Tags (comma separated)" style="min-width:180px;">
                 <input class="search-input" name="stock" type="number" placeholder="Stock" style="max-width: 100px;">
-                <input class="search-input" name="included_items" placeholder="What's included, comma separated">
-                <input class="search-input" name="product_ids" placeholder="Product IDs, comma separated">
+                <input class="search-input" name="rating" type="number" step="0.1" placeholder="Rating (0-5)">
+
+                <input class="search-input" name="included_items" placeholder="What's included, comma separated" style="min-width:220px;">
+                <input class="search-input" name="product_ids" placeholder="Product IDs, comma separated (leave empty to keep current)">
+
+                <textarea class="search-input" name="description" rows="2" placeholder="Description" style="min-width:260px;"></textarea>
+
                 <input class="search-input" name="image" type="file" accept="image/*">
-                <button class="btn-primary" type="submit">Add Bundle</button>
+
+                <label class="form-label" style="display:inline-flex;align-items:center;gap:8px;margin:0;white-space:nowrap;">
+                  <input type="checkbox" name="is_active" value="1" checked>
+                  Active
+                </label>
+
+                <label class="form-label" style="display:inline-flex;align-items:center;gap:8px;margin:0;white-space:nowrap;">
+                  <input type="checkbox" name="is_featured" value="1">
+                  Best Seller (horizontal slider)
+                </label>
+
+                <button id="bundle-submit-btn" class="btn-primary" type="submit">Add Bundle</button>
+                <button id="bundle-cancel-btn" class="btn-secondary" type="button" style="display:none;" onclick="adminCancelBundleEdit()">Cancel</button>
               </form>
+              <p style="font-size:.8rem;opacity:.75;margin:.5rem 0 0;">Bundles with <strong>Best Seller</strong> on appear in the top slider on <code>bundles.php</code>. Others show in the grid below.</p>
             </div>
             <div class="table-container">
-              <table><thead><tr><th>Bundle</th><th>Price</th><th>Featured</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bundles-table"></tbody></table>
+              <table><thead><tr><th>Bundle</th><th>Price</th><th>Best Seller</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bundles-table"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="admin-tab" id="reviews-tab">
+          <div class="data-table">
+            <div class="table-header">
+              <h2>Product Reviews</h2>
+              <p style="font-size:.85rem;opacity:.7;margin:0;">Approve or remove customer reviews.</p>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Customer</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reviews-table">
+                  <tr><td colspan="6" class="empty-state">Select Reviews from the sidebar to load</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div class="admin-tab" id="messages-tab">
+          <div class="data-table">
+            <div class="table-header">
+              <h2>Contact Messages</h2>
+              <p style="font-size:.85rem;opacity:.7;margin:0;">Inbox from the contact form.</p>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="messages-table">
+                  <tr><td colspan="6" class="empty-state">Select Messages from the sidebar to load</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1360,15 +1475,15 @@ if (empty($_SESSION['csrf_token'])) {
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-title">Today's Revenue</div>
-                <div class="stat-card-value" id="analytics-today-revenue">$0</div>
+                <div class="stat-card-value" id="analytics-today-revenue">₹0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-title">This Month's Revenue</div>
-                <div class="stat-card-value" id="analytics-month-revenue">$0</div>
+                <div class="stat-card-value" id="analytics-month-revenue">₹0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-title">Average Order Value</div>
-                <div class="stat-card-value" id="analytics-avg-order">$0</div>
+                <div class="stat-card-value" id="analytics-avg-order">₹0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-title">Conversion Rate</div>
@@ -1385,13 +1500,11 @@ if (empty($_SESSION['csrf_token'])) {
                 <thead>
                   <tr>
                     <th>Product</th>
-                    <th>Category</th>
                     <th>Units Sold</th>
-                    <th>Revenue</th>
+                    <th>Revenue (₹)</th>
                   </tr>
                 </thead>
-                <tbody id="top-products-table">
-                  <!-- Will be populated by JS -->
+                <tbody id="analytics-top-products-table">
                 </tbody>
               </table>
             </div>
@@ -1653,6 +1766,8 @@ if (empty($_SESSION['csrf_token'])) {
       else if (tab === 'orders') loadOrders();
       else if (tab === 'categories') loadAdminCategories();
       else if (tab === 'bundles') loadAdminBundles();
+      else if (tab === 'reviews') loadReviews();
+      else if (tab === 'messages') loadMessages();
       else if (tab === 'analytics') loadAnalytics();
 
       // Close mobile sidebar
@@ -1680,63 +1795,6 @@ if (empty($_SESSION['csrf_token'])) {
     window.toggleSidebar = toggleSidebar;
     window.switchTab = switchTab;
 
-    async function adminJson(url, payload) {
-      const options = payload ? {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' },
-        body: JSON.stringify(payload)
-      } : {};
-      const response = await fetch(url, options);
-      const data = await response.json();
-      if (data.status !== 'success') throw new Error(data.message || 'Request failed');
-      return data.data;
-    }
-    async function loadAdminCategories() {
-      const rows = await adminJson('../api/admin/categories/list.php');
-      document.getElementById('categories-table').innerHTML = rows.map(row => `
-        <tr><td>${row.name}</td><td>${row.slug}</td><td>${row.description || ''}</td><td>${row.is_active == 1 ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Hidden</span>'}</td>
-        <td><button class="btn-small btn-edit" onclick='adminToggleCategory(${JSON.stringify(row)})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button></td></tr>
-      `).join('');
-    }
-    async function adminSaveCategory(event) {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(event.target).entries());
-      await adminJson('../api/admin/categories/save.php', payload);
-      event.target.reset();
-      loadAdminCategories();
-    }
-    async function adminToggleCategory(row) {
-      row.is_active = row.is_active == 1 ? 0 : 1;
-      await adminJson('../api/admin/categories/save.php', row);
-      loadAdminCategories();
-    }
-    async function loadAdminBundles() {
-      const rows = await adminJson('../api/admin/bundles/list.php');
-      document.getElementById('bundles-table').innerHTML = rows.map(row => `
-        <tr><td><img class="product-image" src="../${row.image || 'img/poster.webp'}" onerror="this.style.display='none'"> ${row.name}</td><td>₹${Number(row.price || 0).toLocaleString('en-IN')}</td>
-        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Featured</span>' : 'No'}</td><td>${row.is_active == 1 ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Hidden</span>'}</td>
-        <td><button class="btn-small btn-edit" onclick='adminToggleBundle(${JSON.stringify(row)}, "featured")'>Feature</button><button class="btn-small btn-delete" onclick='adminToggleBundle(${JSON.stringify(row)}, "active")'>${row.is_active == 1 ? 'Hide' : 'Show'}</button></td></tr>
-      `).join('');
-    }
-    async function adminSaveBundle(event) {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(event.target).entries());
-      await adminJson('../api/admin/bundles/save.php', payload);
-      event.target.reset();
-      loadAdminBundles();
-    }
-    async function adminToggleBundle(row, field) {
-      if (field === 'featured') row.is_featured = row.is_featured == 1 ? 0 : 1;
-      if (field === 'active') row.is_active = row.is_active == 1 ? 0 : 1;
-      await adminJson('../api/admin/bundles/save.php', row);
-      loadAdminBundles();
-    }
-    window.loadAdminCategories = loadAdminCategories;
-    window.adminSaveCategory = adminSaveCategory;
-    window.adminToggleCategory = adminToggleCategory;
-    window.loadAdminBundles = loadAdminBundles;
-    window.adminSaveBundle = adminSaveBundle;
-    window.adminToggleBundle = adminToggleBundle;
   </script>
 </body>
 

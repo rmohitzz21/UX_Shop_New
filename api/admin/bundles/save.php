@@ -16,6 +16,10 @@ $stock = max(0, (int) ($input['stock'] ?? 999));
 $rating = max(0, min(5, (float) ($input['rating'] ?? 4.7)));
 $featured = adminBool($input['is_featured'] ?? 0, 0);
 $active = adminBool($input['is_active'] ?? 1, 1);
+$badgeText = trim((string) ($input['badge_text'] ?? ''));
+if ($badgeText === '') {
+    $badgeText = $featured ? 'Best Seller' : 'Most Popular';
+}
 $slug = slugify($input['slug'] ?? $name);
 $image = trim((string) ($input['existing_image'] ?? $input['image'] ?? ''));
 $uploaded = adminUploadImages('image');
@@ -56,13 +60,13 @@ if ($id > 0) {
     if (!$before) sendResponse('error', 'Bundle not found.', null, 404);
     if (!$uploaded && $image === '') $image = $before['image'] ?: 'img/poster.webp';
 
-    $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, price=?, old_price=?, image=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
-    $stmt->bind_param('ssssssddsdiiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $rating, $stock, $featured, $active, $id);
+    $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, price=?, old_price=?, image=?, badge_text=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
+    $stmt->bind_param('ssssssddssdiiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active, $id);
     if (!$stmt->execute()) sendResponse('error', 'Could not update bundle: ' . $stmt->error, null, 500);
     adminRecordInventory($conn, 'bundle', $id, (int) $before['stock'], $stock, 'Admin bundle update');
 } else {
-    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, included_items, price, old_price, image, rating, stock, is_featured, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->bind_param('ssssssddsdiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $rating, $stock, $featured, $active);
+    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, included_items, price, old_price, image, badge_text, rating, stock, is_featured, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('ssssssddssdiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active);
     if (!$stmt->execute()) sendResponse('error', 'Could not create bundle: ' . $stmt->error, null, 500);
     $id = (int) $conn->insert_id;
     adminRecordInventory($conn, 'bundle', $id, 0, $stock, 'Admin bundle create');
@@ -70,10 +74,14 @@ if ($id > 0) {
 
 $conn->begin_transaction();
 try {
-    $clear = $conn->prepare('DELETE FROM bundle_items WHERE bundle_id = ?');
-    $clear->bind_param('i', $id);
-    $clear->execute();
-    if ($productItems) {
+    // Only update bundle_items if product_ids were provided (and parsed into at least one valid product id).
+    // This prevents accidental wiping of existing bundle contents during edits where the admin leaves product_ids blank.
+    $shouldUpdateItems = !empty($productItems);
+    if ($shouldUpdateItems) {
+        $clear = $conn->prepare('DELETE FROM bundle_items WHERE bundle_id = ?');
+        $clear->bind_param('i', $id);
+        $clear->execute();
+
         $insert = $conn->prepare('INSERT INTO bundle_items (bundle_id, product_id, quantity) VALUES (?, ?, ?)');
         foreach ($productItems as $productId => $quantity) {
             $insert->bind_param('iii', $id, $productId, $quantity);

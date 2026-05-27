@@ -22,12 +22,13 @@ $maxPrice = ceil($priceRange['max_price'] ?? 500);
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
       <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
 
   <body class="shopAll">
     <div class="page">
       <!-- NAVBAR -->
-      <?php include 'includes/header.php'; $isShop = true;?>
+      <?php include 'includes/header.php'; ?>
 
       <!-- MAIN CONTENT -->
       <main class="main shop-all-main">
@@ -161,10 +162,13 @@ $maxPrice = ceil($priceRange['max_price'] ?? 500);
 
                       echo "
                       <article class='uxp-product-card shop-product-card' 
-    data-product-id='$id' 
+    data-product-id='$id'
+    data-name='$name'
+    data-image='$imgSrc'
     data-category='$category' 
     data-type='$availableType' 
-    data-price='{$row['price']}' 
+    data-price='{$row['price']}'
+    data-old-price='{$row['old_price']}'
     data-rating='$rating'>
 
     <a href='product.php?id=$id' 
@@ -218,7 +222,7 @@ $maxPrice = ceil($priceRange['max_price'] ?? 500);
             <a href='product.php?id=$id' 
                class='uxp-card-btn uxp-card-btn-primary js-product-popup'
                data-product-id='$id'>
-               Buy Now
+               View Details
             </a>
 
             <button 
@@ -367,19 +371,6 @@ $maxPrice = ceil($priceRange['max_price'] ?? 500);
         sortSelect.addEventListener('change', sortProducts);
       }
 
-      document.querySelectorAll('.shop-product-card').forEach(card => {
-        card.addEventListener('click', function(event) {
-          if (event.target.closest('button')) return;
-          const productId = this.dataset.productId;
-          if (!productId) return;
-          event.preventDefault();
-          if (typeof openMarketplaceModal === 'function') {
-            openMarketplaceModal('product', productId);
-          } else {
-            window.location.href = `product.php?id=${encodeURIComponent(productId)}`;
-          }
-        });
-      });
     });
     </script>
   </body>

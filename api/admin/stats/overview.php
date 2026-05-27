@@ -99,8 +99,9 @@ sendResponse('success', 'Dashboard stats loaded.', [
         'active' => adminScalar($conn, "SELECT COUNT(*) FROM categories WHERE is_active = 1"),
     ],
     'orders' => [
-        'total' => adminScalar($conn, "SELECT COUNT(*) FROM orders"),
-        'change' => $formatChange($ordersMonth, $ordersLast),
+        'total'   => adminScalar($conn, "SELECT COUNT(*) FROM orders"),
+        'pending' => adminScalar($conn, "SELECT COUNT(*) FROM orders WHERE status IN ('Pending','pending','awaiting_payment','Awaiting Payment')"),
+        'change'  => $formatChange($ordersMonth, $ordersLast),
     ],
     'revenue' => [
         'total' => $revenueTotal,

@@ -8,11 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ready-made UI/UX career bundles from UX Pacific." />
 
-    <title>Ready-Made Career Bundles - UX Pacific Shop</title>
+    <title>Bundles - UX Pacific Shop</title>
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,600;1,9..40,200&family=Gabarito:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="assets/css/bundles.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 
 <body class="bundles-page figma-bundles">
@@ -37,179 +39,219 @@ if ($headerUserName === '') {
     <!-- HERO -->
     <section class="figma-hero">
 
-        <h1>
-            <span>Ready-Made Career</span>
-            <em>Bundles</em>
-            <span>for</span>
-            <em>UI/UX Designers</em>
-        </h1>
+     
 
-        <p>
-            Explore curated UI/UX learning kits, templates, case studies,
-            and career resources designed to help creators grow faster.
-        </p>
+   
 
     </section>
 
-    <!-- FEATURED BUNDLE -->
+    <!-- BEST SELLER SLIDER -->
     <?php
-
+    /* Best Seller horizontal slider: only bundles marked is_featured = 1 in admin */
     $featuredSql = "
         SELECT *
         FROM bundles
-        WHERE is_active = 1
-        ORDER BY updated_at DESC, id DESC
-        LIMIT 1
+        WHERE is_active = 1 AND is_featured = 1
+        ORDER BY rating DESC, updated_at DESC, id DESC
+        LIMIT 10
     ";
 
     $featuredResult = $conn->query($featuredSql);
-
-    if ($featuredResult && $featuredResult->num_rows > 0):
-
-        $featured = $featuredResult->fetch_assoc();
-
-        $featuredItems = json_decode(
-            $featured['included_items'] ?? '[]',
-            true
-        );
-
-        if (!is_array($featuredItems)) {
-            $featuredItems = [];
+    $featuredBundles = [];
+    if ($featuredResult && $featuredResult->num_rows > 0) {
+        while ($row = $featuredResult->fetch_assoc()) {
+            $featuredBundles[] = $row;
         }
+    }
+    $featuredCount = count($featuredBundles);
+    $featuredIds = $featuredCount > 0
+        ? array_map(static fn ($b) => (int) $b['id'], $featuredBundles)
+        : [];
 
+    $bundleFilterPills = [
+        'all' => 'All',
+        'portfolio' => 'Portfolio',
+        'case-study' => 'Case Study',
+        'ui-kits' => 'UI Kits',
+        'freelancing' => 'Freelancing',
+        'design-system' => 'Design System',
+        'career-pack' => 'Career Pack',
+        'interview-prep' => 'Interview Prep',
+    ];
+
+    $bundleIncludedItems = function (array $bundle): array {
+        $items = [];
+        if (!empty($bundle['whats_included'])) {
+            $lines = preg_split('/\r\n|\r|\n/', trim((string) $bundle['whats_included']));
+            foreach ($lines as $line) {
+                $line = trim(preg_replace('/^[\-\*•]\s*/', '', trim($line)));
+                if ($line !== '') {
+                    $items[] = $line;
+                }
+            }
+        }
+        if ($items === []) {
+            $decoded = json_decode($bundle['included_items'] ?? '[]', true);
+            if (is_array($decoded)) {
+                $items = $decoded;
+            }
+        }
+        return $items;
+    };
+
+    $bundleCategoryKey = function (array $bundle): string {
+        $raw = strtolower(trim((string) ($bundle['category'] ?? '')));
+        $raw = preg_replace('/[^a-z0-9]+/', '-', $raw);
+        return trim($raw, '-') ?: 'career-pack';
+    };
+
+    $bundleReviewCount = function (int $bundleId) use ($conn): int {
+        $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM reviews WHERE bundle_id = ? AND is_approved = 1');
+        if (!$stmt) {
+            return 0;
+        }
+        $stmt->bind_param('i', $bundleId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        return (int) ($row['c'] ?? 0);
+    };
     ?>
 
-    <section class="figma-featured-card">
+    <?php if ($featuredCount > 0): ?>
+        <section class="bundles-bestseller" aria-label="Best seller bundles">
+            <nav class="bundles-filter-bar" aria-label="Bundle categories">
+                <?php foreach ($bundleFilterPills as $slug => $label): ?>
+                    <button
+                        type="button"
+                        class="bundles-filter-pill<?php echo $slug === 'all' ? ' is-active' : ''; ?>"
+                        data-filter="<?php echo htmlspecialchars($slug); ?>">
+                        <?php echo htmlspecialchars($label); ?>
+                    </button>
+                <?php endforeach; ?>
+            </nav>
 
-        <div class="figma-featured-image">
-
-            <img
-                src="<?php echo htmlspecialchars($featured['image'] ?: 'img/poster.webp'); ?>"
-                alt="<?php echo htmlspecialchars($featured['name']); ?>"
-                onerror="this.src='img/poster.webp'"
-            />
-
-            <span>
-                <?php echo htmlspecialchars($featured['badge_text'] ?: 'Best Seller'); ?>
-            </span>
-
-        </div>
-
-        <div class="figma-featured-content">
-
-            <h2>
-                <?php echo htmlspecialchars($featured['name']); ?>
-            </h2>
-
-            <div class="figma-rating-row">
-
-                <span class="figma-stars">
-                    *****
-                </span>
-
-                <span>
-                    <?php echo htmlspecialchars($featured['rating'] ?: '4.9'); ?>
-                    rating
-                </span>
-
-            </div>
-
-            <p class="figma-featured-desc">
-
-                <?php
-                echo htmlspecialchars(
-                    $featured['description']
-                    ?: 'Premium UI/UX career bundle.'
-                );
-                ?>
-
-            </p>
-
-            <h3>What's Included:</h3>
-
-            <ul class="figma-featured-list">
-
-                <?php if (!empty($featuredItems)): ?>
-
-                    <?php foreach($featuredItems as $item): ?>
-
-                        <li>
-                            <?php echo htmlspecialchars($item); ?>
-                        </li>
-
-                    <?php endforeach; ?>
-
-                <?php else: ?>
-
-                    <li>Portfolio Templates</li>
-                    <li>UX Workbook</li>
-                    <li>Resume Kit</li>
-                    <li>Interview Guide</li>
-
+            <div class="bundles-bestseller-stage">
+                <?php if ($featuredCount > 1): ?>
+                    <button type="button" class="bs-nav bs-nav--prev bundles-featured-prev" aria-label="Previous bundle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                 <?php endif; ?>
 
-            </ul>
+                <div class="bundles-featured-swiper swiper" data-slide-count="<?php echo (int) $featuredCount; ?>">
+                    <div class="swiper-wrapper">
+                        <?php foreach ($featuredBundles as $featured):
+                            $featuredItems = $bundleIncludedItems($featured);
+                            $categoryKey = $bundleCategoryKey($featured);
+                            $tagsKey = strtolower(preg_replace('/[^a-z0-9]+/', '-', (string) ($featured['tags'] ?? '')));
+                            $reviewCount = $bundleReviewCount((int) $featured['id']);
+                            $rating = number_format((float) ($featured['rating'] ?: 4.9), 1);
+                        ?>
+                            <div
+                                class="swiper-slide"
+                                data-category="<?php echo htmlspecialchars($categoryKey); ?>"
+                                data-tags="<?php echo htmlspecialchars(trim($tagsKey, '-')); ?>">
+                                <article class="bs-card">
+                                    <div class="bs-card-media">
+                                        <img
+                                            src="<?php echo htmlspecialchars($featured['image'] ?: 'img/poster.webp'); ?>"
+                                            alt="<?php echo htmlspecialchars($featured['name']); ?>"
+                                            onerror="this.src='img/poster.webp'"
+                                        />
+                                        <span class="bs-badge"><?php echo htmlspecialchars($featured['badge_text'] ?? 'Best Seller'); ?></span>
+                                    </div>
 
-            <div class="figma-featured-price">
+                                    <div class="bs-card-body">
+                                        <h2 class="bs-card-title"><?php echo htmlspecialchars($featured['name']); ?></h2>
 
-                <strong>
-                    ₹<?php echo number_format((float)$featured['price']); ?>
-                </strong>
+                                        <div class="bs-rating">
+                                            <span class="bs-stars" aria-hidden="true">★★★★★</span>
+                                            <span class="bs-rating-text">
+                                                <?php echo htmlspecialchars($rating); ?>
+                                                <?php if ($reviewCount > 0): ?>
+                                                    (<?php echo number_format($reviewCount); ?> reviews)
+                                                <?php else: ?>
+                                                    rating
+                                                <?php endif; ?>
+                                            </span>
+                                        </div>
 
-                <?php if (!empty($featured['old_price'])): ?>
+                                        <p class="bs-desc">
+                                            <?php echo htmlspecialchars($featured['description'] ?: 'Everything you need to build a professional UI/UX portfolio and land your dream job.'); ?>
+                                        </p>
 
-                    <del>
-                        ₹<?php echo number_format((float)$featured['old_price']); ?>
-                    </del>
+                                        <h3 class="bs-includes-title">What's Included:</h3>
+                                        <ul class="bs-includes">
+                                            <?php
+                                            $listItems = !empty($featuredItems) ? $featuredItems : [
+                                                '15+ UI Screens',
+                                                'UX Workbook',
+                                                'Interview Guide',
+                                                'Portfolio Templates',
+                                            ];
+                                            foreach ($listItems as $item):
+                                            ?>
+                                                <li>
+                                                    <svg class="bs-check" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.2L6.4 11.1L12.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    <?php echo htmlspecialchars($item); ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
 
+                                        <div class="bs-pricing">
+                                            <strong class="bs-price">₹<?php echo number_format((float) $featured['price']); ?></strong>
+                                            <?php if (!empty($featured['old_price'])): ?>
+                                                <del class="bs-price-old">₹<?php echo number_format((float) $featured['old_price']); ?></del>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="bs-actions">
+                                            <a class="bs-btn bs-btn--primary" href="bundle-details.php?id=<?php echo (int) $featured['id']; ?>">View Details</a>
+                                            <button
+                                                class="bs-btn bs-btn--outline"
+                                                type="button"
+                                                onclick='addToCart(
+                                                    "bundle_<?php echo (int) $featured['id']; ?>",
+                                                    null,
+                                                    1,
+                                                    {
+                                                        name: <?php echo json_encode($featured['name']); ?>,
+                                                        price: <?php echo (float) $featured['price']; ?>,
+                                                        image: <?php echo json_encode($featured['image']); ?>,
+                                                        category: "Bundles",
+                                                        description: <?php echo json_encode($featured['description']); ?>
+                                                    },
+                                                    "digital"
+                                                )'>
+                                                Buy Now
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <?php if ($featuredCount > 1): ?>
+                    <button type="button" class="bs-nav bs-nav--next bundles-featured-next" aria-label="Next bundle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                 <?php endif; ?>
-
             </div>
 
-            <div class="figma-featured-actions">
-
-                <a
-                    class="figma-btn figma-btn-primary"
-                    href="bundle-details.php?id=<?php echo (int)$featured['id']; ?>">
-
-                    View Details
-
-                </a>
-
-                <button
-                    class="figma-btn figma-btn-outline"
-                    type="button"
-
-                    onclick='addToCart(
-                        "bundle_<?php echo (int)$featured["id"]; ?>",
-                        null,
-                        1,
-                        {
-                            name: <?php echo json_encode($featured["name"]); ?>,
-                            price: <?php echo (float)$featured["price"]; ?>,
-                            image: <?php echo json_encode($featured["image"]); ?>,
-                            category: "Bundles",
-                            description: <?php echo json_encode($featured["description"]); ?>
-                        },
-                        "digital"
-                    )'>
-
-                    Buy Now
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </section>
-
+            <?php if ($featuredCount > 1): ?>
+                <div class="swiper-pagination bundles-featured-pagination" aria-label="Featured pagination"></div>
+            <?php endif; ?>
+        </section>
     <?php endif; ?>
 
-    <!-- BUNDLE GRID -->
+    <!-- BUNDLE GRID (excludes bundles already in Best Seller slider) -->
     <section class="figma-card-grid" aria-label="Career bundles">
 
         <?php
+        $excludeFeatured = $featuredIds !== []
+            ? ' AND b.id NOT IN (' . implode(',', $featuredIds) . ')'
+            : '';
 
         $bundleSql = "
             SELECT 
@@ -219,6 +261,7 @@ if ($headerUserName === '') {
             LEFT JOIN bundle_items bi
                 ON bi.bundle_id = b.id
             WHERE b.is_active = 1
+            {$excludeFeatured}
             GROUP BY b.id
             ORDER BY b.updated_at DESC, b.id DESC
         ";
@@ -255,8 +298,7 @@ if ($headerUserName === '') {
 
                     <?php
                     echo htmlspecialchars(
-                        $bundle['badge_text']
-                        ?: 'Most Popular'
+                        $bundle['badge_text'] ?? 'Most Popular'
                     );
                     ?>
 
@@ -428,7 +470,92 @@ if ($headerUserName === '') {
 
 <?php include 'includes/footer.php'; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="script.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const section = document.querySelector('.bundles-bestseller');
+    const el = document.querySelector('.bundles-featured-swiper');
+    if (!section || !el || typeof Swiper === 'undefined') return;
+
+    const slideCount = parseInt(el.dataset.slideCount || '0', 10);
+    const hasMultiple = slideCount > 1;
+
+    const featuredSwiper = new Swiper(el, {
+      slidesPerView: 1,
+      slidesPerGroup: 1,
+      spaceBetween: 0,
+      speed: 650,
+      effect: 'slide',
+      autoHeight: true,
+      grabCursor: hasMultiple,
+      watchOverflow: true,
+      allowTouchMove: hasMultiple,
+      loop: hasMultiple,
+      loopAdditionalSlides: hasMultiple ? 2 : 0,
+      keyboard: { enabled: hasMultiple, onlyInViewport: true },
+      pagination: hasMultiple ? {
+        el: section.querySelector('.bundles-featured-pagination'),
+        clickable: true
+      } : false,
+      navigation: hasMultiple ? {
+        prevEl: section.querySelector('.bundles-featured-prev'),
+        nextEl: section.querySelector('.bundles-featured-next')
+      } : false,
+      breakpoints: {
+        0: { slidesPerView: 1 },
+        768: { slidesPerView: 1 },
+        1200: { slidesPerView: 1 }
+      }
+    });
+
+    function slideMatchesFilter(slide, filter) {
+      if (filter === 'all') return true;
+      const cat = (slide.dataset.category || '').toLowerCase();
+      const tags = (slide.dataset.tags || '').toLowerCase();
+      return cat.includes(filter) || tags.includes(filter);
+    }
+
+    function applyBundleFilter(filter) {
+      const slides = Array.from(el.querySelectorAll('.swiper-slide'));
+      let firstVisible = -1;
+
+      slides.forEach(function (slide, index) {
+        const match = slideMatchesFilter(slide, filter);
+        slide.classList.toggle('swiper-slide-hidden', !match);
+        if (match && firstVisible === -1) {
+          firstVisible = index;
+        }
+      });
+
+      if (firstVisible === -1) {
+        slides.forEach(function (slide) {
+          slide.classList.remove('swiper-slide-hidden');
+        });
+        firstVisible = 0;
+      }
+
+      const visibleCount = slides.filter(function (s) {
+        return !s.classList.contains('swiper-slide-hidden');
+      }).length;
+
+      featuredSwiper.params.loop = visibleCount > 1;
+      featuredSwiper.update();
+      featuredSwiper.slideTo(firstVisible, 400);
+    }
+
+    section.querySelectorAll('.bundles-filter-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        section.querySelectorAll('.bundles-filter-pill').forEach(function (p) {
+          p.classList.remove('is-active');
+        });
+        pill.classList.add('is-active');
+        applyBundleFilter((pill.dataset.filter || 'all').toLowerCase());
+      });
+    });
+  });
+</script>
 
 </body>
 </html>
