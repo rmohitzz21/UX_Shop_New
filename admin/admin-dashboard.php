@@ -605,6 +605,9 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
             </button>
           </div>
           <form onsubmit="adminSaveCategory(event)" enctype="multipart/form-data">
+            <input type="hidden" name="id" id="category-id" value="" />
+            <input type="hidden" name="slug" id="category-slug" value="" />
+            <input type="hidden" name="existing_icon" id="category-existing-icon" value="" />
             <div class="panel-body">
               <div class="form-grid">
                 <div class="form-group">
@@ -637,7 +640,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
               <div class="form-actions">
                 <div></div>
                 <div class="form-actions-right">
-                  <button class="btn btn-primary" type="submit">
+                  <button class="btn btn-primary" type="submit" id="category-submit-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Add Category
                   </button>
@@ -826,7 +829,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
         <div class="page-header">
           <div>
             <h1>Freebies</h1>
-            <p>Manage free design resources</p>
+            <p>Figma files, Canva templates &amp; free downloads for visitors</p>
           </div>
           <button class="btn btn-primary" type="button" onclick="openFreebiesForm()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -839,7 +842,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
           <div class="panel-head">
             <div>
               <h2 id="freebie-form-title">Add New Freebie</h2>
-              <p>Upload a free design resource for visitors to download</p>
+              <p>Add a Figma file, Canva template, or any downloadable resource link — visible to all visitors for free</p>
             </div>
             <button type="button" class="btn btn-ghost btn-xs" onclick="closeFreebiesForm()" aria-label="Close form">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -856,11 +859,12 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                 </div>
                 <div class="form-group">
                   <label class="form-label">Category</label>
-                  <input class="form-input" name="category" id="freebie-category" placeholder="e.g. UI Kit, Icons, Template" />
+                  <input class="form-input" name="category" id="freebie-category" placeholder="e.g. Figma UI Kit, Canva Template, Icons" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">File URL</label>
-                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" placeholder="https://drive.google.com/…" />
+                  <label class="form-label">Resource Link <span class="req">*</span></label>
+                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" placeholder="https://www.figma.com/… or https://www.canva.com/…" />
+                  <small style="color:var(--text-2);font-size:.75rem;margin-top:4px;display:block;">Paste a Figma, Canva, Google Drive, or any public downloadable link</small>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Sort Order</label>
@@ -902,7 +906,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
         <!-- Freebie List Panel -->
         <div class="panel">
           <div class="panel-head">
-            <div><h2>All Freebies</h2><p>Manage your free design resources</p></div>
+            <div><h2>All Freebies</h2><p>Figma files, Canva templates, and other free resources available to all visitors</p></div>
             <div class="panel-filters">
               <input class="form-input" style="max-width:200px;" type="search" placeholder="Search freebies…" oninput="filterAdminFreebies(this.value)" />
             </div>

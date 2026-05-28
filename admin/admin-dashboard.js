@@ -302,8 +302,8 @@ function renderProducts(products) {
         <td>
           <div class="tbl-actions">
             <button class="btn btn-xs btn-ghost" onclick="editProduct(${Number(p.id)})">Edit</button>
-            <button class="btn btn-xs btn-ghost" onclick="duplicateProduct(${Number(p.id)})">Duplicate</button>
             <button class="btn btn-xs ${p.is_active == 1 ? 'btn-danger-ghost' : 'btn-success-ghost'}" onclick="toggleProductStatus(${Number(p.id)}, ${p.is_active == 1 ? 0 : 1})">${p.is_active == 1 ? 'Archive' : 'Restore'}</button>
+            <button class="btn btn-xs btn-danger-ghost" onclick="deleteProduct(${Number(p.id)})">Delete</button>
           </div>
         </td>
       </tr>
@@ -414,13 +414,14 @@ async function duplicateProduct(productId) {
 }
 
 async function deleteProduct(productId) {
-  if (!confirm('Archive this product?')) return;
+  if (!confirm('Delete this product? If it has orders it will be archived instead.')) return;
   await fetchJson('../api/admin/product/delete.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: productId }),
   });
   await loadProducts();
+  showToast('Product deleted.', 'success');
 }
 
 async function loadAdminCategories() {
@@ -441,6 +442,7 @@ async function loadAdminCategories() {
         <td>${row.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
           <div class="tbl-actions">
+            <button class="btn btn-xs btn-ghost" onclick='adminEditCategory(${Number(row.id)})'>Edit</button>
             <button class="btn btn-xs ${row.is_active == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick='adminToggleCategory(${Number(row.id)}, ${row.is_active == 1 ? 0 : 1})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
             <button class="btn btn-xs btn-danger-ghost" onclick='adminDeleteCategory(${Number(row.id)})'>Delete</button>
           </div>
@@ -645,8 +647,13 @@ function openCategoryForm() {
   if (!panel) return;
   const form = panel.querySelector('form');
   if (form) form.reset();
+  document.getElementById('category-id').value = '';
+  document.getElementById('category-slug').value = '';
+  document.getElementById('category-existing-icon').value = '';
   const formTitle = document.getElementById('category-form-title');
   if (formTitle) formTitle.textContent = 'Add New Category';
+  const submitBtn = document.getElementById('category-submit-btn');
+  if (submitBtn) submitBtn.textContent = 'Add Category';
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -656,7 +663,38 @@ function closeCategoryForm() {
   if (!panel) return;
   const form = panel.querySelector('form');
   if (form) form.reset();
+  document.getElementById('category-id').value = '';
+  document.getElementById('category-slug').value = '';
+  document.getElementById('category-existing-icon').value = '';
   panel.style.display = 'none';
+}
+
+function adminEditCategory(id) {
+  const row = state.categories.find(c => Number(c.id) === Number(id));
+  if (!row) return;
+  const panel = document.getElementById('category-form-panel');
+  if (!panel) return;
+  const form = panel.querySelector('form');
+  if (form) form.reset();
+
+  document.getElementById('category-id').value = row.id;
+  document.getElementById('category-slug').value = row.slug || '';
+  document.getElementById('category-existing-icon').value = row.icon || row.image || '';
+
+  const nameInput = form.querySelector('[name="name"]');
+  if (nameInput) nameInput.value = row.name || '';
+  const descInput = form.querySelector('[name="description"]');
+  if (descInput) descInput.value = row.description || '';
+  const accentInput = form.querySelector('[name="accent"]');
+  if (accentInput) accentInput.value = row.accent || 'purple';
+  const sortInput = form.querySelector('[name="sort_order"]');
+  if (sortInput) sortInput.value = row.sort_order ?? 0;
+
+  document.getElementById('category-form-title').textContent = 'Edit Category';
+  document.getElementById('category-submit-btn').textContent = 'Save Changes';
+
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function adminToggleBundle(id, field) {
@@ -1175,6 +1213,7 @@ const exported = {
   adminDeleteCategory,
   openCategoryForm,
   closeCategoryForm,
+  adminEditCategory,
   adminSaveBundle,
   adminEditBundle,
   adminCancelBundleEdit,
