@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../_admin.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendResponse('error', 'Method not allowed.', null, 405);
+}
 validateCsrf();
 $input = adminInput();
 $id = (int) ($input['id'] ?? 0);

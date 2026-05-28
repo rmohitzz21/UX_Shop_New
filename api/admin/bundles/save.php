@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../_admin.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendResponse('error', 'Method not allowed.', null, 405);
+}
 validateCsrf();
 $input = adminInput();
 $id = (int) ($input['id'] ?? 0);
@@ -26,12 +29,41 @@ $uploaded = adminUploadImages('image');
 if ($uploaded) $image = $uploaded[0];
 if ($image === '') $image = 'img/poster.webp';
 
+// Prefer whats_included textarea (one item per line) as the source of truth.
+// Falls back to included_items JSON for legacy toggle calls.
+$whatsIncluded = trim((string) ($input['whats_included'] ?? ''));
+$fileSpec = trim((string) ($input['file_specification'] ?? ''));
+
+// Additional images: accept newline-separated (admin form) OR JSON array (toggle payload)
+$additionalImagesRaw = trim((string) ($input['additional_images'] ?? ''));
+$additionalImagesArr = [];
+if ($additionalImagesRaw !== '') {
+    $decoded = json_decode($additionalImagesRaw, true);
+    if (is_array($decoded)) {
+        foreach ($decoded as $img) {
+            $img = trim((string) $img);
+            if ($img !== '') $additionalImagesArr[] = $img;
+        }
+    } else {
+        foreach (preg_split('/\r?\n/', $additionalImagesRaw) as $line) {
+            $line = trim($line);
+            if ($line !== '') $additionalImagesArr[] = $line;
+        }
+    }
+}
+$additionalImagesJson = $additionalImagesArr ? json_encode($additionalImagesArr, JSON_UNESCAPED_SLASHES) : null;
+
 $includedItems = [];
-if (isset($input['included_items'])) {
+if ($whatsIncluded !== '') {
+    foreach (preg_split('/\r?\n/', $whatsIncluded) as $line) {
+        $line = trim(preg_replace('/^[-•*]\s*/', '', $line));
+        if ($line !== '') $includedItems[] = ['label' => $line];
+    }
+} elseif (isset($input['included_items'])) {
     $decoded = json_decode((string) $input['included_items'], true);
     if (is_array($decoded)) {
-        foreach ($decoded as $item) {
-            $label = is_array($item) ? trim((string) ($item['label'] ?? $item['name'] ?? '')) : trim((string) $item);
+        foreach ($decoded as $it) {
+            $label = is_array($it) ? trim((string) ($it['label'] ?? $it['name'] ?? '')) : trim((string) $it);
             if ($label !== '') $includedItems[] = ['label' => $label];
         }
     } else {
@@ -60,13 +92,13 @@ if ($id > 0) {
     if (!$before) sendResponse('error', 'Bundle not found.', null, 404);
     if (!$uploaded && $image === '') $image = $before['image'] ?: 'img/poster.webp';
 
-    $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, price=?, old_price=?, image=?, badge_text=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
-    $stmt->bind_param('ssssssddssdiiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active, $id);
+    $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, whats_included=?, file_specification=?, additional_images=?, price=?, old_price=?, image=?, badge_text=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
+    $stmt->bind_param('sssssssssddssdiiii', $name, $slug, $description, $category, $tags, $includedJson, $whatsIncluded, $fileSpec, $additionalImagesJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active, $id);
     if (!$stmt->execute()) sendResponse('error', 'Could not update bundle: ' . $stmt->error, null, 500);
     adminRecordInventory($conn, 'bundle', $id, (int) $before['stock'], $stock, 'Admin bundle update');
 } else {
-    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, included_items, price, old_price, image, badge_text, rating, stock, is_featured, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->bind_param('ssssssddssdiii', $name, $slug, $description, $category, $tags, $includedJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active);
+    $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, included_items, whats_included, file_specification, additional_images, price, old_price, image, badge_text, rating, stock, is_featured, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('sssssssssddssdiii', $name, $slug, $description, $category, $tags, $includedJson, $whatsIncluded, $fileSpec, $additionalImagesJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active);
     if (!$stmt->execute()) sendResponse('error', 'Could not create bundle: ' . $stmt->error, null, 500);
     $id = (int) $conn->insert_id;
     adminRecordInventory($conn, 'bundle', $id, 0, $stock, 'Admin bundle create');

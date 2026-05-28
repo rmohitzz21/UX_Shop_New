@@ -231,8 +231,12 @@ function marketplaceEnsureSchema(mysqli $conn): void {
 
     if (tableExists($conn, 'orders')) {
         ensureAutoIncrementPrimaryKey($conn, 'orders');
-        addColumnIfMissing($conn, 'orders', 'status_updated_at', "`status_updated_at` TIMESTAMP NULL AFTER `status`");
-        addColumnIfMissing($conn, 'orders', 'customer_note', "`customer_note` TEXT NULL AFTER `shipping_address`");
+        addColumnIfMissing($conn, 'orders', 'status_updated_at',    "`status_updated_at` TIMESTAMP NULL AFTER `status`");
+        addColumnIfMissing($conn, 'orders', 'customer_note',        "`customer_note` TEXT NULL AFTER `shipping_address`");
+        addColumnIfMissing($conn, 'orders', 'payment_id',           "`payment_id` VARCHAR(120) NULL AFTER `payment_method`");
+        addColumnIfMissing($conn, 'orders', 'razorpay_order_id',    "`razorpay_order_id` VARCHAR(120) NULL AFTER `payment_id`");
+        addColumnIfMissing($conn, 'orders', 'payment_verified_at',  "`payment_verified_at` DATETIME NULL AFTER `razorpay_order_id`");
+        addColumnIfMissing($conn, 'orders', 'payment_currency',     "`payment_currency` VARCHAR(10) NULL DEFAULT 'INR' AFTER `payment_verified_at`");
     }
     if (tableExists($conn, 'order_items')) {
         ensureAutoIncrementPrimaryKey($conn, 'order_items');
@@ -567,8 +571,7 @@ function marketplaceProductCard(array $item, string $type = 'product'): string {
     $oldRaw = !empty($item['old_price']) ? (float) $item['old_price'] : '';
     return <<<HTML
 <article class="prod-card marketplace-card" data-type="{$type}" data-id="{$id}" data-product-id="{$id}" data-name="{$name}" data-image="{$image}" data-category="{$category}" data-price="{$priceRaw}" data-old-price="{$oldRaw}" data-rating="{$rating}">
-  <button type="button" class="wishlist-float" aria-label="Add to wishlist" onclick="toggleMarketplaceWishlist('{$type}', {$id})">♡</button>
-  <div class="prod-img">
+<div class="prod-img">
     <img src="{$image}" alt="{$name}" loading="lazy" onerror="this.src='img/poster.webp'" />
     <div class="prod-badge"><img src="img/ss/Vector.png" alt="" /></div>
   </div>

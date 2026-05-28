@@ -1,13 +1,14 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 
-$user = apiRequireUser();
+apiRequirePost();
+$user  = apiRequireUser();
 $input = apiInput();
 validateCsrf();
 
-$quantity = max(1, min(10, (int) ($input['quantity'] ?? 1)));
-$size = trim((string) ($input['size'] ?? ''));
-$sizeValue = $size !== '' ? $size : null;
+$quantity      = max(1, min(10, (int) ($input['quantity'] ?? 1)));
+$size          = trim((string) ($input['size'] ?? ''));
+$sizeValue     = $size !== '' ? $size : null;
 $availableType = trim((string) ($input['available_type'] ?? 'physical'));
 if (!in_array($availableType, ['physical', 'digital', 'both'], true)) {
     $availableType = 'physical';
@@ -25,7 +26,7 @@ $existing = $stmt->get_result()->fetch_assoc();
 
 if ($existing) {
     $newQty = min(10, (int) $existing['quantity'] + $quantity);
-    $stmt = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
+    $stmt   = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
     $stmt->bind_param('ii', $newQty, $existing['id']);
     $stmt->execute();
 } else {

@@ -731,14 +731,16 @@
 }
 
 .bs-btn--primary {
-  background: #7c5dfa;
-  border: 1px solid #7c5dfa;
+  background: #6d3dff;
+  border: 1px solid #6d3dff;
   color: #fff;
-  box-shadow: 0 8px 20px rgba(124, 92, 255, 0.35);
+  box-shadow: 0 8px 24px rgba(109, 61, 255, 0.35);
+  animation: uxpPrimaryCtaGlow 2.6s ease-in-out infinite;
 }
 
 .bs-btn--primary:hover {
-  background: #6b4ce6;
+  background: #5b2ee6;
+  border-color: #5b2ee6;
   transform: translateY(-1px);
 }
 

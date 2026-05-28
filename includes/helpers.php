@@ -324,3 +324,40 @@ function validateCsrfFromToken(string $token): void {
         sendResponse("error", "Invalid CSRF token", null, 403);
     }
 }
+
+/* ================= PASSWORD RESET EMAIL ================= */
+
+function sendPasswordResetEmail(string $email, string $name, string $resetLink): bool {
+    try {
+        require_once __DIR__ . '/../core/Mailer.php';
+        $mailer = new Mailer();
+        $html = getPasswordResetEmailTemplate($name, $resetLink);
+        return $mailer->send($email, "Reset Your UX Pacific Password", $html);
+    } catch (Exception $e) {
+        error_log('sendPasswordResetEmail: ' . $e->getMessage());
+        return false;
+    }
+}
+
+function getPasswordResetEmailTemplate(string $name, string $resetLink): string {
+    $safeName = htmlspecialchars(trim($name) ?: 'Customer', ENT_QUOTES, 'UTF-8');
+    $safeLink = htmlspecialchars($resetLink, ENT_QUOTES, 'UTF-8');
+
+    $content = <<<HTML
+<p>Hello {$safeName},</p>
+<p>We received a request to reset your password for your UX Pacific Shop account.</p>
+<div class="panel">
+  <p style="margin:0 0 12px;">Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p>
+  <p style="margin:0;"><a href="{$safeLink}" style="display:inline-block;padding:12px 28px;background:#6d3dff;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">Reset Password</a></p>
+</div>
+<p>If the button does not work, copy and paste this link into your browser:</p>
+<p style="word-break:break-all;">{$safeLink}</p>
+<p class="muted">If you did not request a password reset, you can safely ignore this email. Your password will not change.</p>
+HTML;
+
+    return buildEmailLayout(
+        'Reset Your Password',
+        'Reset your UX Pacific Shop password — link expires in 1 hour.',
+        $content
+    );
+}

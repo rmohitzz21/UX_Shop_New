@@ -26,9 +26,11 @@ if (empty($_SESSION['csrf_token'])) {
 
       <h1 class="auth-premium-title">Sign in</h1>
 
-      <form class="auth-premium-form" id="signin-form" method="POST" action="api/auth/login-process.php" novalidate>
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+      <form class="auth-premium-form" id="signin-form" onsubmit="handleSignIn(event)" novalidate>
         <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_GET['redirect'] ?? ''); ?>">
+
+        <div id="auth-error" class="auth-premium-alert auth-premium-alert--error" style="display:none;"></div>
+        <div id="auth-success" class="auth-premium-alert auth-premium-alert--success" style="display:none;"></div>
 
         <?php if (!empty($_SESSION['error'])): ?>
           <div class="auth-premium-alert auth-premium-alert--error">

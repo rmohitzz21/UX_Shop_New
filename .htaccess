@@ -1,0 +1,39 @@
+Options -Indexes
+
+# ── Block direct access to sensitive files ──────────────────────────────────
+<FilesMatch "\.(env|log|sql|sh|bak|ini|lock|htpasswd)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── Block access to hidden files/dirs (.env, .git, etc.) ─────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block hidden files and directories
+    RewriteRule "(^|/)\." - [F,L]
+
+    # Block direct access to logs directory
+    RewriteRule ^logs(/|$) - [F,L]
+
+    # Block direct access to migrations directory
+    RewriteRule ^migrations(/|$) - [F,L]
+
+    # Block access to includes directory (it has its own .htaccess too)
+    RewriteRule ^includes(/|$) - [F,L]
+
+    # Block access to diagnostic/debug scripts left in root
+    RewriteRule ^(check-users|create-test-user|test-login|test-session|seed-bundles)\.php$ - [F,L]
+</IfModule>
+
+# ── PHP settings ──────────────────────────────────────────────────────────────
+<IfModule mod_php.c>
+    php_flag display_errors off
+    php_flag display_startup_errors off
+    php_flag log_errors on
+</IfModule>

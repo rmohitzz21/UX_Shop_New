@@ -6,6 +6,7 @@ const state = {
   orders: [],
   categories: [],
   bundles: [],
+  freebies: [],
 };
 
 async function fetchJson(url, options = {}) {
@@ -46,19 +47,36 @@ function normalizeStatus(status) {
 }
 
 function showToast(message, type = 'info') {
-  let host = document.getElementById('admin-toast-host');
+  let host = document.getElementById('toast-host');
   if (!host) {
     host = document.createElement('div');
-    host.id = 'admin-toast-host';
-    host.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:99999;display:grid;gap:10px;max-width:min(380px,calc(100vw - 36px));';
+    host.id = 'toast-host';
     document.body.appendChild(host);
   }
+
+  const icons = {
+    success: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+    error:   '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    info:    '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  };
+
   const toast = document.createElement('div');
-  const colors = { success: '#16a34a', error: '#dc2626', info: '#2563eb' };
-  toast.style.cssText = `background:${colors[type] || colors.info};color:#fff;border-radius:8px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.18);font-weight:700;font-size:14px;`;
-  toast.textContent = message;
+  toast.className = `toast toast-${type === 'success' ? 'success' : type === 'error' ? 'error' : 'info'}`;
+  toast.innerHTML = `
+    ${icons[type] || icons.info}
+    <div class="toast-body">
+      <div class="toast-title">${escapeHtml(message)}</div>
+    </div>
+    <div class="toast-bar"></div>`;
+
   host.appendChild(toast);
-  window.setTimeout(() => toast.remove(), 3200);
+
+  const dismiss = () => {
+    toast.classList.add('toast-out');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+  };
+  window.setTimeout(dismiss, 3200);
+  toast.addEventListener('click', dismiss);
 }
 
 function getStatusBadge(status) {
@@ -102,7 +120,14 @@ async function getUsers() {
 }
 
 async function getOrders() {
-  state.orders = await fetchJson('../api/admin/order/list.php');
+  const payload = await fetchJson('../api/admin/order/list.php');
+  if (Array.isArray(payload)) {
+    state.orders = payload;
+  } else if (payload && Array.isArray(payload.orders)) {
+    state.orders = payload.orders;
+  } else {
+    state.orders = [];
+  }
   return state.orders;
 }
 
@@ -164,7 +189,7 @@ function renderRecentOrders(orders) {
   const table = document.getElementById('recent-orders-table');
   if (!table) return;
   if (!orders.length) {
-    table.innerHTML = '<tr><td colspan="4" class="empty-state">No orders yet</td></tr>';
+    table.innerHTML = '<tr><td colspan="4" class="tbl-empty">No orders yet</td></tr>';
     return;
   }
   table.innerHTML = orders.map(o => `
@@ -181,7 +206,7 @@ function renderTopProducts(rows) {
   const table = document.getElementById('top-products-table');
   if (!table) return;
   if (!rows.length) {
-    table.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+    table.innerHTML = '<tr><td colspan="3" class="tbl-empty">No data yet</td></tr>';
     return;
   }
   table.innerHTML = rows.slice(0, 6).map(row => `
@@ -214,7 +239,7 @@ async function loadAnalytics() {
     const analyticsTable = document.getElementById('analytics-top-products-table');
     if (analyticsTable) {
       if (!topRows.length) {
-        analyticsTable.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+        analyticsTable.innerHTML = '<tr><td colspan="3" class="tbl-empty">No data yet</td></tr>';
       } else {
         analyticsTable.innerHTML = topRows.map(row => `
           <tr>
@@ -234,13 +259,13 @@ async function loadAnalytics() {
 async function loadProducts() {
   const table = document.getElementById('products-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="8" class="empty-state">Loading products...</td></tr>';
+  table.innerHTML = '<tr><td colspan="8" class="tbl-empty">Loading products...</td></tr>';
   try {
     await Promise.all([getProducts(), getCategories()]);
     populateCategoryControls();
     renderProducts(state.products);
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="8" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="8" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -253,25 +278,32 @@ function renderProducts(products) {
     return (!q || haystack.includes(q)) && (!category || String(p.category || '').toLowerCase() === category);
   });
   if (!rows.length) {
-    table.innerHTML = '<tr><td colspan="8" class="empty-state">No products found</td></tr>';
+    table.innerHTML = '<tr><td colspan="8" class="tbl-empty">No products found</td></tr>';
     return;
   }
   table.innerHTML = rows.map(p => {
     const img = '../' + escapeHtml(p.image || 'img/sticker.webp');
     return `
       <tr>
-        <td><img src="${img}" alt="${escapeHtml(p.name)}" class="product-image" onerror="this.src='../img/sticker.webp'"></td>
-        <td><strong>${escapeHtml(p.name)}</strong><div style="font-size:.78rem;color:var(--admin-text);opacity:.7;">${escapeHtml(p.sku || '')}</div></td>
+        <td>
+          <div class="cell-with-img">
+            <img src="${img}" alt="${escapeHtml(p.name)}" class="cell-img" onerror="this.src='../img/sticker.webp'">
+            <div>
+              <div class="cell-name">${escapeHtml(p.name)}</div>
+              <div class="cell-sub">${escapeHtml(p.sku || '')}</div>
+            </div>
+          </div>
+        </td>
         <td><span class="badge badge-info">${escapeHtml(p.category || 'Uncategorized')}</span></td>
         <td>${money(p.price)}</td>
         <td>${Number(p.stock || 0).toLocaleString()}</td>
         <td>${escapeHtml(p.rating || '0.0')}</td>
         <td>${p.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
-          <div class="action-buttons">
-            <button class="btn-small btn-edit" onclick="editProduct(${Number(p.id)})">Edit</button>
-            <button class="btn-small btn-edit" onclick="duplicateProduct(${Number(p.id)})">Duplicate</button>
-            <button class="btn-small ${p.is_active == 1 ? 'btn-delete' : 'btn-success'}" onclick="toggleProductStatus(${Number(p.id)}, ${p.is_active == 1 ? 0 : 1})">${p.is_active == 1 ? 'Archive' : 'Restore'}</button>
+          <div class="tbl-actions">
+            <button class="btn btn-xs btn-ghost" onclick="editProduct(${Number(p.id)})">Edit</button>
+            <button class="btn btn-xs btn-ghost" onclick="duplicateProduct(${Number(p.id)})">Duplicate</button>
+            <button class="btn btn-xs ${p.is_active == 1 ? 'btn-danger-ghost' : 'btn-success-ghost'}" onclick="toggleProductStatus(${Number(p.id)}, ${p.is_active == 1 ? 0 : 1})">${p.is_active == 1 ? 'Archive' : 'Restore'}</button>
           </div>
         </td>
       </tr>
@@ -394,24 +426,29 @@ async function deleteProduct(productId) {
 async function loadAdminCategories() {
   const table = document.getElementById('categories-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="5" class="empty-state">Loading categories...</td></tr>';
+  table.innerHTML = '<tr><td colspan="5" class="tbl-empty">Loading categories...</td></tr>';
   try {
     await getCategories();
     populateCategoryControls();
     table.innerHTML = state.categories.length ? state.categories.map(row => `
       <tr>
-        <td><strong>${escapeHtml(row.name)}</strong><div style="font-size:.78rem;opacity:.7;">${Number(row.product_count || 0)} products</div></td>
-        <td>${escapeHtml(row.slug)}</td>
-        <td>${escapeHtml(row.description || '')}</td>
+        <td>
+          <div class="cell-name">${escapeHtml(row.name)}</div>
+          <div class="cell-sub">${Number(row.product_count || 0)} products</div>
+        </td>
+        <td><code style="font-size:.75rem;background:var(--surface-3);padding:2px 6px;border-radius:4px;">${escapeHtml(row.slug)}</code></td>
+        <td style="max-width:220px;white-space:normal;font-size:.8rem;color:var(--text-2);">${escapeHtml(row.description || '—')}</td>
         <td>${row.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
-          <button class="btn-small btn-edit" onclick='adminToggleCategory(${Number(row.id)}, ${row.is_active == 1 ? 0 : 1})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
-          <button class="btn-small btn-delete" onclick='adminDeleteCategory(${Number(row.id)})'>Delete</button>
+          <div class="tbl-actions">
+            <button class="btn btn-xs ${row.is_active == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick='adminToggleCategory(${Number(row.id)}, ${row.is_active == 1 ? 0 : 1})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
+            <button class="btn btn-xs btn-danger-ghost" onclick='adminDeleteCategory(${Number(row.id)})'>Delete</button>
+          </div>
         </td>
       </tr>
-    `).join('') : '<tr><td colspan="5" class="empty-state">No categories found</td></tr>';
+    `).join('') : '<tr><td colspan="5" class="tbl-empty">No categories found</td></tr>';
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="5" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -421,6 +458,7 @@ async function adminSaveCategory(event) {
   try {
     await fetchJson('../api/admin/categories/save.php', { method: 'POST', body: new FormData(form) });
     form.reset();
+    closeCategoryForm();
     await Promise.all([loadAdminCategories(), loadProducts(), loadOverview()]);
     showToast('Category saved.', 'success');
   } catch (err) {
@@ -457,29 +495,35 @@ async function adminDeleteCategory(id) {
 async function loadAdminBundles() {
   const table = document.getElementById('bundles-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="5" class="empty-state">Loading bundles...</td></tr>';
+  table.innerHTML = '<tr><td colspan="5" class="tbl-empty">Loading bundles...</td></tr>';
   try {
     await getBundles();
     table.innerHTML = state.bundles.length ? state.bundles.map(row => `
       <tr>
         <td>
-          <img class="product-image" src="../${escapeHtml(row.image || 'img/poster.webp')}" onerror="this.src='../img/poster.webp'">
-          <strong>${escapeHtml(row.name)}</strong>
-          <div style="font-size:.78rem;opacity:.7;">${Number(row.product_count || 0)} products</div>
+          <div class="cell-with-img">
+            <img class="cell-img" src="../${escapeHtml(row.image || 'img/poster.webp')}" onerror="this.src='../img/poster.webp'">
+            <div>
+              <div class="cell-name">${escapeHtml(row.name)}</div>
+              <div class="cell-sub">${Number(row.product_count || 0)} products</div>
+            </div>
+          </div>
         </td>
-        <td>${money(row.price)}</td>
-        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Best Seller</span>' : '—'}</td>
+        <td>${money(row.price)}${row.old_price > 0 ? `<div class="cell-sub" style="text-decoration:line-through;">${money(row.old_price)}</div>` : ''}</td>
+        <td>${row.is_featured == 1 ? '<span class="badge badge-info">Best Seller</span>' : '<span class="badge badge-neutral">Standard</span>'}</td>
         <td>${row.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
-          <button class="btn-small btn-edit" onclick='adminEditBundle(${Number(row.id)})'>Edit</button>
-          <button class="btn-small btn-edit" onclick='adminToggleBundle(${Number(row.id)}, "is_featured")'>${row.is_featured == 1 ? 'Remove Best Seller' : 'Set Best Seller'}</button>
-          <button class="btn-small btn-edit" onclick='adminToggleBundle(${Number(row.id)}, "is_active")'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
-          <button class="btn-small btn-delete" onclick='adminDeleteBundle(${Number(row.id)})'>Delete</button>
+          <div class="tbl-actions">
+            <button class="btn btn-xs btn-ghost" onclick='adminEditBundle(${Number(row.id)})'>Edit</button>
+            <button class="btn btn-xs ${row.is_featured == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick='adminToggleBundle(${Number(row.id)}, "is_featured")'>${row.is_featured == 1 ? 'Unfeature' : 'Feature'}</button>
+            <button class="btn btn-xs ${row.is_active == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick='adminToggleBundle(${Number(row.id)}, "is_active")'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
+            <button class="btn btn-xs btn-danger-ghost" onclick='adminDeleteBundle(${Number(row.id)})'>Delete</button>
+          </div>
         </td>
       </tr>
-    `).join('') : '<tr><td colspan="5" class="empty-state">No bundles found</td></tr>';
+    `).join('') : '<tr><td colspan="5" class="tbl-empty">No bundles found</td></tr>';
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="5" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -487,22 +531,15 @@ async function adminSaveBundle(event) {
   event.preventDefault();
   const form = event.target;
   const fd = new FormData(form);
-  // Checkboxes do not submit when unchecked, so we normalize values here.
   const isFeaturedEl = form.querySelector('input[name="is_featured"]');
   const isActiveEl = form.querySelector('input[name="is_active"]');
   fd.set('is_featured', isFeaturedEl && isFeaturedEl.checked ? '1' : '0');
   fd.set('is_active', isActiveEl && isActiveEl.checked ? '1' : '0');
-
-  const included = String(fd.get('included_items') || '')
-    .split(',')
-    .map(label => label.trim())
-    .filter(Boolean)
-    .map(label => ({ label }));
-  fd.set('included_items', JSON.stringify(included));
+  // whats_included is a textarea — server derives included_items JSON from it
   try {
     await fetchJson('../api/admin/bundles/save.php', { method: 'POST', body: fd });
     form.reset();
-    adminCancelBundleEdit();
+    closeBundleForm();
     await Promise.all([loadAdminBundles(), loadOverview()]);
     showToast('Bundle saved.', 'success');
   } catch (err) {
@@ -523,25 +560,36 @@ function adminEditBundle(id) {
   form.elements['price'].value = row.price ?? '';
   form.elements['old_price'].value = row.old_price ?? '';
   form.elements['category'].value = row.category || '';
+  form.elements['badge_text'].value = row.badge_text || '';
   form.elements['tags'].value = row.tags || '';
   form.elements['stock'].value = row.stock ?? '';
   form.elements['rating'].value = row.rating ?? '';
   form.elements['description'].value = row.description || '';
-
-  const includedList = row.included_items_list || [];
-  const normalizedIncluded = Array.isArray(includedList)
-    ? includedList
-        .map(it => {
-          if (typeof it === 'string') return it;
-          if (it && typeof it === 'object') return String(it.label ?? it.name ?? '').trim();
-          return '';
-        })
-        .filter(Boolean)
-    : [];
-  form.elements['included_items'].value = normalizedIncluded.join(', ');
-
-  // Leave product_ids empty unless the admin explicitly wants to update bundle contents.
   form.elements['product_ids'].value = '';
+
+  // whats_included: stored as plain text (newline-separated)
+  // Fall back to deriving from included_items_list if whats_included is empty
+  let whatsIncluded = row.whats_included || '';
+  if (!whatsIncluded.trim() && Array.isArray(row.included_items_list) && row.included_items_list.length) {
+    whatsIncluded = row.included_items_list
+      .map(it => (typeof it === 'string' ? it : String(it.label ?? it.name ?? '')).trim())
+      .filter(Boolean)
+      .join('\n');
+  }
+  form.elements['whats_included'].value = whatsIncluded;
+  form.elements['file_specification'].value = row.file_specification || '';
+
+  // additional_images: stored as JSON array → show as newline-separated paths
+  let additionalImages = '';
+  if (row.additional_images) {
+    try {
+      const imgs = JSON.parse(row.additional_images);
+      if (Array.isArray(imgs)) additionalImages = imgs.join('\n');
+    } catch (_) {
+      additionalImages = row.additional_images;
+    }
+  }
+  form.elements['additional_images'].value = additionalImages;
 
   const isFeaturedEl = form.querySelector('input[name="is_featured"]');
   const isActiveEl = form.querySelector('input[name="is_active"]');
@@ -550,8 +598,15 @@ function adminEditBundle(id) {
 
   const submitBtn = document.getElementById('bundle-submit-btn');
   const cancelBtn = document.getElementById('bundle-cancel-btn');
-  if (submitBtn) submitBtn.textContent = 'Update Bundle';
+  const formTitle = document.getElementById('bundle-form-title');
+  if (submitBtn) submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Update Bundle';
   if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+  if (formTitle) formTitle.textContent = 'Edit Bundle';
+
+  // Show panel and scroll into view
+  const panel = document.getElementById('bundle-form-panel');
+  if (panel) panel.style.display = 'block';
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function adminCancelBundleEdit() {
@@ -564,8 +619,44 @@ function adminCancelBundleEdit() {
 
   const submitBtn = document.getElementById('bundle-submit-btn');
   const cancelBtn = document.getElementById('bundle-cancel-btn');
-  if (submitBtn) submitBtn.textContent = 'Add Bundle';
+  const formTitle = document.getElementById('bundle-form-title');
+  if (submitBtn) submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Bundle';
   if (cancelBtn) cancelBtn.style.display = 'none';
+  if (formTitle) formTitle.textContent = 'Add New Bundle';
+}
+
+function openBundleForm() {
+  const panel = document.getElementById('bundle-form-panel');
+  if (!panel) return;
+  adminCancelBundleEdit();
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeBundleForm() {
+  const panel = document.getElementById('bundle-form-panel');
+  if (!panel) return;
+  adminCancelBundleEdit();
+  panel.style.display = 'none';
+}
+
+function openCategoryForm() {
+  const panel = document.getElementById('category-form-panel');
+  if (!panel) return;
+  const form = panel.querySelector('form');
+  if (form) form.reset();
+  const formTitle = document.getElementById('category-form-title');
+  if (formTitle) formTitle.textContent = 'Add New Category';
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeCategoryForm() {
+  const panel = document.getElementById('category-form-panel');
+  if (!panel) return;
+  const form = panel.querySelector('form');
+  if (form) form.reset();
+  panel.style.display = 'none';
 }
 
 async function adminToggleBundle(id, field) {
@@ -600,30 +691,30 @@ async function adminDeleteBundle(id) {
 async function loadReviews() {
   const table = document.getElementById('reviews-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="6" class="empty-state">Loading reviews...</td></tr>';
+  table.innerHTML = '<tr><td colspan="6" class="tbl-empty">Loading reviews...</td></tr>';
   try {
     const rows = await fetchJson('../api/admin/reviews/list.php');
     if (!rows.length) {
-      table.innerHTML = '<tr><td colspan="6" class="empty-state">No reviews found</td></tr>';
+      table.innerHTML = '<tr><td colspan="6" class="tbl-empty">No reviews found</td></tr>';
       return;
     }
     table.innerHTML = rows.map(r => `
       <tr>
-        <td>${escapeHtml(r.product_name || 'N/A')}</td>
-        <td>${escapeHtml(r.user_name || r.reviewer_name || 'Guest')}</td>
-        <td>${'★'.repeat(Math.min(5, Math.max(0, Number(r.rating || 0))))}${'☆'.repeat(Math.max(0, 5 - Math.min(5, Number(r.rating || 0))))}</td>
-        <td style="max-width:260px;white-space:normal;">${escapeHtml(r.comment || r.body || '')}</td>
+        <td><div class="cell-name">${escapeHtml(r.product_name || 'N/A')}</div></td>
+        <td><div class="cell-name">${escapeHtml(r.user_name || r.reviewer_name || 'Guest')}</div></td>
+        <td><span style="color:#f59e0b;letter-spacing:1px;">${'★'.repeat(Math.min(5, Math.max(0, Number(r.rating || 0))))}${'☆'.repeat(Math.max(0, 5 - Math.min(5, Number(r.rating || 0))))}</span></td>
+        <td style="max-width:260px;white-space:normal;font-size:.81rem;color:var(--text-2);">${escapeHtml(r.comment || r.body || '—')}</td>
         <td>${r.is_approved == 1 ? getStatusBadge('active') : getStatusBadge('pending')}</td>
         <td>
-          <div class="action-buttons">
-            <button class="btn-small ${r.is_approved == 1 ? 'btn-delete' : 'btn-success'}" onclick="toggleReviewApproval(${Number(r.id)}, ${r.is_approved == 1 ? 0 : 1})">${r.is_approved == 1 ? 'Unapprove' : 'Approve'}</button>
-            <button class="btn-small btn-delete" onclick="deleteReview(${Number(r.id)})">Delete</button>
+          <div class="tbl-actions">
+            <button class="btn btn-xs ${r.is_approved == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick="toggleReviewApproval(${Number(r.id)}, ${r.is_approved == 1 ? 0 : 1})">${r.is_approved == 1 ? 'Unapprove' : 'Approve'}</button>
+            <button class="btn btn-xs btn-danger-ghost" onclick="deleteReview(${Number(r.id)})">Delete</button>
           </div>
         </td>
       </tr>
     `).join('');
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="6" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="6" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -653,30 +744,35 @@ async function deleteReview(id) {
 async function loadMessages() {
   const table = document.getElementById('messages-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="6" class="empty-state">Loading messages...</td></tr>';
+  table.innerHTML = '<tr><td colspan="6" class="tbl-empty">Loading messages...</td></tr>';
   try {
     const rows = await fetchJson('../api/admin/messages/list.php');
     if (!rows.length) {
-      table.innerHTML = '<tr><td colspan="6" class="empty-state">No messages found</td></tr>';
+      table.innerHTML = '<tr><td colspan="6" class="tbl-empty">No messages found</td></tr>';
       return;
     }
     table.innerHTML = rows.map(m => `
       <tr>
-        <td>${escapeHtml(m.name || 'N/A')}</td>
-        <td>${escapeHtml(m.email || 'N/A')}</td>
-        <td>${escapeHtml(m.subject || 'General')}</td>
-        <td style="max-width:260px;white-space:normal;">${escapeHtml(String(m.message || '').substring(0, 120))}${String(m.message || '').length > 120 ? '…' : ''}</td>
-        <td>${new Date(m.created_at || Date.now()).toLocaleDateString()}</td>
         <td>
-          <div class="action-buttons">
-            ${m.is_read == 1 ? '' : `<button class="btn-small btn-success" onclick="markMessageRead(${Number(m.id)})">Mark Read</button>`}
-            <button class="btn-small btn-delete" onclick="deleteMessage(${Number(m.id)})">Delete</button>
+          <div class="cell-name">
+            ${m.is_read != 1 ? '<span class="cell-read-dot" title="Unread"></span>' : ''}
+            ${escapeHtml(m.name || 'N/A')}
+          </div>
+        </td>
+        <td style="font-size:.8rem;color:var(--text-2);">${escapeHtml(m.email || 'N/A')}</td>
+        <td><div class="cell-name" style="font-weight:500;">${escapeHtml(m.subject || 'General')}</div></td>
+        <td style="max-width:280px;white-space:normal;font-size:.8rem;color:var(--text-2);">${escapeHtml(String(m.message || '').substring(0, 130))}${String(m.message || '').length > 130 ? '…' : ''}</td>
+        <td style="white-space:nowrap;font-size:.79rem;color:var(--text-3);">${new Date(m.created_at || Date.now()).toLocaleDateString()}</td>
+        <td>
+          <div class="tbl-actions">
+            ${m.is_read != 1 ? `<button class="btn btn-xs btn-success-ghost" onclick="markMessageRead(${Number(m.id)})">Mark Read</button>` : ''}
+            <button class="btn btn-xs btn-danger-ghost" onclick="deleteMessage(${Number(m.id)})">Delete</button>
           </div>
         </td>
       </tr>
     `).join('');
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="6" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="6" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -705,12 +801,12 @@ async function deleteMessage(id) {
 async function loadOrders() {
   const table = document.getElementById('orders-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="8" class="empty-state">Loading orders...</td></tr>';
+  table.innerHTML = '<tr><td colspan="8" class="tbl-empty">Loading orders...</td></tr>';
   try {
     await getOrders();
     renderOrders();
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="8" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="8" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -723,23 +819,26 @@ function renderOrders() {
     return (!q || text.includes(q)) && (!filter || normalizeStatus(order.status) === filter);
   });
   if (!rows.length) {
-    table.innerHTML = '<tr><td colspan="8" class="empty-state">No orders found</td></tr>';
+    table.innerHTML = '<tr><td colspan="8" class="tbl-empty">No orders found</td></tr>';
     return;
   }
   table.innerHTML = rows.map(order => `
     <tr>
-      <td>${escapeHtml(order.order_number || 'N/A')}</td>
-      <td>${escapeHtml(getOrderCustomerName(order))}</td>
-      <td>${Number(order.items_count || 0)} item(s)</td>
-      <td>${new Date(order.created_at || Date.now()).toLocaleDateString()}</td>
-      <td>${money(order.total)}</td>
-      <td><span class="badge badge-info">${escapeHtml(order.payment_method || 'card')}</span></td>
+      <td><div class="cell-name">${escapeHtml(order.order_number || 'N/A')}</div></td>
+      <td>
+        <div class="cell-name">${escapeHtml(getOrderCustomerName(order))}</div>
+        <div class="cell-sub">${escapeHtml(getOrderEmail(order))}</div>
+      </td>
+      <td style="font-size:.8rem;">${Number(order.items_count || 0)} item(s)</td>
+      <td style="font-size:.79rem;color:var(--text-2);white-space:nowrap;">${new Date(order.created_at || Date.now()).toLocaleDateString()}</td>
+      <td style="font-weight:600;">${money(order.total)}</td>
+      <td><span class="badge badge-neutral">${escapeHtml(order.payment_method || 'card')}</span></td>
       <td>${getStatusBadge(order.status)}</td>
       <td>
-        <div class="action-buttons">
-          <button class="btn-small btn-edit" onclick="viewOrder(${Number(order.id)})">View</button>
-          <button class="btn-small btn-edit" onclick="openStatusEditor(${Number(order.id)})">Update</button>
-          <button class="btn-small btn-delete" onclick="deleteOrder(${Number(order.id)})">Delete</button>
+        <div class="tbl-actions">
+          <button class="btn btn-xs btn-ghost" onclick="viewOrder(${Number(order.id)})">View</button>
+          <button class="btn btn-xs btn-ghost" onclick="openStatusEditor(${Number(order.id)})">Status</button>
+          <button class="btn btn-xs btn-danger-ghost" onclick="deleteOrder(${Number(order.id)})">Delete</button>
         </div>
       </td>
     </tr>
@@ -775,30 +874,41 @@ async function confirmStatusUpdate() {
 
 async function viewOrder(orderId) {
   const content = document.getElementById('order-details-content');
-  content.innerHTML = '<div class="empty-state">Loading order...</div>';
+  content.innerHTML = '<div class="tbl-empty">Loading order...</div>';
   openOrderDetailsModal();
   try {
     const data = await fetchJson(`../api/admin/order/get_details.php?id=${encodeURIComponent(orderId)}`);
     const items = data.items || [];
     content.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-bottom:1.5rem;">
-        <div><h3>Customer</h3><p>${escapeHtml(getOrderCustomerName(data))}</p><p>${escapeHtml(getOrderEmail(data))}</p></div>
-        <div><h3>Order</h3><p>${escapeHtml(data.order_number || data.id)}</p><p>${getStatusBadge(data.status)}</p><p>${money(data.total)}</p></div>
+      <div class="order-info-grid">
+        <div class="order-info-block">
+          <h3>Customer</h3>
+          <p>${escapeHtml(getOrderCustomerName(data))}</p>
+          <p>${escapeHtml(getOrderEmail(data))}</p>
+        </div>
+        <div class="order-info-block">
+          <h3>Order</h3>
+          <p>${escapeHtml(data.order_number || String(data.id))}</p>
+          <p>${getStatusBadge(data.status)}</p>
+          <p style="font-weight:700;font-size:1rem;margin-top:4px;">${money(data.total)}</p>
+        </div>
       </div>
-      <table style="width:100%;">
-        <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-        <tbody>${items.map(item => `
-          <tr>
-            <td>${escapeHtml(item.name || item.product_name || 'Item')}</td>
-            <td>${Number(item.quantity || 0)}</td>
-            <td>${money(item.price)}</td>
-            <td>${money(Number(item.price || 0) * Number(item.quantity || 0))}</td>
-          </tr>
-        `).join('')}</tbody>
-      </table>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+          <tbody>${items.map(item => `
+            <tr>
+              <td><div class="cell-name">${escapeHtml(item.name || item.product_name || 'Item')}</div></td>
+              <td>${Number(item.quantity || 0)}</td>
+              <td>${money(item.price)}</td>
+              <td style="font-weight:600;">${money(Number(item.price || 0) * Number(item.quantity || 0))}</td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      </div>
     `;
   } catch (err) {
-    content.innerHTML = `<div class="empty-state">${escapeHtml(err.message)}</div>`;
+    content.innerHTML = `<div class="tbl-empty">${escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -815,12 +925,12 @@ async function deleteOrder(orderId) {
 async function loadUsers() {
   const table = document.getElementById('users-table');
   if (!table) return;
-  table.innerHTML = '<tr><td colspan="7" class="empty-state">Loading users...</td></tr>';
+  table.innerHTML = '<tr><td colspan="7" class="tbl-empty">Loading users...</td></tr>';
   try {
     await getUsers();
     renderUsers();
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="7" class="empty-state">${escapeHtml(err.message)}</td></tr>`;
+    table.innerHTML = `<tr><td colspan="7" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -829,21 +939,30 @@ function renderUsers() {
   const q = document.getElementById('user-search')?.value.toLowerCase().trim() || '';
   const rows = state.users.filter(u => `${u.name || ''} ${u.first_name || ''} ${u.last_name || ''} ${u.email || ''} ${u.phone || ''}`.toLowerCase().includes(q));
   if (!rows.length) {
-    table.innerHTML = '<tr><td colspan="7" class="empty-state">No users found</td></tr>';
+    table.innerHTML = '<tr><td colspan="7" class="tbl-empty">No users found</td></tr>';
     return;
   }
   table.innerHTML = rows.map(user => {
     const name = user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || 'N/A';
+    const initial = name.charAt(0).toUpperCase();
     const blocked = user.is_blocked == 1;
     return `
       <tr>
-        <td>${escapeHtml(name)}</td>
-        <td>${escapeHtml(user.email || 'N/A')}</td>
-        <td>${escapeHtml(user.phone || 'N/A')}</td>
-        <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
-        <td>${Number(user.order_count || 0)}</td>
+        <td>
+          <div class="cell-with-img">
+            <div class="cell-avatar">${initial}</div>
+            <div>
+              <div class="cell-name">${escapeHtml(name)}</div>
+              <div class="cell-sub">${escapeHtml(user.role || 'customer')}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:.8rem;color:var(--text-2);">${escapeHtml(user.email || 'N/A')}</td>
+        <td style="font-size:.8rem;color:var(--text-2);">${escapeHtml(user.phone || '—')}</td>
+        <td style="font-size:.79rem;color:var(--text-3);white-space:nowrap;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
+        <td style="font-weight:600;">${Number(user.order_count || 0)}</td>
         <td>${blocked ? getStatusBadge('blocked') : getStatusBadge('active')}</td>
-        <td><button class="btn-small ${blocked ? 'btn-success' : 'btn-delete'}" onclick="toggleUserBlock(${Number(user.id)}, ${blocked ? 0 : 1})">${blocked ? 'Unblock' : 'Block'}</button></td>
+        <td><button class="btn btn-xs ${blocked ? 'btn-success-ghost' : 'btn-danger-ghost'}" onclick="toggleUserBlock(${Number(user.id)}, ${blocked ? 0 : 1})">${blocked ? 'Unblock' : 'Block'}</button></td>
       </tr>
     `;
   }).join('');
@@ -896,6 +1015,132 @@ function handleAdminLogout() {
   fetch('../api/auth/logout.php').finally(() => { window.location.href = 'admin-login.php'; });
 }
 
+/* ─────────────────────────────────────────────
+   FREEBIES ADMIN
+───────────────────────────────────────────── */
+
+function openFreebiesForm() {
+  document.getElementById('freebie-form-panel').style.display = '';
+  document.getElementById('freebie-form-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeFreebiesForm() {
+  document.getElementById('freebie-form-panel').style.display = 'none';
+  document.getElementById('freebie-form').reset();
+  document.getElementById('freebie-id').value = '0';
+  document.getElementById('freebie-existing-image').value = '';
+  document.getElementById('freebie-form-title').textContent = 'Add New Freebie';
+  document.getElementById('freebie-submit-btn').textContent = 'Add Freebie';
+}
+
+async function loadAdminFreebies(q) {
+  const table = document.getElementById('freebies-table');
+  if (!table) return;
+  table.innerHTML = '<tr><td colspan="5" class="tbl-empty">Loading freebies...</td></tr>';
+  try {
+    const url = '../api/admin/freebies/list.php' + (q ? '?q=' + encodeURIComponent(q) : '');
+    state.freebies = await fetchJson(url);
+    table.innerHTML = state.freebies.length
+      ? state.freebies.map(row => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${row.image ? `<img src="../${escapeHtml(row.image)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="" />` : ''}
+              <div>
+                <div class="cell-name">${escapeHtml(row.name)}</div>
+                <div class="cell-sub" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(row.description || '—')}</div>
+              </div>
+            </div>
+          </td>
+          <td><span style="font-size:.8rem;padding:2px 8px;background:rgba(111,75,255,.12);border-radius:999px;color:var(--accent-soft);">${escapeHtml(row.category || 'General')}</span></td>
+          <td>${Number(row.download_count || 0).toLocaleString()}</td>
+          <td>${row.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
+          <td>
+            <div class="tbl-actions">
+              <button class="btn btn-xs btn-ghost" onclick='adminEditFreebie(${Number(row.id)})'>Edit</button>
+              <button class="btn btn-xs ${row.is_active == 1 ? 'btn-ghost' : 'btn-success-ghost'}" onclick='adminToggleFreebie(${Number(row.id)}, ${row.is_active == 1 ? 0 : 1})'>${row.is_active == 1 ? 'Hide' : 'Show'}</button>
+              <button class="btn btn-xs btn-danger-ghost" onclick='adminDeleteFreebie(${Number(row.id)})'>Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="5" class="tbl-empty">No freebies found</td></tr>';
+  } catch (err) {
+    table.innerHTML = `<tr><td colspan="5" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function filterAdminFreebies(q) {
+  loadAdminFreebies(q.trim());
+}
+
+function adminEditFreebie(id) {
+  const row = state.freebies.find(f => Number(f.id) === Number(id));
+  if (!row) return;
+  openFreebiesForm();
+  document.getElementById('freebie-id').value = row.id;
+  document.getElementById('freebie-name').value = row.name || '';
+  document.getElementById('freebie-category').value = row.category || '';
+  document.getElementById('freebie-file-url').value = row.file_url || '';
+  document.getElementById('freebie-sort-order').value = row.sort_order || 0;
+  document.getElementById('freebie-description').value = row.description || '';
+  document.getElementById('freebie-is-active').checked = row.is_active == 1;
+  document.getElementById('freebie-is-featured').checked = row.is_featured == 1;
+  document.getElementById('freebie-existing-image').value = row.image || '';
+  document.getElementById('freebie-form-title').textContent = 'Edit Freebie';
+  document.getElementById('freebie-submit-btn').innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    Save Changes`;
+}
+
+async function adminSaveFreebies(event) {
+  event.preventDefault();
+  const form = event.target;
+  const fd = new FormData(form);
+  if (document.getElementById('freebie-is-active').checked) fd.set('is_active', '1');
+  else fd.set('is_active', '0');
+  if (document.getElementById('freebie-is-featured').checked) fd.set('is_featured', '1');
+  else fd.set('is_featured', '0');
+  try {
+    await fetchJson('../api/admin/freebies/save.php', { method: 'POST', body: fd });
+    closeFreebiesForm();
+    await loadAdminFreebies();
+    showToast('Freebie saved.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function adminToggleFreebie(id, isActive) {
+  const row = state.freebies.find(f => Number(f.id) === Number(id));
+  if (!row) return;
+  try {
+    await fetchJson('../api/admin/freebies/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...row, is_active: isActive }),
+    });
+    await loadAdminFreebies();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function adminDeleteFreebie(id) {
+  if (!confirm('Delete this freebie? This cannot be undone.')) return;
+  try {
+    await fetchJson('../api/admin/freebies/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    await loadAdminFreebies();
+    showToast('Freebie deleted.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 function initDashboard() {
   Promise.allSettled([getCategories()]).then(populateCategoryControls);
   loadOverview();
@@ -928,9 +1173,13 @@ const exported = {
   adminSaveCategory,
   adminToggleCategory,
   adminDeleteCategory,
+  openCategoryForm,
+  closeCategoryForm,
   adminSaveBundle,
   adminEditBundle,
   adminCancelBundleEdit,
+  openBundleForm,
+  closeBundleForm,
   adminToggleBundle,
   adminDeleteBundle,
   loadReviews,
@@ -939,6 +1188,14 @@ const exported = {
   loadMessages,
   markMessageRead,
   deleteMessage,
+  loadAdminFreebies,
+  adminSaveFreebies,
+  adminEditFreebie,
+  adminToggleFreebie,
+  adminDeleteFreebie,
+  openFreebiesForm,
+  closeFreebiesForm,
+  filterAdminFreebies,
   filterUsers,
   filterProducts,
   filterOrders,

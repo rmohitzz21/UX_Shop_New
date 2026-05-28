@@ -19,12 +19,23 @@ async function getCsrfTokenAsync() {
   if (meta) { _csrfToken = meta; return _csrfToken; }
   // Deduplicate concurrent calls — only one inflight request at a time
   if (!_csrfFetchPromise) {
-    _csrfFetchPromise = fetch('api/auth/csrf.php')
+    _csrfFetchPromise = fetch('api/auth/csrf.php', { credentials: 'same-origin' })
       .then(r => r.json())
-      .then(d => { _csrfToken = d.token || ''; _csrfFetchPromise = null; return _csrfToken; })
+      .then(d => {
+        _csrfToken = d.data?.token || d.token || '';
+        _csrfFetchPromise = null;
+        return _csrfToken;
+      })
       .catch(() => { _csrfFetchPromise = null; return ''; });
   }
   return _csrfFetchPromise;
+}
+
+function setCsrfToken(token) {
+  if (!token) return;
+  _csrfToken = token;
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  if (meta) meta.setAttribute('content', token);
 }
 
 /**
@@ -1122,6 +1133,7 @@ function loadCheckoutPage() {
     if (digitalDeliveryInfo) digitalDeliveryInfo.style.display = hasDigital ? 'flex' : 'none';
     if (blockTitle) blockTitle.textContent = 'Shipping Information';
   }
+  syncCheckoutRequiredFields({ onlyDigital });
 
   // Handle COD availability
   const codOption = document.getElementById('cod-option');
@@ -1134,6 +1146,55 @@ function loadCheckoutPage() {
       codOption.style.opacity = '1';
       codOption.style.cursor = 'pointer';
       codOption.style.pointerEvents = 'auto';
+  }
+}
+
+function syncCheckoutRequiredFields(options = {}) {
+  const form = document.getElementById('checkout-form');
+  if (!form) return;
+
+  const hasPhysicalInCart = cart.some(item => item.available_type === 'physical' || !item.available_type);
+  const onlyDigital = typeof options.onlyDigital === 'boolean' ? options.onlyDigital : !hasPhysicalInCart;
+  const usingSavedAddress = isUsingSavedAddress();
+
+  const addressFields = ['address', 'city', 'state', 'zip', 'country'];
+  addressFields.forEach((name) => {
+    const field = form.elements[name];
+    if (!field) return;
+    if (usingSavedAddress || onlyDigital) {
+      field.removeAttribute('required');
+    } else {
+      field.setAttribute('required', 'required');
+    }
+  });
+
+  const identityFields = ['firstName', 'lastName', 'phone'];
+  identityFields.forEach((name) => {
+    const field = form.elements[name];
+    if (!field) return;
+    if (usingSavedAddress) {
+      field.removeAttribute('required');
+    } else {
+      field.setAttribute('required', 'required');
+    }
+  });
+
+  const emailField = form.elements['email'];
+  if (emailField) {
+    if (usingSavedAddress) {
+      emailField.removeAttribute('required');
+    } else {
+      emailField.setAttribute('required', 'required');
+    }
+  }
+
+  const emailSavedField = form.elements['emailSaved'];
+  if (emailSavedField) {
+    if (usingSavedAddress) {
+      emailSavedField.setAttribute('required', 'required');
+    } else {
+      emailSavedField.removeAttribute('required');
+    }
   }
 }
 
@@ -1566,8 +1627,8 @@ function handleSignIn(event) {
   const successDiv = document.getElementById('auth-success');
   
   // Clear previous errors
-  errorDiv.style.display = 'none';
-  successDiv.style.display = 'none';
+  if (errorDiv) errorDiv.style.display = 'none';
+  if (successDiv) successDiv.style.display = 'none';
   
   // Validation
   let isValid = true;
@@ -1602,24 +1663,29 @@ function handleSignIn(event) {
   btnLoader.style.display = 'inline';
   
   // Call API
-  const csrfToken = getCsrfToken();
-  fetch('api/auth/login.php', {
+  getCsrfTokenAsync().then((csrfToken) => fetch('api/auth/login.php', {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
     },
     body: JSON.stringify({
       email: email,
       password: password,
       csrf_token: csrfToken
     })
-  })
+  }))
   .then(response => response.json())
   .then(data => {
     if (data.status === 'success') {
-      const user = data.data.user;
-      const tokens = data.data.tokens;
+      const user = data.data?.user;
+      if (!user) {
+        throw new Error('Invalid login response');
+      }
+      if (data.data?.csrf_token) {
+        setCsrfToken(data.data.csrf_token);
+      }
       
       const userData = {
         id: user.id,
@@ -1632,8 +1698,6 @@ function handleSignIn(event) {
       };
       
       setUserSession(userData);
-      localStorage.setItem('accessToken', tokens.access_token);
-      localStorage.setItem('refreshToken', tokens.refresh_token);
       
       // Merge local cart if exists
       const localCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -1649,25 +1713,36 @@ function handleSignIn(event) {
               localStorage.removeItem('cart');
               cart = [];
               
-              successDiv.textContent = 'Sign in successful! Redirecting...';
-              successDiv.style.display = 'block';
+              if (successDiv) {
+                successDiv.textContent = 'Sign in successful! Redirecting...';
+                successDiv.style.display = 'block';
+              }
               handleSignInRedirect();
           })
           .catch(err => {
               console.error('Merge error:', err);
               // Proceed anyway
-              successDiv.textContent = 'Sign in successful! Redirecting...';
-              successDiv.style.display = 'block';
+              if (successDiv) {
+                successDiv.textContent = 'Sign in successful! Redirecting...';
+                successDiv.style.display = 'block';
+              }
               handleSignInRedirect();
           });
       } else {
-          successDiv.textContent = 'Sign in successful! Redirecting...';
-          successDiv.style.display = 'block';
+          if (successDiv) {
+            successDiv.textContent = 'Sign in successful! Redirecting...';
+            successDiv.style.display = 'block';
+          }
           handleSignInRedirect();
       }
     } else {
-      errorDiv.textContent = data.message || 'Invalid email or password';
-      errorDiv.style.display = 'block';
+      const msg = data.message || 'Invalid email or password';
+      if (errorDiv) {
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+      } else {
+        showToast(msg, 'error');
+      }
       btn.disabled = false;
       btnText.style.display = 'inline';
       btnLoader.style.display = 'none';
@@ -1675,8 +1750,13 @@ function handleSignIn(event) {
   })
   .catch(error => {
     console.error('Login error:', error);
-    errorDiv.textContent = 'An error occurred. Please try again.';
-    errorDiv.style.display = 'block';
+    const msg = 'An error occurred. Please try again.';
+    if (errorDiv) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+    } else {
+      showToast(msg, 'error');
+    }
     btn.disabled = false;
     btnText.style.display = 'inline';
     btnLoader.style.display = 'none';
@@ -1684,23 +1764,27 @@ function handleSignIn(event) {
 }
 
 // Sign out handler
-function handleSignOut() {
-  // Call server logout API to destroy PHP session
-  fetch('api/auth/logout.php', { credentials: 'same-origin' })
-    .then(response => {
-        // Regardless of server response, clear client state
-        clearUserSession();
-        showToast('Signed out successfully', 'success');
-        setTimeout(() => {
-            window.location.href = 'index.php';
-        }, 1000);
-    })
-    .catch(err => {
-        console.error('Logout error:', err);
-        // Fallback
-        clearUserSession();
-        window.location.href = 'index.php';
+async function handleSignOut() {
+  try {
+    const csrfToken = await getCsrfTokenAsync();
+    await fetch('api/auth/logout.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken
+      },
+      body: JSON.stringify({ csrf_token: csrfToken })
     });
+  } catch (err) {
+    console.error('Logout error:', err);
+  } finally {
+    clearUserSession();
+    showToast('Signed out successfully', 'success');
+    setTimeout(() => {
+      window.location.href = 'index.php';
+    }, 600);
+  }
 }
 
 // Contact form handler
@@ -2186,11 +2270,11 @@ function handleSignUp(event) {
     }
     form.password.style.borderColor = '#ef4444';
     isValid = false;
-  } else if (password.length < 6) {
+  } else if (password.length < 8) {
     const errorSpan = form.password.parentElement?.querySelector('.field-error-modern') || 
                      form.password.parentElement?.querySelector('.field-error');
     if (errorSpan) {
-      errorSpan.textContent = 'Password must be at least 6 characters';
+      errorSpan.textContent = 'Password must be at least 8 characters';
       errorSpan.style.display = 'block';
     }
     form.password.style.borderColor = '#ef4444';
@@ -2256,10 +2340,12 @@ function handleSignUp(event) {
   }
   
   // Call actual API
-  fetch('api/auth/signup.php', {
+  getCsrfTokenAsync().then((csrfToken) => fetch('api/auth/signup.php', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
     },
     body: JSON.stringify({
       firstName: firstName,
@@ -2268,9 +2354,9 @@ function handleSignUp(event) {
       email: email,
       phone: phone,
       password: password,
-      csrf_token: getCsrfToken()
+      csrf_token: csrfToken
     })
-  })
+  }))
   .then(response => response.json())
   .then(data => {
     if (data.status === 'success') {
@@ -2419,6 +2505,7 @@ function renderAddressSelector(addresses) {
     savedSection.style.display = 'none';
     if (newAddressSection) newAddressSection.style.display = 'block';
     if (emailOnlySection) emailOnlySection.style.display = 'none';
+    syncCheckoutRequiredFields();
     return;
   }
 
@@ -2427,6 +2514,7 @@ function renderAddressSelector(addresses) {
   if (newAddressSection) newAddressSection.style.display = 'none';
   if (emailOnlySection) emailOnlySection.style.display = 'block';
   if (saveAddressRow) saveAddressRow.style.display = 'none';
+  syncCheckoutRequiredFields();
 
   container.innerHTML = '<div class="address-cards">' + addresses.map((addr, index) => `
     <label class="address-card ${addr.is_default ? 'selected' : ''}" data-address-id="${addr.id}">
@@ -2454,6 +2542,7 @@ function renderAddressSelector(addresses) {
     card.addEventListener('click', function() {
       container.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
       this.classList.add('selected');
+      syncCheckoutRequiredFields();
     });
   });
 
@@ -2514,6 +2603,7 @@ function setupAddressFormToggle() {
         }
       }
     }
+    syncCheckoutRequiredFields();
   });
 }
 
@@ -2553,6 +2643,7 @@ async function initCheckoutAddresses() {
       prefillCheckoutContact(defaultAddr);
     }
   }
+  syncCheckoutRequiredFields();
 }
 
 /**
@@ -2907,71 +2998,6 @@ window.handleAddressFormSubmit = handleAddressFormSubmit;
 window.confirmDeleteAddress = confirmDeleteAddress;
 window.confirmSetDefault = confirmSetDefault;
 
-// ==================== WISHLIST FUNCTIONALITY ====================
-
-// Add to wishlist
-function addToWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating) {
-  let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-  
-  // Check if already in wishlist
-  if (wishlist.find(item => item.id === productId)) {
-    showToast('Already in wishlist', 'info');
-    return;
-  }
-  
-  wishlist.push({
-    id: productId,
-    name: productName,
-    price: productPrice,
-    image: productImage,
-    category: productCategory,
-    description: productDescription,
-    rating: productRating || 4.5
-  });
-  
-  localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  updateWishlistCount();
-  showToast('Added to wishlist', 'success');
-}
-
-// Remove from wishlist
-function removeFromWishlist(productId) {
-  let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-  wishlist = wishlist.filter(item => item.id !== productId);
-  localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  updateWishlistCount();
-  showToast('Removed from wishlist', 'success');
-}
-
-// Check if product is in wishlist
-function isInWishlist(productId) {
-  const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-  return wishlist.find(item => item.id === productId) !== undefined;
-}
-
-// Update wishlist count in header
-function updateWishlistCount() {
-  const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-  const wishlistCount = document.getElementById('wishlist-count');
-  if (wishlistCount) {
-    wishlistCount.textContent = wishlist.length;
-    wishlistCount.style.display = wishlist.length > 0 ? 'flex' : 'none';
-  }
-}
-
-// Initialize wishlist count on page load
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', function() {
-    updateWishlistCount();
-  });
-}
-
-// Export functions
-window.addToWishlist = addToWishlist;
-window.removeFromWishlist = removeFromWishlist;
-window.isInWishlist = isInWishlist;
-window.updateWishlistCount = updateWishlistCount;
-
 // Header search functionality
 function performHeaderSearch() {
   const query = document.getElementById('header-search-input')?.value.trim();
@@ -3145,25 +3171,16 @@ function initSearchModal() {
       <button type="button" class="search-modal-result" data-index="${index}" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}">
         <img src="${esc(item.image)}" alt="" onerror="this.src='img/poster.webp'">
         <span><strong>${esc(item.name)}</strong><em>${esc(item.type || 'product')} / ${esc(item.category || '')}</em></span>
-        <b>${money(item.price).replace('₹', '$')}</b>
+        <b>${formatMoney(item.price)}</b>
       </button>
     `).join('') : '<div class="search-modal-empty">No matching products or bundles found.</div>');
   }
 
-  document.querySelectorAll('.nav-search-trigger').forEach((button) => {
-    button.addEventListener('click', (event) => {
+  document.addEventListener('keydown', (event) => {
+    if ((event.key === '/' || (event.ctrlKey && event.key === 'k')) && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
       event.preventDefault();
-      event.stopPropagation();
-      const navInput = button.closest('.nav-search')?.querySelector('.nav-search-input');
-      openSearchModal(navInput?.value.trim() || '');
-    });
-  });
-
-  document.querySelectorAll('.nav-search').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      openSearchModal(form.querySelector('.nav-search-input')?.value.trim() || '');
-    });
+      openSearchModal('');
+    }
   });
 
   input.addEventListener('input', () => {
@@ -3517,6 +3534,165 @@ function renderProductInfoPanels(item, itemType, skipMainInfo = false) {
     ${fileSpecHtml}`;
 }
 
+function renderBundleDetailModal(item, related) {
+  const gallery = [item.image, ...(item.additional_images || [])].filter(Boolean);
+  const uniqueGallery = [...new Set(gallery)];
+
+  const price = parseFloat(item.price) || 0;
+  const oldPrice = parseFloat(item.old_price) || 0;
+  const savings = oldPrice > price ? Math.round(oldPrice - price) : 0;
+  const reviewCount = Number(item.review_count || 0);
+
+  // Merge whats_included text + included_items_parsed JSON into one list
+  const textItems = parseProductTextList(item.whats_included);
+  const jsonItems = (item.included_items_parsed || []).map((i) =>
+    typeof i === 'string' ? i : String(i.label || i.name || '').trim()
+  ).filter(Boolean);
+  const allItems = textItems.length ? textItems : jsonItems;
+
+  const previewMax = 5;
+  const previewItems = allItems.slice(0, previewMax);
+  const remaining = allItems.length - previewMax;
+
+  const checkSvg = `<svg class="mp-bundle-check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5" opacity=".3"/><polyline points="5.5 10 8.5 13 14.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const pkgSvg = `<svg class="mp-bundle-pkg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+
+  const includedBoxHtml = allItems.length ? `
+    <div class="mp-bundle-box">
+      <div class="mp-bundle-box-head">
+        ${pkgSvg}
+        <span>What&rsquo;s Included</span>
+        <em class="mp-bundle-count">${allItems.length} item${allItems.length !== 1 ? 's' : ''}</em>
+      </div>
+      <ul class="mp-bundle-checklist">
+        ${previewItems.map((it) => `<li>${checkSvg}<span>${esc(it)}</span></li>`).join('')}
+        ${remaining > 0 ? `<li class="mp-bundle-checklist-more">${checkSvg}<span>+ ${remaining} more item${remaining > 1 ? 's' : ''} inside&hellip;</span></li>` : ''}
+      </ul>
+    </div>` : '';
+
+  const allItemsGridHtml = allItems.length ? `
+    <section class="mp-panel mp-bundle-items-panel">
+      <header class="mp-panel-head">
+        <h3>Everything Inside</h3>
+        <span class="mp-panel-sub">${allItems.length} premium item${allItems.length !== 1 ? 's' : ''}</span>
+      </header>
+      <div class="mp-bundle-items-grid">
+        ${allItems.map((it, i) => `
+          <div class="mp-bundle-item-card">
+            <span class="mp-bundle-item-num">${String(i + 1).padStart(2, '0')}</span>
+            <span class="mp-bundle-item-label">${esc(it)}</span>
+          </div>`).join('')}
+      </div>
+    </section>` : '';
+
+  const fileSpecs = parseProductTextList(item.file_specification);
+  const fileSpecHtml = fileSpecs.length ? `
+    <section class="mp-panel">
+      <header class="mp-panel-head"><h3>File Specifications</h3></header>
+      <ul class="mp-bullet-list">${fileSpecs.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+    </section>` : '';
+
+  const infoRows = [
+    renderProductInfoRow('Category', item.category || 'Bundle'),
+    renderProductInfoRow('License', item.license_type || 'Premium'),
+    renderProductInfoRow('Compatibility', item.compatible_software || 'All UX Pacific resources'),
+    renderProductInfoRow('High Resolution', item.high_resolution || 'Yes'),
+    renderProductInfoRow('Format', item.files_included || 'Digital download'),
+    renderProductInfoRow('Last Updated', item.last_update),
+  ].filter(Boolean).join('');
+
+  const relatedHtml = related.length ? `
+    <section class="mp-related mp-related--compact">
+      <div class="mp-related-head">
+        <h3>More Bundles</h3>
+        <div class="mp-related-nav">
+          <button type="button" class="mp-related-arrow" data-related-prev aria-label="Scroll left">‹</button>
+          <button type="button" class="mp-related-arrow" data-related-next aria-label="Scroll right">›</button>
+        </div>
+      </div>
+      <div class="mp-related-track" data-related-track>
+        ${related.slice(0, 6).map((rel) => `
+          <button type="button" class="mp-related-item" onclick="openMarketplaceModal('bundle', '${esc(rel.id)}')">
+            <div class="mp-related-item-media">
+              <img src="${esc(rel.image)}" alt="" loading="lazy" decoding="async" onerror="this.src='img/poster.webp'">
+              <span class="mp-related-item-cat">${esc(rel.category || 'Bundle')}</span>
+            </div>
+            <div class="mp-related-item-body">
+              <span class="mp-related-item-name">${esc(rel.name)}</span>
+              <div class="mp-related-item-meta">
+                <strong>${formatMoney(rel.price)}</strong>
+                ${rel.old_price ? `<em class="mp-related-item-old">${formatMoney(rel.old_price)}</em>` : ''}
+              </div>
+            </div>
+          </button>`).join('')}
+      </div>
+    </section>` : '';
+
+  return `
+    ${renderMpGalleryCol(uniqueGallery, item.name)}
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="bundles.php">
+      <div class="mp-details">
+        <div class="mp-tags">
+          <span class="mp-tag-pill">${esc(item.category || 'Bundle')}</span>
+          <span class="mp-tag-pill mp-tag-pill--muted">Digital Bundle</span>
+          ${item.is_featured ? '<span class="mp-tag-pill mp-tag-pill--accent">Best Seller</span>' : ''}
+        </div>
+
+        <h2 id="marketplace-modal-title">${esc(item.name)}</h2>
+        ${renderMpStarRating(item.rating || '4.5', reviewCount)}
+
+        <div class="mp-price-row">
+          <strong>${formatMoney(price)}</strong>
+          ${oldPrice > 0 ? `<span class="mp-old-price">${formatMoney(oldPrice)}</span>` : ''}
+          ${item.discount_percent ? `<em class="mp-discount">${item.discount_percent}% OFF</em>` : ''}
+          ${savings > 0 ? `<span class="mp-bundle-savings">Save ${formatMoney(savings)}</span>` : ''}
+        </div>
+
+        ${includedBoxHtml}
+
+        <div class="mp-field">
+          <span class="mp-field-label">Quantity</span>
+          <div class="mp-qty-stepper">
+            <button type="button" class="mp-qty-btn" data-mp-qty-minus aria-label="Decrease quantity">−</button>
+            <span class="mp-qty-value" id="mp-qty-display">1</span>
+            <input type="hidden" id="marketplace-qty-input" value="1">
+            <button type="button" class="mp-qty-btn" data-mp-qty-plus aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <div class="mp-action-stack">
+          <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('bundle', '${esc(item.id)}')">Add to Cart</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('bundle', '${esc(item.id)}')">Buy Now</button>
+        </div>
+
+        <div class="mp-secondary-actions">
+          <button type="button" class="mp-btn-ghost" onclick="toggleMarketplaceWishlist('bundle', '${esc(item.id)}')">Save to Wishlist</button>
+          <a href="bundles.php" class="mp-btn-ghost">All Bundles</a>
+        </div>
+      </div>
+
+      ${item.description ? `
+      <section class="mp-panel mp-panel--about">
+        <header class="mp-panel-head"><h3>About this bundle</h3></header>
+        <p class="mp-about-text">${esc(item.description)}</p>
+      </section>` : ''}
+
+      ${allItemsGridHtml}
+
+      ${infoRows ? `
+      <section class="mp-panel mp-panel--info">
+        <header class="mp-panel-head">
+          <h3>Bundle Details</h3>
+          <span class="mp-panel-sub">License &amp; compatibility</span>
+        </header>
+        <dl class="mp-info-table">${infoRows}</dl>
+      </section>` : ''}
+
+      ${fileSpecHtml}
+      ${relatedHtml}
+    </div>`;
+}
+
 function renderProductDetailModal(item, type, related, tagTokens) {
   const itemType = item.type || type;
   const gallery = [item.image, ...(item.additional_images || [])].filter(Boolean);
@@ -3771,9 +3947,9 @@ function initProductCardPopups() {
       return;
     }
 
-    const card = event.target.closest('.uxp-product-card, .shop-product-card, .marketplace-card');
+    const card = event.target.closest('.uxp-product-card, .shop-product-card, .marketplace-card, .uxp-bundle-card');
     if (!card) return;
-    if (event.target.closest('button, .wishlist-float')) return;
+    if (event.target.closest('button')) return;
     const plainLink = event.target.closest('a');
     if (plainLink && !plainLink.classList.contains('js-product-popup')) return;
 
@@ -3831,7 +4007,9 @@ async function openMarketplaceModal(type, id, triggerEl) {
     const related = payload.related || [];
     const tagTokens = payload.tag_tokens || [];
     content.className = 'marketplace-modal-content';
-    body.innerHTML = renderProductDetailModal(item, type, related, tagTokens);
+    body.innerHTML = type === 'bundle'
+      ? renderBundleDetailModal(item, related)
+      : renderProductDetailModal(item, type, related, tagTokens);
     initMarketplaceGallery();
     initMpModalControls();
     initRelatedCarousel();
@@ -3909,28 +4087,6 @@ async function addMarketplaceItemToCart(type, id) {
   }
 }
 
-async function toggleMarketplaceWishlist(type, id) {
-  const userSession = getUserSession();
-  if (!userSession || !userSession.id) {
-    showToast('Please sign in to use wishlist.', 'error');
-    setTimeout(() => { window.location.href = 'signin.php?redirect=wishlist.php'; }, 700);
-    return;
-  }
-  try {
-    const payload = type === 'bundle' ? { item_type: 'bundle', bundle_id: Number(id) } : { item_type: 'product', product_id: Number(id) };
-    const response = await fetch('api/wishlist/add.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (data.status !== 'success') throw new Error(data.message || 'Wishlist failed.');
-    showToast('Added to wishlist.', 'success');
-    updateWishlistCount();
-  } catch (error) {
-    showToast(error.message || 'Wishlist failed.', 'error');
-  }
-}
 
 function initTopProductsFilters() {
   const section = document.querySelector('.uxp-top-products-section');
@@ -4108,7 +4264,7 @@ function handleSignInRedirect() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirect = urlParams.get('redirect');
   // Only allow relative redirects to prevent open redirect attacks
-  const allowedPages = ['index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php', 'shopAll.php', 'wishlist.php'];
+  const allowedPages = ['index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php', 'shopAll.php'];
   if (redirect && allowedPages.some(page => redirect.includes(page)) && !redirect.includes('://')) {
     setTimeout(() => {
       window.location.href = redirect;
@@ -4370,6 +4526,8 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
   }
 
   function initSearchSuggestions() {
+    const TRENDS = ['UI Kit', 'Portfolio', 'Mockups', 'Case Study', 'Icons', 'Dashboard'];
+
     document.querySelectorAll('.nav-search').forEach((form) => {
       const input = form.querySelector('input[type="search"]');
       let panel = form.querySelector('.nav-search-suggestions');
@@ -4381,42 +4539,139 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
       }
 
       let timer = null;
+      let activeIdx = -1;
+
+      function getItems() {
+        return Array.from(panel.querySelectorAll('.nav-search-suggestion'));
+      }
+
+      function setActive(idx) {
+        const items = getItems();
+        activeIdx = Math.max(-1, Math.min(idx, items.length - 1));
+        items.forEach((el, i) => el.classList.toggle('is-focused', i === activeIdx));
+      }
+
+      function closePanel() {
+        panel.classList.remove('is-visible');
+        activeIdx = -1;
+      }
+
+      function showTrends() {
+        panel.innerHTML = `
+          <div class="nss-section-label">Trending</div>
+          <div class="nss-trends">
+            ${TRENDS.map(t => `<button type="button" class="nss-trend-pill" data-trend="${esc(t)}">${esc(t)}</button>`).join('')}
+          </div>`;
+        panel.classList.add('is-visible');
+      }
+
+      function showLoading() {
+        panel.innerHTML = `<div class="nss-loading"><span></span><span></span><span></span></div>`;
+        panel.classList.add('is-visible');
+      }
+
+      async function fetchAndShow(q) {
+        showLoading();
+        try {
+          const response = await fetch(`api/product/search.php?q=${encodeURIComponent(q)}&limit=7`);
+          const data = await response.json();
+          const items = data?.data?.items || [];
+          if (!items.length) {
+            panel.innerHTML = `
+              <div class="nss-section-label">No results for "<em>${esc(q)}</em>"</div>
+              <div class="nss-empty-hint">Try a different keyword or <a href="search.php?q=${encodeURIComponent(q)}">browse all</a></div>`;
+            panel.classList.add('is-visible');
+            return;
+          }
+          const listHtml = items.map((item) => {
+            const typeBadge = item.type === 'bundle'
+              ? `<span class="nss-type-badge nss-type-bundle">Bundle</span>`
+              : `<span class="nss-type-badge nss-type-product">Product</span>`;
+            return `
+              <button type="button" class="nav-search-suggestion" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}" data-name="${esc(item.name)}">
+                <img src="${esc(item.image)}" alt="" loading="lazy" onerror="this.src='img/sticker.webp'" />
+                <span class="nss-info">
+                  <span class="nss-name">${esc(item.name)}</span>
+                  <span class="nss-meta">${typeBadge} <span class="nss-cat">${esc(item.category || '')}</span></span>
+                </span>
+                <strong class="nss-price">${money(item.price)}</strong>
+              </button>`;
+          }).join('');
+          const viewAll = `<a class="nss-view-all" href="search.php?q=${encodeURIComponent(q)}">View all results for "<em>${esc(q)}</em>" →</a>`;
+          panel.innerHTML = listHtml + viewAll;
+          panel.classList.add('is-visible');
+          activeIdx = -1;
+        } catch {
+          closePanel();
+        }
+      }
+
+      input.addEventListener('focus', () => {
+        if (!input.value.trim()) showTrends();
+      });
+
       input.addEventListener('input', () => {
         clearTimeout(timer);
+        activeIdx = -1;
         const q = input.value.trim();
-        if (q.length < 2) {
-          panel.classList.remove('is-visible');
-          panel.innerHTML = '';
-          return;
+        if (!q) { showTrends(); return; }
+        if (q.length < 2) { closePanel(); return; }
+        timer = setTimeout(() => fetchAndShow(q), 200);
+      });
+
+      input.addEventListener('keydown', (event) => {
+        if (!panel.classList.contains('is-visible')) return;
+        const items = getItems();
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          setActive(activeIdx + 1);
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          setActive(activeIdx - 1);
+        } else if (event.key === 'Enter' && activeIdx >= 0 && items[activeIdx]) {
+          event.preventDefault();
+          items[activeIdx].click();
+        } else if (event.key === 'Escape') {
+          closePanel();
+          form.classList.remove('is-open');
+          input.blur();
         }
-        timer = setTimeout(async () => {
-          try {
-            const response = await fetch(`api/product/search.php?q=${encodeURIComponent(q)}&limit=6`);
-            const data = await response.json();
-            const items = data?.data?.items || [];
-            panel.innerHTML = items.length ? items.map((item) => `
-              <button type="button" class="nav-search-suggestion" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}" data-query="${esc(item.name)}">
-                <img src="${esc(item.image)}" alt="" onerror="this.src='img/sticker.webp'" />
-                <span>${esc(item.name)} <em>${esc(item.type || 'product')}</em></span>
-                <strong>${money(item.price)}</strong>
-              </button>
-            `).join('') : '<div class="nav-search-empty">No matching products found</div>';
-            panel.classList.add('is-visible');
-          } catch (error) {
-            panel.classList.remove('is-visible');
-          }
-        }, 180);
       });
 
       panel.addEventListener('click', (event) => {
-        const item = event.target.closest('.nav-search-suggestion');
-        if (!item) return;
-        panel.classList.remove('is-visible');
-        if ((item.dataset.type || 'product') === 'bundle') {
-          window.location.href = 'bundles.php';
+        const trend = event.target.closest('.nss-trend-pill');
+        if (trend) {
+          input.value = trend.dataset.trend;
+          fetchAndShow(trend.dataset.trend);
           return;
         }
-        window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
+        const viewAll = event.target.closest('.nss-view-all');
+        if (viewAll) { closePanel(); return; }
+
+        const item = event.target.closest('.nav-search-suggestion');
+        if (!item) return;
+        closePanel();
+        if (item.dataset.type === 'bundle') {
+          if (typeof openMarketplaceModal === 'function') {
+            openMarketplaceModal('bundle', item.dataset.id, item);
+          } else {
+            window.location.href = `bundles.php?quick=bundle&id=${encodeURIComponent(item.dataset.id)}`;
+          }
+          return;
+        }
+        if (typeof openMarketplaceModal === 'function') {
+          openMarketplaceModal('product', item.dataset.id, item);
+        } else {
+          window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!form.contains(event.target)) closePanel();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closePanel();
       });
     });
   }
@@ -4437,54 +4692,6 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
     });
   }
 
-  const localAddToWishlist = window.addToWishlist;
-  window.addToWishlist = function enhancedWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating) {
-    const user = getUserSession();
-    if (!user || !user.id) {
-      return localAddToWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating);
-    }
-    const payload = {
-      product_id: productId,
-      details: {
-        name: productName,
-        price: productPrice,
-        image: productImage,
-        category: productCategory,
-        description: productDescription,
-        rating: productRating || 4.5
-      }
-    };
-    return fetch('api/wishlist/add.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
-      body: JSON.stringify(payload)
-    }).then((response) => response.json()).then((data) => {
-      if (data.status === 'success') {
-        showToast('Added to wishlist', 'success');
-        syncWishlistFromAPI();
-      } else {
-        showToast(data.message || 'Could not update wishlist', 'error');
-      }
-    }).catch(() => localAddToWishlist(productId, productName, productPrice, productImage, productCategory, productDescription, productRating));
-  };
-
-  async function syncWishlistFromAPI() {
-    if (!getUserSession()?.id) {
-      updateWishlistCount();
-      return;
-    }
-    try {
-      const response = await fetch('api/wishlist/list.php');
-      const data = await response.json();
-      if (data.status === 'success') {
-        localStorage.setItem('wishlist', JSON.stringify(data.data || []));
-        updateWishlistCount();
-      }
-    } catch (error) {
-      updateWishlistCount();
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     ensureCartDrawer();
     hydrateSession();
@@ -4493,6 +4700,5 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
     initSearchSuggestions();
     initDataAddButtons();
     renderCartDrawer();
-    syncWishlistFromAPI();
   });
 })();

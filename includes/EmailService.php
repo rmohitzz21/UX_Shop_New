@@ -223,7 +223,7 @@ HTML;
                 <div class="total">Total: &#8377;{$total}</div>
             </div>
             
-            <p><a href="https://uxpacific.com/order-tracking.php?order_id={$orderId}" class="btn">Track Your Order</a></p>
+            <p><a href="https://uxpacific.com/order-confirmation.php?order={$orderId}" class="btn">View Your Order</a></p>
             
             <p>If you have any questions about your order, please contact us at support@uxpacific.com</p>
             <p>Best regards,<br>The UX Pacific Team</p>

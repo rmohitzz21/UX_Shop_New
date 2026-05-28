@@ -10,7 +10,11 @@
       "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/categories/save.php\")",
       "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/product/save.php\")",
       "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/admin/order/update_status.php\")",
-      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/auth/admin-login.php\")"
+      "Bash(\"C:/xampp/php/php.exe\" -l \"C:/xampp/htdocs/Shop/UX_SHOP/UX_Shop_New/api/auth/admin-login.php\")",
+      "Bash(C:/xampp/php/php.exe *)",
+      "Bash(grep -E \"\\\\.\\(php|sql\\)$\")",
+      "Bash(php *)",
+      "Bash(grep -E '\\\\.\\(php|env|htaccess\\)$')"
     ]
   }
 }

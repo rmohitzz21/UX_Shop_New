@@ -9,17 +9,6 @@
     $isShop = in_array($headerCurrent, ['shopAll.php', 'search.php', 'products.php', 'product.php'], true);
     $isBundles = $headerCurrent === 'bundles.php';
     $isFreebies = $headerCurrent === 'freebies.php';
-    $isWishlist = $headerCurrent === 'wishlist.php';
-    $headerWishlistCount = 0;
-    if ($headerUserId && isset($conn)) {
-        $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM wishlist WHERE user_id = ?');
-        if ($stmt) {
-            $uid = (int) $headerUserId;
-            $stmt->bind_param('i', $uid);
-            $stmt->execute();
-            $headerWishlistCount = (int) ($stmt->get_result()->fetch_assoc()['c'] ?? 0);
-        }
-    }
 ?>
 <header class="navbar">
     <div class="nav-container">
@@ -44,11 +33,7 @@
                 <img src="img/ss/hugeicons_shopping-basket-secure-01.png" alt="Cart" />
                 <span id="cart-count" class="nav-count-badge">0</span>
             </a>
-            <a href="wishlist.php" class="icon-btn <?php echo $isWishlist ? 'active' : ''; ?>" aria-label="Wishlist">
-                <span class="nav-heart">&#9825;</span>
-                <span id="wishlist-count" class="nav-count-badge" <?php echo $headerWishlistCount ? '' : 'style="display:none;"'; ?>><?php echo $headerWishlistCount; ?></span>
-            </a>
-            <a href="signin.php" class="btn-primary header-signin-cta" <?php echo $headerUserId ? 'style="display:none;"' : ''; ?>>Sign In</a>
+<a href="signin.php" class="btn-primary header-signin-cta" <?php echo $headerUserId ? 'style="display:none;"' : ''; ?>>Sign In</a>
             <div class="user-menu profile-menu" <?php echo $headerUserId ? '' : 'style="display:none;"'; ?>>
                 <button type="button" class="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">
                     <img src="img/ss/nav/iconoir_user.png" alt="User" />
@@ -56,8 +41,9 @@
                     <i class="ph ph-caret-down"></i>
                 </button>
                 <div class="profile-dropdown" role="menu">
-                    <a href="account.php" role="menuitem">Edit Profile</a>
-                    <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
+                    <a href="account.php" role="menuitem"><i class="ph ph-user-circle"></i> Edit Profile</a>
+                    <a href="orders.php" role="menuitem"><i class="ph ph-package"></i> My Orders</a>
+                    <button type="button" role="menuitem" onclick="handleSignOut()"><i class="ph ph-sign-out"></i> Logout</button>
                 </div>
             </div>
             <button type="button" class="icon-btn mobile-nav-toggle" aria-label="Menu" aria-expanded="false">Menu</button>
@@ -68,8 +54,11 @@
         <a href="shopAll.php">Products</a>
         <a href="bundles.php">Bundles</a>
         <a href="freebies.php">Freebies</a>
-        <a href="wishlist.php">Wishlist</a>
         <a href="cart.php">Cart</a>
+        <?php if ($headerUserId): ?>
+        <a href="orders.php">My Orders</a>
+        <a href="account.php">Edit Profile</a>
+        <?php endif; ?>
     </div>
 </header>
 <div class="search-modal" id="site-search-modal" aria-hidden="true">

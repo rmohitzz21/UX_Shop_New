@@ -7,6 +7,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ready-made UI/UX career bundles from UX Pacific." />
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
 
     <title>Bundles - UX Pacific Shop</title>
 
@@ -150,7 +151,7 @@ if ($headerUserName === '') {
                                 class="swiper-slide"
                                 data-category="<?php echo htmlspecialchars($categoryKey); ?>"
                                 data-tags="<?php echo htmlspecialchars(trim($tagsKey, '-')); ?>">
-                                <article class="bs-card">
+                                <article class="bs-card" data-type="bundle" data-id="<?php echo (int) $featured['id']; ?>" data-product-id="<?php echo (int) $featured['id']; ?>" data-name="<?php echo htmlspecialchars($featured['name']); ?>" data-image="<?php echo htmlspecialchars($featured['image'] ?: 'img/poster.webp'); ?>" data-price="<?php echo (float) $featured['price']; ?>" data-old-price="<?php echo (float) ($featured['old_price'] ?? 0); ?>" data-rating="<?php echo htmlspecialchars($rating); ?>">
                                     <div class="bs-card-media">
                                         <img
                                             src="<?php echo htmlspecialchars($featured['image'] ?: 'img/poster.webp'); ?>"
@@ -205,7 +206,7 @@ if ($headerUserName === '') {
                                         </div>
 
                                         <div class="bs-actions">
-                                            <a class="bs-btn bs-btn--primary" href="bundle-details.php?id=<?php echo (int) $featured['id']; ?>">View Details</a>
+                                            <button type="button" class="bs-btn bs-btn--primary js-product-popup" data-product-id="<?php echo (int) $featured['id']; ?>" data-item-type="bundle">View Details</button>
                                             <button
                                                 class="bs-btn bs-btn--outline"
                                                 type="button"
@@ -272,24 +273,25 @@ if ($headerUserName === '') {
 
             while($bundle = $bundleResult->fetch_assoc()):
 
-                $includedItems = json_decode(
-                    $bundle['included_items'] ?? '[]',
-                    true
-                );
-
-                if (!is_array($includedItems)) {
-                    $includedItems = [];
-                }
+                $includedItems = $bundleIncludedItems($bundle);
 
         ?>
 
-        <article class="uxp-bundle-card">
+        <?php
+        $gridBundleId = (int) $bundle['id'];
+        $gridBundleName = htmlspecialchars($bundle['name']);
+        $gridBundleImage = htmlspecialchars($bundle['image'] ?: 'img/poster1.webp');
+        $gridBundlePrice = (float) $bundle['price'];
+        $gridBundleOldPrice = (float) ($bundle['old_price'] ?? 0);
+        $gridBundleRating = htmlspecialchars($bundle['rating'] ?: '4.5');
+        ?>
+        <article class="uxp-bundle-card" data-type="bundle" data-id="<?php echo $gridBundleId; ?>" data-product-id="<?php echo $gridBundleId; ?>" data-name="<?php echo $gridBundleName; ?>" data-image="<?php echo $gridBundleImage; ?>" data-price="<?php echo $gridBundlePrice; ?>" data-old-price="<?php echo $gridBundleOldPrice; ?>" data-rating="<?php echo $gridBundleRating; ?>">
 
             <div class="uxp-bundle-image">
 
                 <img
-                    src="<?php echo htmlspecialchars($bundle['image'] ?: 'img/poster1.webp'); ?>"
-                    alt="<?php echo htmlspecialchars($bundle['name']); ?>"
+                    src="<?php echo $gridBundleImage; ?>"
+                    alt="<?php echo $gridBundleName; ?>"
                     loading="lazy"
                     onerror="this.src='img/poster1.webp'"
                 />
@@ -383,25 +385,27 @@ if ($headerUserName === '') {
 
                     <div>
 
-                        <a
-                            href="bundle-details.php?id=<?php echo (int)$bundle['id']; ?>"
-                            class="uxp-card-btn uxp-card-btn-primary">
+                        <button
+                            type="button"
+                            class="uxp-card-btn uxp-card-btn-primary js-product-popup"
+                            data-product-id="<?php echo $gridBundleId; ?>"
+                            data-item-type="bundle">
 
-                            View Bundle
+                            View Details
 
-                        </a>
+                        </button>
 
                         <button
                             class="uxp-card-btn uxp-card-btn-secondary"
                             type="button"
 
                             onclick='addToCart(
-                                "bundle_<?php echo (int)$bundle["id"]; ?>",
+                                "bundle_<?php echo $gridBundleId; ?>",
                                 null,
                                 1,
                                 {
                                     name: <?php echo json_encode($bundle["name"]); ?>,
-                                    price: <?php echo (float)$bundle["price"]; ?>,
+                                    price: <?php echo $gridBundlePrice; ?>,
                                     image: <?php echo json_encode($bundle["image"]); ?>,
                                     category: "Bundle",
                                     description: <?php echo json_encode($bundle["description"]); ?>
@@ -409,7 +413,7 @@ if ($headerUserName === '') {
                                 "bundle"
                             )'>
 
-                            Buy Now
+                            Add to Cart
 
                         </button>
 

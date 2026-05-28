@@ -1,1801 +1,1243 @@
-
 <?php
 require_once '../includes/config.php';
-
-
 if (!isset($_SESSION['admin_id']) || empty($_SESSION['admin_id'])) {
     header('Location: admin-login.php');
     exit;
 }
-
-// Generate CSRF Token if not set
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+$adminEmail = htmlspecialchars($_SESSION['admin_email'] ?? 'Admin');
+$adminInitial = strtoupper(substr($adminEmail, 0, 1));
 ?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <title>Admin Dashboard – UX Pacific Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="../style.css" />
-            <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
-
-  <style>
-    /* ==================== ADMIN DASHBOARD STYLES ==================== */
-
-    :root {
-      --admin-bg-light: #f5f7fa;
-      --admin-bg-dark: #0f172a;
-      --admin-card-light: #ffffff;
-      --admin-card-dark: #1e293b;
-      --admin-text-light: #1a1a1a;
-      --admin-text-dark: #f1f5f9;
-      --admin-border-light: #e5e7eb;
-      --admin-border-dark: #334155;
-      --admin-sidebar-light: #ffffff;
-      --admin-sidebar-dark: #1e293b;
-      --admin-accent: #667eea;
-      --admin-overlay-light: rgba(15, 23, 42, 0.6);
-      --admin-overlay-dark: rgba(0, 0, 0, 0.8);
-    }
-
-    [data-theme="dark"] {
-      --admin-bg: var(--admin-bg-dark);
-      --admin-card: var(--admin-card-dark);
-      --admin-text: var(--admin-text-dark);
-      --admin-border: var(--admin-border-dark);
-      --admin-sidebar: var(--admin-sidebar-dark);
-      --admin-overlay: var(--admin-overlay-dark);
-      --admin-logo-img: url('../img/logo1.webp');
-
-    }
-
-    [data-theme="light"] {
-      --admin-bg: var(--admin-bg-light);
-      --admin-card: var(--admin-card-light);
-      --admin-text: var(--admin-text-light);
-      --admin-border: var(--admin-border-light);
-      --admin-sidebar: var(--admin-sidebar-light);
-      --admin-overlay: var(--admin-overlay-light);
-
-
-    }
-
-    .admin-dashboard {
-      min-height: 100vh;
-      background: var(--admin-bg);
-      color: var(--admin-text);
-      transition: background 0.3s ease, color 0.3s ease;
-      display: flex;
-    }
-
-    /* Sidebar */
-    .admin-sidebar {
-      width: 280px;
-      background: var(--admin-sidebar);
-      border-right: 1px solid var(--admin-border);
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      transition: transform 0.3s ease, width 0.3s ease;
-      z-index: 1000;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .admin-sidebar.collapsed {
-      width: 80px;
-    }
-
-    .admin-sidebar-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--admin-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 80px;
-    }
-
-    .admin-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      text-decoration: none;
-      color: var(--admin-text);
-    }
-
-    .admin-logo img {
-      width: 190px;
-      height: 40px;
-      object-fit: contain;
-    }
-
-    .admin-logo-text {
-      font-size: 1.25rem;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: opacity 0.3s;
-    }
-
-    .admin-sidebar.collapsed .admin-logo-text {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-    }
-
-    .sidebar-toggle {
-      background: none;
-      border: none;
-      color: var(--admin-text);
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 6px;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .sidebar-toggle:hover {
-      background: var(--admin-bg);
-    }
-
-    .admin-sidebar-nav {
-      padding: 1rem 0;
-    }
-
-    .sidebar-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.875rem 1.5rem;
-      color: var(--admin-text);
-      text-decoration: none;
-      transition: all 0.2s;
-      border-left: 3px solid transparent;
-      cursor: pointer;
-    }
-
-    .sidebar-nav-item:hover {
-      background: var(--admin-bg);
-      border-left-color: var(--admin-accent);
-    }
-
-    .sidebar-nav-item.active {
-      background: var(--admin-bg);
-      border-left-color: var(--admin-accent);
-      color: var(--admin-accent);
-      font-weight: 600;
-    }
-
-    .sidebar-nav-item svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .sidebar-nav-item span {
-      white-space: nowrap;
-      transition: opacity 0.3s;
-    }
-
-    .admin-sidebar.collapsed .sidebar-nav-item span {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-    }
-
-    /* Main Content Area */
-    .admin-main {
-      flex: 1;
-      margin-left: 280px;
-      transition: margin-left 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .admin-sidebar.collapsed~.admin-main {
-      margin-left: 80px;
-    }
-
-    /* Header */
-    .admin-header {
-      background: var(--admin-card);
-      padding: 1.5rem 2rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      border-bottom: 1px solid var(--admin-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .admin-header-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .mobile-sidebar-toggle {
-      display: none;
-      background: none;
-      border: none;
-      color: var(--admin-text);
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 6px;
-      font-size: 1.5rem;
-    }
-
-    .admin-header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--admin-text);
-      margin: 0;
-    }
-
-    .admin-header-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .theme-toggle {
-      background: var(--admin-bg);
-      border: 1px solid var(--admin-border);
-      color: var(--admin-text);
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .theme-toggle:hover {
-      background: var(--admin-accent);
-      color: white;
-      border-color: var(--admin-accent);
-    }
-
-    .theme-toggle svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    /* Content */
-    .admin-content {
-      padding: 2rem;
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .admin-tab {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .admin-tab.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: var(--admin-card);
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border: 1px solid var(--admin-border);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-card-title {
-      font-size: 0.875rem;
-      color: var(--admin-text);
-      opacity: 0.7;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-
-    .stat-card-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--admin-text);
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-card-change {
-      font-size: 0.875rem;
-      color: #10b981;
-    }
-
-    /* Tables */
-    .data-table {
-      background: var(--admin-card);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border: 1px solid var(--admin-border);
-    }
-
-    .table-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--admin-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .table-header h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--admin-text);
-      margin: 0;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead {
-      background: var(--admin-bg);
-    }
-
-    th {
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: var(--admin-text);
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid var(--admin-border);
-    }
-
-    td {
-      padding: 1rem;
-      border-top: 1px solid var(--admin-border);
-      color: var(--admin-text);
-    }
-
-    tbody tr:hover {
-      background: var(--admin-bg);
-    }
-
-    /* Badges */
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .badge-success {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    [data-theme="dark"] .badge-success {
-      background: rgba(16, 185, 129, 0.2);
-      color: #6ee7b7;
-    }
-
-    .badge-warning {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    [data-theme="dark"] .badge-warning {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fcd34d;
-    }
-
-    .badge-danger {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    [data-theme="dark"] .badge-danger {
-      background: rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-    }
-
-    .badge-info {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    [data-theme="dark"] .badge-info {
-      background: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
-    }
-
-    .product-image {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-small {
-      padding: 0.375rem 0.75rem;
-      font-size: 0.875rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .btn-edit {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    [data-theme="dark"] .btn-edit {
-      background: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
-    }
-
-    .btn-edit:hover {
-      background: #bfdbfe;
-    }
-
-    [data-theme="dark"] .btn-edit:hover {
-      background: rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-delete {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    [data-theme="dark"] .btn-delete {
-      background: rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-    }
-
-    .btn-delete:hover {
-      background: #fecaca;
-    }
-
-    [data-theme="dark"] .btn-delete:hover {
-      background: rgba(239, 68, 68, 0.3);
-    }
-
-    .btn-success {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    [data-theme="dark"] .btn-success {
-      background: rgba(16, 185, 129, 0.2);
-      color: #6ee7b7;
-    }
-
-    .btn-success:hover {
-      background: #a7f3d0;
-    }
-
-    [data-theme="dark"] .btn-success:hover {
-       background: rgba(16, 185, 129, 0.3);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: var(--admin-text);
-      opacity: 0.7;
-    }
-
-    .search-filter {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-
-    .search-input {
-      flex: 1;
-      min-width: 200px;
-      padding: 0.75rem;
-      border: 1px solid var(--admin-border);
-      border-radius: 8px;
-      font-size: 0.875rem;
-      background: var(--admin-card);
-      color: var(--admin-text);
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: var(--admin-accent);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .filter-select {
-      padding: 0.75rem;
-      border: 1px solid var(--admin-border);
-      border-radius: 8px;
-      font-size: 0.875rem;
-      background: var(--admin-card);
-      color: var(--admin-text);
-      cursor: pointer;
-    }
-
-    .filter-select:focus {
-      outline: none;
-      border-color: var(--admin-accent);
-    }
-
-    /* Mobile Responsive */
-    @media (max-width: 1024px) {
-      .admin-sidebar {
-        transform: translateX(-100%);
-      }
-
-      .admin-sidebar.open {
-        transform: translateX(0);
-      }
-
-      .admin-main {
-        margin-left: 0;
-      }
-
-      .mobile-sidebar-toggle {
-        display: block;
-      }
-
-      .admin-content {
-        padding: 1rem;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-      }
-
-      .table-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .search-filter {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .admin-header {
-        padding: 1rem;
-      }
-
-      .admin-content {
-        padding: 1rem 0.5rem;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .table-container {
-        font-size: 0.875rem;
-      }
-
-      th,
-      td {
-        padding: 0.75rem 0.5rem;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .admin-header h1 {
-        font-size: 1.25rem;
-      }
-
-      .stat-card-value {
-        font-size: 1.5rem;
-      }
-
-      table {
-        font-size: 0.75rem;
-      }
-
-      th,
-      td {
-        padding: 0.5rem 0.25rem;
-      }
-    }
-
-    /* Overlay for mobile sidebar */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-    }
-
-    .sidebar-overlay.active {
-      display: block;
-    }
-
-    @media (max-width: 1024px) {
-      .sidebar-overlay.active {
-        display: block;
-      }
-    }
-
-    .admin-logo-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .logo-dark {
-      display: none;
-    }
-
-    [data-theme="dark"] .logo-light {
-      display: none;
-    }
-
-    [data-theme="dark"] .logo-dark {
-      display: block;
-    }
-
-    /* Modal Styles */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--admin-overlay);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.2s ease;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-dialog {
-      background-color: var(--admin-card);
-      border-radius: 12px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-      width: 90%;
-      max-width: 900px;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      animation: slideUp 0.3s ease;
-      border: 1px solid var(--admin-border);
-      color: var(--admin-text);
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .modal-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--admin-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: transparent;
-    }
-
-    .modal-header h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--admin-text);
-      margin: 0;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--admin-text);
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      opacity: 0.7;
-    }
-
-    .modal-close:hover {
-      background: var(--admin-bg);
-      opacity: 1;
-    }
-
-    .modal-close svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .modal-body {
-      padding: 1.5rem;
-      background: transparent;
-      overflow-y: auto;
-    }
-
-    .modal-order-info {
-      background: var(--admin-bg);
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-
-    .modal-order-info p {
-      margin: 0.5rem 0;
-      color: var(--admin-text);
-      font-size: 0.875rem;
-    }
-
-    .modal-order-info strong {
-      font-weight: 600;
-      margin-right: 0.5rem;
-    }
-
-    .modal-footer {
-      padding: 1.5rem;
-      border-top: 1px solid var(--admin-border);
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      background: transparent;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--admin-text);
-      margin-bottom: 0.5rem;
-    }
-
-    .form-label .required {
-      color: #ef4444;
-      margin-left: 0.25rem;
-    }
-
-    .form-section {
-      margin-bottom: 2rem;
-    }
-
-    .form-section-title {
-      font-size: 1.1rem;
-      /* Slightly smaller for modal */
-      font-weight: 600;
-      color: var(--admin-text);
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--admin-border);
-    }
-
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-
-    .form-help-text {
-      font-size: 0.75rem;
-      color: var(--admin-text);
-      opacity: 0.6;
-      margin-top: 0.5rem;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--admin-border);
-    }
-
-    .btn-secondary {
-      padding: 0.75rem 1.5rem;
-      background: var(--admin-bg);
-      border: 1px solid var(--admin-border);
-      border-radius: 8px;
-      color: var(--admin-text);
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-secondary:hover {
-      background: var(--admin-card);
-      border-color: var(--admin-accent);
-    }
-
-    .btn-primary {
-      padding: 0.75rem 1.5rem;
-      background: var(--admin-accent);
-      border: 1px solid var(--admin-accent);
-      border-radius: 8px;
-      color: #ffffff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-
-    .btn-primary:hover {
-      opacity: 0.9;
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Form Elements for Modals */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 1rem;
-    }
-
-    .edit-product-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-    }
-    @media (max-width: 768px) {
-      .edit-product-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--admin-border);
-      border-radius: 8px;
-      font-size: 0.875rem;
-      background-color: var(--admin-bg);
-      color: var(--admin-text);
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-
-    .form-select {
-      cursor: pointer;
-    }
-
-    .form-input:focus,
-    .form-select:focus,
-    .form-textarea:focus {
-      outline: none;
-      border-color: var(--admin-accent);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    @media (max-width: 768px) {
-      .modal-dialog {
-        width: 95%;
-        margin: 1rem;
-      }
-
-      .modal-footer {
-        flex-direction: column-reverse;
-      }
-
-      .modal-footer button {
-        width: 100%;
-      }
-    }
-    /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 34px;
-      height: 20px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      -webkit-transition: .4s;
-      transition: .4s;
-      border-radius: 34px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      -webkit-transition: .4s;
-      transition: .4s;
-      border-radius: 50%;
-    }
-
-    input:checked+.slider {
-      background-color: #ef4444; 
-    }
-
-    input:focus+.slider {
-      box-shadow: 0 0 1px #ef4444;
-    }
-
-    input:checked+.slider:before {
-      -webkit-transform: translateX(14px);
-      -ms-transform: translateX(14px);
-      transform: translateX(14px);
-    }
-  </style>
+  <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
 </head>
 
 <body>
-  <div class="admin-dashboard" data-theme="light">
-    <!-- Sidebar Overlay (Mobile) -->
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="adm" id="adm-root">
 
-    <!-- Left Sidebar -->
-    <aside class="admin-sidebar" id="admin-sidebar">
-      <div class="admin-sidebar-header">
-        <a href="../index.php" class="admin-logo">
-          <img src="../img/logo1.webp" alt="UX Pacific" class="logo-light" />
-          <img src="../img/logo1.webp" alt="UX Pacific" class="logo-dark" />
-          <!-- <span class="admin-logo-text">UX Pacific</span> -->
-        </a>
-        <button class="sidebar-toggle" onclick="toggleSidebarCollapse()" aria-label="Toggle sidebar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+  <!-- Mobile Overlay -->
+  <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════════ -->
+  <aside class="adm-sidebar" id="adm-sidebar">
+
+    <a href="../index.php" class="sb-logo">
+      <img src="../img/logo1.webp" alt="UX Pacific" onerror="this.style.display='none'" />
+      <!-- <span class="sb-logo-name">UX Pacific</span> -->
+    </a>
+
+    <nav class="sb-nav">
+
+      <div class="sb-section-label">Main</div>
+
+      <a href="#" class="sb-item active" data-tab="overview" data-tooltip="Overview" onclick="switchTab('overview',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span class="sb-label">Overview</span>
+      </a>
+
+      <a href="#" class="sb-item" data-tab="analytics" data-tooltip="Analytics" onclick="switchTab('analytics',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span class="sb-label">Analytics</span>
+      </a>
+
+      <div class="sb-section-label">Catalog</div>
+
+      <a href="#" class="sb-item" data-tab="products" data-tooltip="Products" onclick="switchTab('products',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        <span class="sb-label">Products</span>
+      </a>
+
+      <a href="#" class="sb-item" data-tab="bundles" data-tooltip="Bundles" onclick="switchTab('bundles',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+        </svg>
+        <span class="sb-label">Bundles</span>
+      </a>
+
+      <a href="#" class="sb-item" data-tab="categories" data-tooltip="Categories" onclick="switchTab('categories',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h7v7H4z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/><path d="M13 13h7v7h-7z"/>
+        </svg>
+        <span class="sb-label">Categories</span>
+      </a>
+
+      <div class="sb-section-label">Customers</div>
+
+      <a href="#" class="sb-item" data-tab="orders" data-tooltip="Orders" onclick="switchTab('orders',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+        </svg>
+        <span class="sb-label">Orders</span>
+      </a>
+
+      <a href="#" class="sb-item" data-tab="users" data-tooltip="Users" onclick="switchTab('users',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span class="sb-label">Users</span>
+      </a>
+
+      <div class="sb-section-label">Engagement</div>
+
+      <a href="#" class="sb-item" data-tab="reviews" data-tooltip="Reviews" onclick="switchTab('reviews',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span class="sb-label">Reviews</span>
+      </a>
+
+      <a href="#" class="sb-item" data-tab="messages" data-tooltip="Messages" onclick="switchTab('messages',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <span class="sb-label">Messages</span>
+      </a>
+
+      <div class="sb-section-label">Resources</div>
+
+      <a href="#" class="sb-item" data-tab="freebies" data-tooltip="Freebies" onclick="switchTab('freebies',this)">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="sb-label">Freebies</span>
+      </a>
+
+    </nav>
+
+    <div class="sb-footer">
+      <button class="sb-collapse-btn" onclick="toggleSidebarCollapse()" aria-label="Collapse sidebar">
+        <svg class="sb-collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>
+        </svg>
+        <span class="sb-collapse-label" style="font-size:.78rem;">Collapse</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════════════ -->
+  <main class="adm-main" id="adm-main">
+
+    <!-- TOPBAR -->
+    <header class="adm-topbar">
+      <button class="topbar-mobile-btn" onclick="openSidebar()" aria-label="Open sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="topbar-title" id="topbar-title">Overview</div>
+
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Quick search…" id="topbar-search-input" oninput="handleTopbarSearch(this.value)" />
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Theme toggle -->
+        <button class="tb-btn" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+          <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          </svg>
+          <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
         </button>
-      </div>
 
-      <nav class="admin-sidebar-nav">
-        <a href="#" class="sidebar-nav-item active" data-tab="overview" onclick="switchTab('overview', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
+        <!-- Admin info -->
+        <div class="tb-avatar" title="<?php echo $adminEmail; ?>"><?php echo $adminInitial; ?></div>
+        <div class="tb-admin-info">
+          <span class="tb-admin-name" id="admin-email-display"><?php echo $adminEmail; ?></span>
+          <span class="tb-admin-role">Administrator</span>
+        </div>
+
+        <!-- Logout -->
+        <button class="tb-logout" onclick="handleAdminLogout()">
+          <svg style="width:13px;height:13px;display:inline;margin-right:4px;vertical-align:-1px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          <span>Overview</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="users" onclick="switchTab('users', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <span>Users</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="products" onclick="switchTab('products', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path
-              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-            </path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-          <span>Products</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="orders" onclick="switchTab('orders', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-          </svg>
-          <span>Orders</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="categories" onclick="switchTab('categories', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h7v7H4z"></path><path d="M13 4h7v7h-7z"></path><path d="M4 13h7v7H4z"></path><path d="M13 13h7v7h-7z"></path></svg>
-          <span>Categories</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="bundles" onclick="switchTab('bundles', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
-          <span>Bundles</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="reviews" onclick="switchTab('reviews', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <span>Reviews</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="messages" onclick="switchTab('messages', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-          <span>Messages</span>
-        </a>
-        <a href="#" class="sidebar-nav-item" data-tab="analytics" onclick="switchTab('analytics', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
-          <span>Analytics</span>
-        </a>
-      </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="admin-main">
-      <!-- Header -->
-      <div class="admin-header">
-        <div class="admin-header-left">
-          <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-            ☰
-          </button>
-          <h1>Admin Dashboard</h1>
-        </div>
-        <div class="admin-header-actions">
-          <span id="admin-email-display"
-            style="color: var(--admin-text); opacity: 0.7; margin-right: 1rem; font-size: 0.875rem;"><?php echo htmlspecialchars($_SESSION['admin_email'] ?? 'Admin'); ?></span>
-          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" id="theme-toggle">
-            <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              style="display: none;">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </button>
-          <button onclick="handleAdminLogout()" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="admin-content">
-        <!-- Overview Tab -->
-        <div class="admin-tab active" id="overview-tab">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-card-title">Total Customers</div>
-              <div class="stat-card-value" id="stat-total-users">0</div>
-              <div class="stat-card-change" id="stat-users-change">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Total Products</div>
-              <div class="stat-card-value" id="stat-total-products">0</div>
-              <div class="stat-card-change" id="stat-products-change">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Total Orders</div>
-              <div class="stat-card-value" id="stat-total-orders">0</div>
-              <div class="stat-card-change" id="stat-orders-change">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Total Revenue</div>
-              <div class="stat-card-value" id="stat-total-revenue">₹0</div>
-              <div class="stat-card-change" id="stat-revenue-change">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Pending Orders</div>
-              <div class="stat-card-value" id="stat-pending-orders" style="color:#f59e0b;">0</div>
-              <div class="stat-card-change">Awaiting action</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Low Stock Items</div>
-              <div class="stat-card-value" id="stat-low-stock" style="color:#ef4444;">0</div>
-              <div class="stat-card-change">Stock &le; 5 units</div>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.5rem;margin-top:1.5rem;">
-            <div class="data-table">
-              <div class="table-header">
-                <h2>Recent Orders</h2>
-                <a href="#" class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;" onclick="switchTab('orders', document.querySelector('[data-tab=orders]'));return false;">View All</a>
-              </div>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Order</th>
-                      <th>Customer</th>
-                      <th>Amount (₹)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="recent-orders-table">
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="data-table">
-              <div class="table-header">
-                <h2>Top Products</h2>
-              </div>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Units Sold</th>
-                      <th>Revenue (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody id="top-products-table">
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Users Tab -->
-         <div class="admin-tab" id="users-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>All Users</h2>
-              <div class="search-filter">
-                <input type="text" class="search-input" id="user-search" placeholder="Search users..."
-                  onkeyup="filterUsers()">
-              </div>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Registered</th>
-                    <th>Orders</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="users-table">
-                  <!-- Will be populated by JS -->
-                   
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Products Tab -->
-        <div class="admin-tab" id="products-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>All Products</h2>
-              <div class="search-filter">
-                <input type="text" class="search-input" id="product-search" placeholder="Search products..."
-                  onkeyup="filterProducts()">
-                <select class="filter-select" id="product-category-filter" onchange="filterProducts()">
-                  <option value="">All Categories</option>
-                  <option value="T-Shirts">T-Shirts</option>
-                  <option value="Stickers">Stickers</option>
-                  <option value="Booklet">Booklet</option>
-                  <option value="Workbook">Workbook</option>
-                  <option value="Mockup">Mockup</option>
-                  <option value="Badges">Badges</option>
-                  <option value="Template">UI Template</option>
-                </select>
-                <button type="button" class="btn-primary" onclick="openCreateProductModal()" style="padding: 0.75rem 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  Add Product
-                </button>
-              </div>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Rating</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="products-table">
-                  <!-- Will be populated by JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Orders Tab -->
-        <div class="admin-tab" id="orders-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>All Orders</h2>
-              <div class="search-filter">
-                <input type="text" class="search-input" id="order-search" placeholder="Search orders..."
-                  onkeyup="filterOrders()">
-                <select class="filter-select" id="order-status-filter" onchange="filterOrders()">
-                  <option value="">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="awaiting payment">Awaiting payment</option>
-                  <option value="paid">Paid</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="failed">Failed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Items</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Payment</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="orders-table">
-                  <!-- Will be populated by JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-tab" id="categories-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>Categories</h2>
-              <form class="search-filter" onsubmit="adminSaveCategory(event)" enctype="multipart/form-data">
-                <input class="search-input" name="name" placeholder="Category name" required>
-                <input class="search-input" name="description" placeholder="Description">
-                <select class="filter-select" name="accent">
-                  <option value="purple">Purple</option><option value="green">Green</option><option value="pink">Pink</option><option value="orange">Orange</option>
-                </select>
-                <input class="search-input" name="sort_order" type="number" placeholder="Order" style="max-width: 100px;">
-                <input class="search-input" name="image" type="file" accept="image/*">
-                <button class="btn-primary" type="submit">Add Category</button>
-              </form>
-            </div>
-            <div class="table-container">
-              <table><thead><tr><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody id="categories-table"></tbody></table>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-tab" id="bundles-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>Bundles</h2>
-              <form id="bundle-editor-form" class="search-filter" onsubmit="adminSaveBundle(event)" enctype="multipart/form-data" style="flex-wrap:wrap;align-items:center;">
-                <input type="hidden" name="id" value="">
-                <input type="hidden" name="existing_image" value="">
-
-                <input class="search-input" name="name" placeholder="Bundle name" required>
-                <input class="search-input" name="price" type="number" step="0.01" placeholder="Price" required>
-                <input class="search-input" name="old_price" type="number" step="0.01" placeholder="Old price" style="max-width:120px;">
-                <input class="search-input" name="category" placeholder="Category (e.g. Career Pack)">
-                <input class="search-input" name="tags" placeholder="Tags (comma separated)" style="min-width:180px;">
-                <input class="search-input" name="stock" type="number" placeholder="Stock" style="max-width: 100px;">
-                <input class="search-input" name="rating" type="number" step="0.1" placeholder="Rating (0-5)">
-
-                <input class="search-input" name="included_items" placeholder="What's included, comma separated" style="min-width:220px;">
-                <input class="search-input" name="product_ids" placeholder="Product IDs, comma separated (leave empty to keep current)">
-
-                <textarea class="search-input" name="description" rows="2" placeholder="Description" style="min-width:260px;"></textarea>
-
-                <input class="search-input" name="image" type="file" accept="image/*">
-
-                <label class="form-label" style="display:inline-flex;align-items:center;gap:8px;margin:0;white-space:nowrap;">
-                  <input type="checkbox" name="is_active" value="1" checked>
-                  Active
-                </label>
-
-                <label class="form-label" style="display:inline-flex;align-items:center;gap:8px;margin:0;white-space:nowrap;">
-                  <input type="checkbox" name="is_featured" value="1">
-                  Best Seller (horizontal slider)
-                </label>
-
-                <button id="bundle-submit-btn" class="btn-primary" type="submit">Add Bundle</button>
-                <button id="bundle-cancel-btn" class="btn-secondary" type="button" style="display:none;" onclick="adminCancelBundleEdit()">Cancel</button>
-              </form>
-              <p style="font-size:.8rem;opacity:.75;margin:.5rem 0 0;">Bundles with <strong>Best Seller</strong> on appear in the top slider on <code>bundles.php</code>. Others show in the grid below.</p>
-            </div>
-            <div class="table-container">
-              <table><thead><tr><th>Bundle</th><th>Price</th><th>Best Seller</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bundles-table"></tbody></table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reviews Tab -->
-        <div class="admin-tab" id="reviews-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>Product Reviews</h2>
-              <p style="font-size:.85rem;opacity:.7;margin:0;">Approve or remove customer reviews.</p>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Customer</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="reviews-table">
-                  <tr><td colspan="6" class="empty-state">Select Reviews from the sidebar to load</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Messages Tab -->
-        <div class="admin-tab" id="messages-tab">
-          <div class="data-table">
-            <div class="table-header">
-              <h2>Contact Messages</h2>
-              <p style="font-size:.85rem;opacity:.7;margin:0;">Inbox from the contact form.</p>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Subject</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="messages-table">
-                  <tr><td colspan="6" class="empty-state">Select Messages from the sidebar to load</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Analytics Tab -->
-        <div class="admin-tab" id="analytics-tab">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-card-title">Today's Revenue</div>
-                <div class="stat-card-value" id="analytics-today-revenue">₹0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">This Month's Revenue</div>
-                <div class="stat-card-value" id="analytics-month-revenue">₹0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Average Order Value</div>
-                <div class="stat-card-value" id="analytics-avg-order">₹0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-title">Conversion Rate</div>
-              <div class="stat-card-value" id="analytics-conversion">0%</div>
-            </div>
-          </div>
-
-          <div class="data-table" style="margin-top: 2rem;">
-            <div class="table-header">
-              <h2>Top Selling Products</h2>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Units Sold</th>
-                    <th>Revenue (₹)</th>
-                  </tr>
-                </thead>
-                <tbody id="analytics-top-products-table">
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-  <!-- Order Details Modal -->
-  <div class="modal-overlay" id="order-details-modal-overlay" onclick="closeOrderDetailsModal()">
-    <div class="modal-dialog" style="max-width: 800px;" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Order Details</h2>
-        <button class="modal-close" onclick="closeOrderDetailsModal()" aria-label="Close modal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          Logout
         </button>
       </div>
-      <div class="modal-body" id="order-details-content">
-        <!-- Will be populated by JS -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeOrderDetailsModal()">Close</button>
-        <button class="btn-primary" id="print-order-btn" onclick="window.print()">Print Order</button>
-      </div>
+    </header>
+
+    <!-- ─── CONTENT ─── -->
+    <div class="adm-content">
+
+      <!-- ══════════════ OVERVIEW TAB ══════════════ -->
+      <div class="adm-tab active" id="overview-tab">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back — here's what's happening in your store today.</p>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <a href="#" class="qa-card" onclick="switchTab('products',document.querySelector('[data-tab=products]'));openCreateProductModal();return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+          </a>
+          <a href="#" class="qa-card" onclick="switchTab('orders',document.querySelector('[data-tab=orders]'));return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            Manage Orders
+          </a>
+          <a href="../index.php" target="_blank" class="qa-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View Store
+          </a>
+          <a href="#" class="qa-card" onclick="switchTab('bundles',document.querySelector('[data-tab=bundles]'));return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+            Add Bundle
+          </a>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon si-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Total Customers</div>
+              <div class="stat-value" id="stat-total-users">—</div>
+              <span class="stat-change neutral" id="stat-users-change">Loading</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Total Products</div>
+              <div class="stat-value" id="stat-total-products">—</div>
+              <span class="stat-change neutral" id="stat-products-change">Loading</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Total Orders</div>
+              <div class="stat-value" id="stat-total-orders">—</div>
+              <span class="stat-change neutral" id="stat-orders-change">Loading</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Total Revenue</div>
+              <div class="stat-value" id="stat-total-revenue">—</div>
+              <span class="stat-change neutral" id="stat-revenue-change">Loading</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Pending Orders</div>
+              <div class="stat-value" id="stat-pending-orders">—</div>
+              <span class="stat-change warn">Awaiting action</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Low Stock Items</div>
+              <div class="stat-value" id="stat-low-stock">—</div>
+              <span class="stat-change bad">Stock &le; 5 units</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders + Top Products -->
+        <div class="gap-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>Recent Orders</h2><p>Latest transactions</p></div>
+              <a href="#" class="btn btn-ghost btn-xs" onclick="switchTab('orders',document.querySelector('[data-tab=orders]'));return false;">
+                View all
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody id="recent-orders-table">
+                  <tr><td colspan="4" class="tbl-empty">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>Top Products</h2><p>By units sold</p></div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead>
+                <tbody id="top-products-table">
+                  <tr><td colspan="3" class="tbl-empty">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /overview-tab -->
+
+      <!-- ══════════════ ANALYTICS TAB ══════════════ -->
+      <div class="adm-tab" id="analytics-tab">
+        <div class="page-header">
+          <div>
+            <h1>Analytics</h1>
+            <p>Revenue and performance breakdown</p>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon si-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="stat-body">
+              <div class="stat-title">Today's Revenue</div>
+              <div class="stat-value" id="analytics-today-revenue">₹0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div class="stat-body">
+              <div class="stat-title">This Month</div>
+              <div class="stat-value" id="analytics-month-revenue">₹0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="stat-body">
+              <div class="stat-title">Avg Order Value</div>
+              <div class="stat-value" id="analytics-avg-order">₹0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="stat-body">
+              <div class="stat-title">Conversion Rate</div>
+              <div class="stat-value" id="analytics-conversion">0%</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:8px;">
+          <div class="panel-head"><h2>Top Selling Products</h2></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue (₹)</th></tr></thead>
+              <tbody id="analytics-top-products-table"><tr><td colspan="3" class="tbl-empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /analytics-tab -->
+
+      <!-- ══════════════ PRODUCTS TAB ══════════════ -->
+      <div class="adm-tab" id="products-tab">
+        <div class="page-header">
+          <div>
+            <h1>Products</h1>
+            <p>Manage your catalog</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Products</h2></div>
+            <div class="panel-filters">
+              <div class="f-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="product-search" placeholder="Search products…" oninput="filterProducts()" />
+              </div>
+              <select class="f-select" id="product-category-filter" onchange="filterProducts()">
+                <option value="">All Categories</option>
+                <option value="T-Shirts">T-Shirts</option>
+                <option value="Stickers">Stickers</option>
+                <option value="Booklet">Booklet</option>
+                <option value="Workbook">Workbook</option>
+                <option value="Mockup">Mockup</option>
+                <option value="Badges">Badges</option>
+                <option value="Template">UI Template</option>
+              </select>
+              <button class="btn btn-primary" onclick="openCreateProductModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Product
+              </button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th style="width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-table">
+                <tr><td colspan="7" class="tbl-empty">Loading products…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /products-tab -->
+
+      <!-- ══════════════ BUNDLES TAB ══════════════ -->
+      <div class="adm-tab" id="bundles-tab">
+        <div class="page-header">
+          <div>
+            <h1>Bundles</h1>
+            <p>Create and manage bundle packages</p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="openBundleForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Bundle
+          </button>
+        </div>
+
+        <!-- Add / Edit Bundle Form Panel (hidden by default) -->
+        <div class="panel adm-collapsible-form" id="bundle-form-panel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2 id="bundle-form-title">Add New Bundle</h2>
+              <p>Fields marked <span class="req">*</span> are required</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs" onclick="closeBundleForm()" aria-label="Close form">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form id="bundle-editor-form" onsubmit="adminSaveBundle(event)" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="">
+            <input type="hidden" name="existing_image" value="">
+            <div class="panel-body">
+
+              <!-- Section: Basic Info -->
+              <div class="form-section-label">Basic Information</div>
+              <div class="form-grid">
+                <div class="form-group form-col-full">
+                  <label class="form-label">Bundle Name <span class="req">*</span></label>
+                  <input class="form-input" name="name" placeholder="e.g. Ultimate UI/UX Career Bundle" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Price (₹) <span class="req">*</span></label>
+                  <input class="form-input" name="price" type="number" step="0.01" min="0" placeholder="1499" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Compare-at Price (₹) <span class="form-help">shows strikethrough</span></label>
+                  <input class="form-input" name="old_price" type="number" step="0.01" min="0" placeholder="2999" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <input class="form-input" name="category" placeholder="e.g. Career Pack" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Badge Text <span class="form-help">card label (auto if blank)</span></label>
+                  <input class="form-input" name="badge_text" placeholder="Best Seller" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Stock Quantity</label>
+                  <input class="form-input" name="stock" type="number" min="0" placeholder="999" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Rating (0–5)</label>
+                  <input class="form-input" name="rating" type="number" step="0.1" min="0" max="5" placeholder="4.7" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tags <span class="form-help">comma-separated</span></label>
+                  <input class="form-input" name="tags" placeholder="design, ux, career" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Product IDs to link <span class="form-help">leave blank to keep existing</span></label>
+                  <input class="form-input" name="product_ids" placeholder="1, 2, 3" />
+                </div>
+                <div class="form-group form-col-full">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea" name="description" rows="3" placeholder="What makes this bundle valuable? Who is it for?"></textarea>
+                </div>
+              </div>
+
+              <!-- Section: Bundle Contents -->
+              <div class="form-section-label" style="margin-top:20px;">Bundle Contents</div>
+              <div class="form-grid">
+                <div class="form-group form-col-full">
+                  <label class="form-label">What's Included <span class="req">*</span> <span class="form-help">one item per line — displayed in popup &amp; cards</span></label>
+                  <textarea class="form-textarea" name="whats_included" rows="6" placeholder="15+ UI Screens&#10;UX Workbook&#10;Interview Prep Guide&#10;Portfolio Templates&#10;Resume &amp; Cover Letter Kit&#10;LinkedIn Banner Set"></textarea>
+                </div>
+                <div class="form-group form-col-full">
+                  <label class="form-label">File Specifications <span class="form-help">one per line — e.g. file types, resolution, format</span></label>
+                  <textarea class="form-textarea" name="file_specification" rows="4" placeholder="AI (Adobe Illustrator)&#10;PDF (Print-ready)&#10;PNG (300 DPI)&#10;Figma source file"></textarea>
+                </div>
+              </div>
+
+              <!-- Section: Media -->
+              <div class="form-section-label" style="margin-top:20px;">Media</div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Cover Image</label>
+                  <input class="form-input" name="image" type="file" accept="image/*" />
+                </div>
+                <div class="form-group form-col-full">
+                  <label class="form-label">Additional Gallery Images <span class="form-help">one path per line — shown in popup gallery</span></label>
+                  <textarea class="form-textarea" name="additional_images" rows="3" placeholder="assets/img/bundle-preview-2.jpg&#10;assets/img/bundle-preview-3.jpg"></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <div class="form-actions-left">
+                  <label class="toggle-wrap">
+                    <span class="toggle"><input type="checkbox" name="is_active" value="1" checked><span class="toggle-track"></span></span>
+                    <span class="toggle-label">Active</span>
+                  </label>
+                  <label class="toggle-wrap">
+                    <span class="toggle"><input type="checkbox" name="is_featured" value="1"><span class="toggle-track"></span></span>
+                    <span class="toggle-label">Best Seller</span>
+                  </label>
+                </div>
+                <div class="form-actions-right">
+                  <button id="bundle-cancel-btn" class="btn btn-ghost" type="button" style="display:none;" onclick="adminCancelBundleEdit()">Cancel</button>
+                  <button id="bundle-submit-btn" class="btn btn-primary" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Bundle
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <p class="panel-note">
+          <svg style="width:13px;height:13px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Bundles marked <strong>Best Seller</strong> appear in the featured slider on <code>bundles.php</code>.
+        </p>
+
+        <!-- Bundle List Panel -->
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Bundles</h2><p>Click Edit to modify a bundle</p></div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Bundle</th>
+                  <th>Price</th>
+                  <th>Best Seller</th>
+                  <th>Status</th>
+                  <th style="width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bundles-table">
+                <tr><td colspan="5" class="tbl-empty">Loading bundles…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /bundles-tab -->
+
+      <!-- ══════════════ CATEGORIES TAB ══════════════ -->
+      <div class="adm-tab" id="categories-tab">
+        <div class="page-header">
+          <div>
+            <h1>Categories</h1>
+            <p>Organise your product catalog</p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="openCategoryForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Category
+          </button>
+        </div>
+
+        <!-- Add Category Form Panel (hidden by default) -->
+        <div class="panel adm-collapsible-form" id="category-form-panel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2 id="category-form-title">Add New Category</h2>
+              <p>Create a new category for your products</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs" onclick="closeCategoryForm()" aria-label="Close form">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form onsubmit="adminSaveCategory(event)" enctype="multipart/form-data">
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Category Name <span class="req">*</span></label>
+                  <input class="form-input" name="name" placeholder="e.g. T-Shirts" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Accent Colour</label>
+                  <select class="form-select" name="accent">
+                    <option value="purple">Purple</option>
+                    <option value="green">Green</option>
+                    <option value="pink">Pink</option>
+                    <option value="orange">Orange</option>
+                    <option value="blue">Blue</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sort Order</label>
+                  <input class="form-input" name="sort_order" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Icon / Image</label>
+                  <input class="form-input" name="image" type="file" accept="image/*" />
+                </div>
+                <div class="form-group form-col-full">
+                  <label class="form-label">Description</label>
+                  <input class="form-input" name="description" placeholder="Brief description of this category" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <div></div>
+                <div class="form-actions-right">
+                  <button class="btn btn-primary" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Category
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Category List Panel -->
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Categories</h2><p>Manage your product categories</p></div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th style="width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="categories-table">
+                <tr><td colspan="5" class="tbl-empty">Loading categories…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /categories-tab -->
+
+      <!-- ══════════════ ORDERS TAB ══════════════ -->
+      <div class="adm-tab" id="orders-tab">
+        <div class="page-header">
+          <div>
+            <h1>Orders</h1>
+            <p>Track and manage customer orders</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Orders</h2></div>
+            <div class="panel-filters">
+              <div class="f-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="order-search" placeholder="Search orders…" oninput="filterOrders()" />
+              </div>
+              <select class="f-select" id="order-status-filter" onchange="filterOrders()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="awaiting_payment">Awaiting Payment</option>
+                <option value="paid">Paid</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="failed">Failed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table">
+                <tr><td colspan="8" class="tbl-empty">Loading orders…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /orders-tab -->
+
+      <!-- ══════════════ USERS TAB ══════════════ -->
+      <div class="adm-tab" id="users-tab">
+        <div class="page-header">
+          <div>
+            <h1>Users</h1>
+            <p>Manage customer accounts</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Users</h2></div>
+            <div class="panel-filters">
+              <div class="f-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="user-search" placeholder="Search users…" oninput="filterUsers()" />
+              </div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Registered</th>
+                  <th>Orders</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="users-table">
+                <tr><td colspan="7" class="tbl-empty">Loading users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /users-tab -->
+
+      <!-- ══════════════ REVIEWS TAB ══════════════ -->
+      <div class="adm-tab" id="reviews-tab">
+        <div class="page-header">
+          <div>
+            <h1>Reviews</h1>
+            <p>Moderate customer reviews</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><h2>All Reviews</h2><p>Approve or remove customer reviews</p></div></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reviews-table">
+                <tr><td colspan="6" class="tbl-empty">Loading reviews…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /reviews-tab -->
+
+      <!-- ══════════════ MESSAGES TAB ══════════════ -->
+      <div class="adm-tab" id="messages-tab">
+        <div class="page-header">
+          <div>
+            <h1>Messages</h1>
+            <p>Contact form inbox</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><h2>Contact Messages</h2><p>Messages sent through your contact form</p></div></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Subject</th>
+                  <th>Message</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="messages-table">
+                <tr><td colspan="6" class="tbl-empty">Loading messages…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /messages-tab -->
+
+      <!-- ══════════════ FREEBIES TAB ══════════════ -->
+      <div class="adm-tab" id="freebies-tab">
+        <div class="page-header">
+          <div>
+            <h1>Freebies</h1>
+            <p>Manage free design resources</p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="openFreebiesForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Freebie
+          </button>
+        </div>
+
+        <!-- Add / Edit Freebie Form Panel -->
+        <div class="panel adm-collapsible-form" id="freebie-form-panel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2 id="freebie-form-title">Add New Freebie</h2>
+              <p>Upload a free design resource for visitors to download</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs" onclick="closeFreebiesForm()" aria-label="Close form">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form onsubmit="adminSaveFreebies(event)" enctype="multipart/form-data" id="freebie-form">
+            <input type="hidden" name="id" id="freebie-id" value="0" />
+            <input type="hidden" name="existing_image" id="freebie-existing-image" value="" />
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Name <span class="req">*</span></label>
+                  <input class="form-input" name="name" id="freebie-name" placeholder="e.g. UI Kit Pro" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <input class="form-input" name="category" id="freebie-category" placeholder="e.g. UI Kit, Icons, Template" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">File URL</label>
+                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" placeholder="https://drive.google.com/…" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sort Order</label>
+                  <input class="form-input" name="sort_order" id="freebie-sort-order" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cover Image</label>
+                  <input class="form-input" name="image" type="file" accept="image/*" />
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:16px;padding-top:28px;">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;">
+                    <input type="checkbox" name="is_active" id="freebie-is-active" value="1" checked style="accent-color:var(--accent);width:16px;height:16px;" />
+                    Active
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;">
+                    <input type="checkbox" name="is_featured" id="freebie-is-featured" value="1" style="accent-color:var(--accent);width:16px;height:16px;" />
+                    Featured
+                  </label>
+                </div>
+                <div class="form-group form-col-full">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-input" name="description" id="freebie-description" rows="3" placeholder="Brief description of this resource" style="resize:vertical;"></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <div></div>
+                <div class="form-actions-right">
+                  <button class="btn btn-ghost" type="button" onclick="closeFreebiesForm()">Cancel</button>
+                  <button class="btn btn-primary" type="submit" id="freebie-submit-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Freebie
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Freebie List Panel -->
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>All Freebies</h2><p>Manage your free design resources</p></div>
+            <div class="panel-filters">
+              <input class="form-input" style="max-width:200px;" type="search" placeholder="Search freebies…" oninput="filterAdminFreebies(this.value)" />
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Downloads</th>
+                  <th>Status</th>
+                  <th style="width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="freebies-table">
+                <tr><td colspan="5" class="tbl-empty">Loading freebies…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /freebies-tab -->
+
+    </div><!-- /adm-content -->
+  </main><!-- /adm-main -->
+
+</div><!-- /adm -->
+
+<!-- ═══════════════════════════════════════════════════
+     TOAST HOST
+═══════════════════════════════════════════════════ -->
+<div id="toast-host"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     ORDER DETAILS MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="order-details-modal-overlay" onclick="closeOrderDetailsModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Order Details</h2>
+      <button class="modal-close" onclick="closeOrderDetailsModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="order-details-content">
+      <div class="tbl-empty">Loading order…</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeOrderDetailsModal()">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- Order Status Update Modal -->
-  <div class="modal-overlay" id="status-modal-overlay" onclick="closeStatusModal()">
-    <div class="modal-dialog" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Update Order Status</h2>
-        <button class="modal-close" onclick="closeStatusModal()" aria-label="Close modal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="modal-order-info">
-          <p><strong>Order Number:</strong> <span id="modal-order-number">N/A</span></p>
-          <p><strong>Customer:</strong> <span id="modal-order-customer">N/A</span></p>
-          <p><strong>Current Status:</strong> <span id="modal-current-status"><span class="badge badge-info">Processing</span></span></p>
-        </div>
-        <div class="form-group" style="margin-top: 1.5rem;">
-          <label class="form-label" for="status-select">
-            Select New Status
-            <span class="required">*</span>
-          </label>
-          <select id="status-select" class="form-select">
-            <option value="">Select Status</option>
-            <option value="pending">Pending</option>
-            <option value="awaiting_payment">Awaiting payment</option>
-            <option value="paid">Paid</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="failed">Failed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+<!-- ═══════════════════════════════════════════════════
+     ORDER STATUS MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="status-modal-overlay" onclick="closeStatusModal()">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Update Order Status</h2>
+      <button class="modal-close" onclick="closeStatusModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="order-info-grid" style="grid-template-columns:1fr;">
+        <div class="order-info-block">
+          <p><strong>Order:</strong> <span id="modal-order-number">—</span></p>
+          <p style="margin-top:6px;"><strong>Customer:</strong> <span id="modal-order-customer">—</span></p>
+          <p style="margin-top:6px;"><strong>Current Status:</strong> <span id="modal-current-status">—</span></p>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeStatusModal()">Cancel</button>
-        <button class="btn-primary" onclick="confirmStatusUpdate()">Update Status</button>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">New Status <span class="req">*</span></label>
+        <select class="form-select" id="status-select">
+          <option value="">Select status…</option>
+          <option value="pending">Pending</option>
+          <option value="awaiting_payment">Awaiting Payment</option>
+          <option value="paid">Paid</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
       </div>
     </div>
-  </div>
-
-  <!-- Edit Product Modal -->
-  <div class="modal-overlay" id="edit-product-modal-overlay" onclick="closeEditProductModal()">
-    <div class="modal-dialog" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h2 id="product-modal-title">Edit Product</h2>
-        <button class="modal-close" onclick="closeEditProductModal()" aria-label="Close modal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="edit-product-form" onsubmit="handleUpdateProduct(event)">
-          <input type="hidden" id="edit-product-id" name="id">
-          <input type="hidden" id="edit-product-existing-image" name="existing_image">
-
-          <div class="form-section">
-            <h3 class="form-section-title">Basic Information</h3>
-            <div class="form-grid">
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="edit-product-name">Product Name <span class="required">*</span></label>
-                <input type="text" id="edit-product-name" name="name" class="form-input" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-sku">SKU</label>
-                <input type="text" id="edit-product-sku" name="sku" class="form-input" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-category">Category <span class="required">*</span></label>
-                <select id="edit-product-category" name="category" class="form-select" required>
-                  <option value="T-Shirts">T-Shirts</option>
-                  <option value="Stickers">Stickers</option>
-                  <option value="Booklet">Booklet</option>
-                  <option value="Workbook">Workbook</option>
-                  <option value="Mockup">Mockup</option>
-                  <option value="Badges">Badges</option>
-                  <option value="Template">UI Template</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-rating">Rating</label>
-                <input type="number" id="edit-product-rating" name="rating" class="form-input" step="0.1" min="0"
-                  max="5" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-available">Type</label>
-                <select id="edit-product-available" name="available_type" class="form-select">
-                  <option value="digital">Digital</option>
-                  <option value="physical">Physical</option>
-                  <option value="both">Both</option>
-                </select>
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="edit-product-description">Description</label>
-                <textarea id="edit-product-description" name="description" class="form-textarea"></textarea>
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="edit-product-whats">What's Included</label>
-                <textarea id="edit-product-whats" name="whats_included" class="form-textarea"></textarea>
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="edit-product-specs">Specifications</label>
-                <textarea id="edit-product-specs" name="file_specification" class="form-textarea"></textarea>
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="edit-product-tags">Tags</label>
-                <input type="text" id="edit-product-tags" name="tags" class="form-input" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3 class="form-section-title">Pricing & Inventory</h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label" for="edit-product-price">Price <span class="required">*</span></label>
-                <input type="number" id="edit-product-price" name="price" class="form-input" step="0.01" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-old-price">Old Price (Optional)</label>
-                <input type="number" id="edit-product-old-price" name="old_price" class="form-input" step="0.01" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-commercial-price">Commercial Price</label>
-                <input type="number" id="edit-product-commercial-price" name="commercial_price" class="form-input" step="0.01" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-stock">Stock <span class="required">*</span></label>
-                <input type="number" id="edit-product-stock" name="stock" class="form-input" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-active">Status</label>
-                <select id="edit-product-active" name="is_active" class="form-select">
-                  <option value="1">Active</option>
-                  <option value="0">Archived</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="edit-product-featured">Featured</label>
-                <select id="edit-product-featured" name="is_featured" class="form-select">
-                  <option value="0">No</option>
-                  <option value="1">Yes</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3 class="form-section-title">Media</h3>
-            <label class="form-label" for="edit-product-image">Update Main Image</label>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-              <input type="file" id="edit-product-image" name="image" class="form-input" accept="image/*" style="flex: 1;">
-            </div>
-            <div id="current-image-preview"
-              style="margin-top: 1rem; font-size: 0.8rem; color: var(--admin-text); opacity: 0.8;"></div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" onclick="closeEditProductModal()">Cancel</button>
-            <button type="submit" class="btn-primary">Save Changes</button>
-          </div>
-        </form>
-      </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeStatusModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmStatusUpdate()">Update Status</button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     EDIT / ADD PRODUCT MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-product-modal-overlay" onclick="closeEditProductModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2 id="product-modal-title">Add Product</h2>
+      <button class="modal-close" onclick="closeEditProductModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="edit-product-form" onsubmit="handleUpdateProduct(event)">
+        <input type="hidden" id="edit-product-id" name="id">
+        <input type="hidden" id="edit-product-existing-image" name="existing_image">
+
+        <!-- Basic Info -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Basic Information
+          </div>
+          <div class="form-grid">
+            <div class="form-group form-col-full">
+              <label class="form-label">Product Name <span class="req">*</span></label>
+              <input class="form-input" id="edit-product-name" name="name" required placeholder="e.g. UX Sticker Pack" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SKU</label>
+              <input class="form-input" id="edit-product-sku" name="sku" placeholder="UXP-001" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category <span class="req">*</span></label>
+              <select class="form-select" id="edit-product-category" name="category" required>
+                <option value="T-Shirts">T-Shirts</option>
+                <option value="Stickers">Stickers</option>
+                <option value="Booklet">Booklet</option>
+                <option value="Workbook">Workbook</option>
+                <option value="Mockup">Mockup</option>
+                <option value="Badges">Badges</option>
+                <option value="Template">UI Template</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-select" id="edit-product-available" name="available_type">
+                <option value="digital">Digital</option>
+                <option value="physical">Physical</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rating (0–5)</label>
+              <input class="form-input" id="edit-product-rating" name="rating" type="number" step="0.1" min="0" max="5" placeholder="4.5" />
+            </div>
+            <div class="form-group form-col-full">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" id="edit-product-description" name="description" placeholder="Describe the product…"></textarea>
+            </div>
+            <div class="form-group form-col-full">
+              <label class="form-label">What's Included</label>
+              <textarea class="form-textarea" id="edit-product-whats" name="whats_included" placeholder="List what's included…"></textarea>
+            </div>
+            <div class="form-group form-col-full">
+              <label class="form-label">Specifications</label>
+              <textarea class="form-textarea" id="edit-product-specs" name="file_specification" placeholder="File specs, dimensions…"></textarea>
+            </div>
+            <div class="form-group form-col-full">
+              <label class="form-label">Tags</label>
+              <input class="form-input" id="edit-product-tags" name="tags" placeholder="ux, design, sticker" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Pricing & Inventory
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Price (₹) <span class="req">*</span></label>
+              <input class="form-input" id="edit-product-price" name="price" type="number" step="0.01" required placeholder="499" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Old Price (₹)</label>
+              <input class="form-input" id="edit-product-old-price" name="old_price" type="number" step="0.01" placeholder="799" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Commercial Price (₹)</label>
+              <input class="form-input" id="edit-product-commercial-price" name="commercial_price" type="number" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stock <span class="req">*</span></label>
+              <input class="form-input" id="edit-product-stock" name="stock" type="number" required placeholder="100" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="edit-product-active" name="is_active">
+                <option value="1">Active</option>
+                <option value="0">Archived</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Featured</label>
+              <select class="form-select" id="edit-product-featured" name="is_featured">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Media
+          </div>
+          <div class="form-group">
+            <label class="form-label">Main Image</label>
+            <input class="form-input" id="edit-product-image" name="image" type="file" accept="image/*" />
+          </div>
+          <div id="current-image-preview" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:12px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border);">
+          <button type="button" class="btn btn-ghost" onclick="closeEditProductModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Product
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
+</div>
 
-  <script src="../script.js"></script>
-  <script src="admin-dashboard.js?v=<?php echo time(); ?>"></script>
-  <script>
-    // Theme Toggle
-    function toggleTheme() {
-      const dashboard = document.querySelector('.admin-dashboard');
-      const currentTheme = dashboard.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      dashboard.setAttribute('data-theme', newTheme);
-      localStorage.setItem('admin-theme', newTheme);
-      updateThemeIcon(newTheme);
-    }
+<!-- ═══════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════ -->
+<script src="admin-dashboard.js?v=<?php echo time(); ?>"></script>
+<script>
+/* ── Theme ── */
+function toggleTheme() {
+  const root = document.documentElement;
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('admin-theme', next);
+  updateThemeIcon(next);
+}
+function updateThemeIcon(theme) {
+  document.getElementById('theme-icon-sun').style.display  = theme === 'dark' ? 'block' : 'none';
+  document.getElementById('theme-icon-moon').style.display = theme === 'dark' ? 'none'  : 'block';
+}
 
-    function updateThemeIcon(theme) {
-      const sunIcon = document.getElementById('theme-icon-sun');
-      const moonIcon = document.getElementById('theme-icon-moon');
-      if (theme === 'dark') {
-        sunIcon.style.display = 'block';
-        moonIcon.style.display = 'none';
-      } else {
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';
-      }
-    }
+/* ── Sidebar ── */
+function toggleSidebarCollapse() {
+  const sb = document.getElementById('adm-sidebar');
+  sb.classList.toggle('collapsed');
+  localStorage.setItem('admin-sidebar-collapsed', sb.classList.contains('collapsed'));
+}
+function openSidebar() {
+  document.getElementById('adm-sidebar').classList.add('open');
+  document.getElementById('sb-overlay').classList.add('active');
+}
+function closeSidebar() {
+  document.getElementById('adm-sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('active');
+}
+function toggleSidebar() {
+  const sb = document.getElementById('adm-sidebar');
+  sb.classList.contains('open') ? closeSidebar() : openSidebar();
+}
 
-    // Sidebar Toggle
-    function toggleSidebarCollapse() {
-      const sidebar = document.getElementById('admin-sidebar');
-      sidebar.classList.toggle('collapsed');
-      localStorage.setItem('admin-sidebar-collapsed', sidebar.classList.contains('collapsed'));
-    }
+/* ── Tab switching ── */
+const tabTitles = {
+  overview:'Overview', analytics:'Analytics', products:'Products',
+  bundles:'Bundles', categories:'Categories', orders:'Orders',
+  users:'Users', reviews:'Reviews', messages:'Messages', freebies:'Freebies'
+};
+function switchTab(tab, element) {
+  event && event.preventDefault && event.preventDefault();
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (element) element.classList.add('active');
+  document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(tab + '-tab');
+  if (el) el.classList.add('active');
+  const title = document.getElementById('topbar-title');
+  if (title) title.textContent = tabTitles[tab] || tab;
+  if (tab === 'overview')    loadOverview();
+  else if (tab === 'analytics')  loadAnalytics();
+  else if (tab === 'products')   loadProducts();
+  else if (tab === 'bundles')    loadAdminBundles();
+  else if (tab === 'categories') loadAdminCategories();
+  else if (tab === 'orders')     loadOrders();
+  else if (tab === 'users')      loadUsers();
+  else if (tab === 'reviews')    loadReviews();
+  else if (tab === 'messages')   loadMessages();
+  else if (tab === 'freebies')   loadAdminFreebies();
+  if (window.innerWidth <= 1100) closeSidebar();
+}
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById('admin-sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('active');
-    }
+/* ── Topbar search passthrough ── */
+function handleTopbarSearch(val) {
+  const activeTab = document.querySelector('.adm-tab.active');
+  if (!activeTab) return;
+  const id = activeTab.id;
+  if (id === 'products-tab') {
+    const s = document.getElementById('product-search');
+    if (s) { s.value = val; filterProducts(); }
+  } else if (id === 'orders-tab') {
+    const s = document.getElementById('order-search');
+    if (s) { s.value = val; filterOrders(); }
+  } else if (id === 'users-tab') {
+    const s = document.getElementById('user-search');
+    if (s) { s.value = val; filterUsers(); }
+  }
+}
 
-    // Tab Switching
-    function switchTab(tab, element) {
-      event.preventDefault();
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', function () {
+  const savedTheme = localStorage.getItem('admin-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+  const sbCollapsed = localStorage.getItem('admin-sidebar-collapsed') === 'true';
+  if (sbCollapsed && window.innerWidth > 1100) {
+    document.getElementById('adm-sidebar').classList.add('collapsed');
+  }
+});
 
-      // Update sidebar nav
-      document.querySelectorAll('.sidebar-nav-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      element.classList.add('active');
-
-      // Update tabs
-      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(tab + '-tab').classList.add('active');
-
-      // Reload data
-      if (tab === 'overview') loadOverview();
-      else if (tab === 'users') loadUsers();
-      else if (tab === 'products') loadProducts();
-      else if (tab === 'orders') loadOrders();
-      else if (tab === 'categories') loadAdminCategories();
-      else if (tab === 'bundles') loadAdminBundles();
-      else if (tab === 'reviews') loadReviews();
-      else if (tab === 'messages') loadMessages();
-      else if (tab === 'analytics') loadAnalytics();
-
-      // Close mobile sidebar
-      if (window.innerWidth <= 1024) {
-        toggleSidebar();
-      }
-    }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function () {
-      // Load saved theme
-      const savedTheme = localStorage.getItem('admin-theme') || 'light';
-      document.querySelector('.admin-dashboard').setAttribute('data-theme', savedTheme);
-      updateThemeIcon(savedTheme);
-
-      // Load sidebar state
-      const sidebarCollapsed = localStorage.getItem('admin-sidebar-collapsed') === 'true';
-      if (sidebarCollapsed && window.innerWidth > 1024) {
-        document.getElementById('admin-sidebar').classList.add('collapsed');
-      }
-    });
-
-    window.toggleTheme = toggleTheme;
-    window.toggleSidebarCollapse = toggleSidebarCollapse;
-    window.toggleSidebar = toggleSidebar;
-    window.switchTab = switchTab;
-
-  </script>
+window.toggleTheme = toggleTheme;
+window.toggleSidebarCollapse = toggleSidebarCollapse;
+window.toggleSidebar = toggleSidebar;
+window.switchTab = switchTab;
+</script>
 </body>
-
 </html>

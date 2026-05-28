@@ -1,14 +1,15 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 
-$user = apiRequireUser();
+apiRequirePost();
+$user  = apiRequireUser();
 $input = apiInput();
 validateCsrf();
 
-$productId = (int) ($input['product_id'] ?? 0);
-$quantity = (int) ($input['quantity'] ?? 1);
-$size = trim((string) ($input['size'] ?? ''));
-$sizeValue = $size !== '' ? $size : null;
+$productId     = (int) ($input['product_id'] ?? 0);
+$quantity      = (int) ($input['quantity'] ?? 1);
+$size          = trim((string) ($input['size'] ?? ''));
+$sizeValue     = $size !== '' ? $size : null;
 $availableType = trim((string) ($input['available_type'] ?? 'physical'));
 
 if ($productId <= 0) {

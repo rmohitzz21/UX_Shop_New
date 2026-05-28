@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 
-$user = apiRequireUser();
+apiRequirePost();
+$user  = apiRequireUser();
 $input = apiInput();
 validateCsrf();
 
@@ -15,17 +16,23 @@ foreach ($items as $item) {
         continue;
     }
     $payload = [
-        'product_id' => $item['id'] ?? null,
-        'quantity' => $item['quantity'] ?? 1,
-        'size' => $item['size'] ?? null,
+        'product_id' => $item['id'] ?? $item['product_id'] ?? null,
+        'item_type'  => $item['item_type'] ?? $item['type'] ?? 'product',
+        'quantity'   => $item['quantity'] ?? 1,
+        'size'       => $item['size'] ?? null,
         'available_type' => $item['available_type'] ?? 'physical',
-        'details' => $item,
     ];
+
+    // apiEnsureProduct now only uses server-side data; returns 404 if unknown product
     $productId = apiEnsureProduct($conn, $payload);
-    $quantity = max(1, min(10, (int) ($payload['quantity'] ?? 1)));
-    $size = trim((string) ($payload['size'] ?? ''));
-    $sizeValue = $size !== '' ? $size : null;
-    $availableType = $payload['available_type'];
+
+    $quantity      = max(1, min(10, (int) $payload['quantity']));
+    $size          = trim((string) ($payload['size'] ?? ''));
+    $sizeValue     = $size !== '' ? $size : null;
+    $availableType = (string) $payload['available_type'];
+    if (!in_array($availableType, ['physical', 'digital', 'both'], true)) {
+        $availableType = 'physical';
+    }
     if ($availableType === 'both') {
         $availableType = 'physical';
     }
@@ -36,7 +43,7 @@ foreach ($items as $item) {
     $existing = $stmt->get_result()->fetch_assoc();
     if ($existing) {
         $newQty = min(10, (int) $existing['quantity'] + $quantity);
-        $stmt = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
+        $stmt   = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
         $stmt->bind_param('ii', $newQty, $existing['id']);
         $stmt->execute();
     } else {
