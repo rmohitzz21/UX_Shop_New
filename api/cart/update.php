@@ -28,4 +28,8 @@ $stmt = $conn->prepare('UPDATE cart SET quantity = ? WHERE user_id = ? AND produ
 $stmt->bind_param('iiiss', $quantity, $user['id'], $productId, $sizeValue, $availableType);
 $stmt->execute();
 
+if ($stmt->affected_rows === 0) {
+    sendResponse('error', 'Item not found in cart.', null, 404);
+}
+
 sendResponse('success', 'Cart updated.');

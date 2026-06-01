@@ -19,4 +19,5 @@ $stmt = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ? AN
 $stmt->bind_param('iiss', $user['id'], $productId, $sizeValue, $availableType);
 $stmt->execute();
 
-sendResponse('success', 'Item removed from cart.');
+// Note: We return success even if item wasn't found (idempotent delete)
+sendResponse('success', 'Item removed from cart.', ['removed' => $stmt->affected_rows > 0]);

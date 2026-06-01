@@ -1,10 +1,17 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+require_once __DIR__ . '/../../includes/auth_rate_limit.php';
 
 apiRequirePost();
 $user  = apiRequireUser();
 $input = apiInput();
 validateCsrf();
+
+// Rate limit: 5 password change attempts per user per 15 minutes (prevents brute-forcing current password)
+$rateLimitKey = 'change_password_' . $user['id'];
+if (!authRateLimitAllow($rateLimitKey, 5, 900)) {
+    sendResponse('error', 'Too many password change attempts. Please try again later.', null, 429);
+}
 
 $currentPassword = (string) ($input['current_password'] ?? '');
 $newPassword     = (string) ($input['new_password'] ?? '');
@@ -15,6 +22,9 @@ if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
 }
 if (strlen($newPassword) < 8) {
     sendResponse('error', 'New password must be at least 8 characters.', null, 422);
+}
+if (strlen($newPassword) > 128) {
+    sendResponse('error', 'Password is too long.', null, 422);
 }
 if ($newPassword !== $confirmPassword) {
     sendResponse('error', 'New passwords do not match.', null, 422);

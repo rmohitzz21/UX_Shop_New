@@ -15,10 +15,10 @@
 | 3 | **Sign out** | header / account | `api/auth/logout.php` | ✅ Audited |
 | 4 | **Session / CSRF** | all pages | `api/auth/session.php`, `api/auth/csrf.php` | ✅ Audited |
 | 5 | **Forgot / reset password** | `forgot-password.php`, `reset-password.php` | `api/auth/forgot-password.php`, `verify-reset-token.php`, `reset-password.php` | ✅ Audited |
-| 6 | Profile | `account.php` | `api/user/profile.php`, `update_profile.php` | Pending |
-| 7 | Change password | account | `api/user/update_password.php` | Pending |
-| 8 | Delete account | account | `api/user/delete_account.php` | Pending |
-| 9 | Cart | `cart.php` | `api/cart/*` | Pending |
+| 6 | **Profile** | `account.php` | `api/user/profile.php`, `update_profile.php` | ✅ Audited |
+| 7 | **Change password** | account | `api/user/update_password.php` | ✅ Audited |
+| 8 | **Delete account** | account | `api/user/delete_account.php` | ✅ Audited |
+| 9 | **Cart** | `cart.php` | `api/cart/*` | ✅ Audited |
 | 10 | Wishlist | `wishlist.php` | `api/wishlist/*` | Pending |
 | 11 | Addresses | checkout / account | `api/address/*` | Pending |
 | 12 | Checkout / orders | `checkout.php`, `orders.php` | `api/order/*`, `api/payment/*` | Pending |
@@ -456,7 +456,7 @@ function validateCsrf() {
 ## 4.11. Verdict
 
 **Status**: ✅ **Production-ready**
-
+ 
 Session and CSRF handling is solid:
 - All protected pages have proper server-side auth guards
 - All mutation APIs validate CSRF tokens
@@ -636,6 +636,344 @@ The forgot/reset password flow is secure:
 
 ---
 
-# 6. Profile / Change Password (next)
+# 6. Profile / Change Password / Delete Account
 
-_To be filled when auditing `api/user/profile.php`, `api/user/update_profile.php`, `api/user/update_password.php`._
+**Scope**: User profile management, password change, account deletion.
+
+---
+
+## 6.1. Endpoint Map
+
+| Purpose | File | Method | Auth | CSRF |
+|---------|------|--------|------|------|
+| Get profile | `api/user/profile.php` | GET | ✅ Required | No (read-only) |
+| Update profile | `api/user/update_profile.php` | POST | ✅ Required | ✅ Yes |
+| Change password | `api/user/update_password.php` | POST | ✅ Required | ✅ Yes |
+| Delete account | `api/user/delete_account.php` | POST | ✅ Required | ✅ Yes |
+
+---
+
+## 6.2. API Analysis
+
+### `api/user/profile.php` (GET profile)
+
+| Aspect | Status |
+|--------|--------|
+| Auth check | ✅ `apiRequireUser()` |
+| Returns limited data | ✅ No password hash exposed |
+| Error handling | ✅ 404 if user not found |
+
+### `api/user/update_profile.php` (Update profile)
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Name validation | ✅ Required, 2-100 chars |
+| Phone validation | ✅ Sanitized, max 20 chars |
+| Session sync | ✅ Updates `$_SESSION` after change |
+
+### `api/user/update_password.php` (Change password)
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Rate limiting | ✅ 5 attempts/15min per user |
+| Current password verify | ✅ `password_verify()` |
+| New password min length | ✅ 8 characters |
+| New password max length | ✅ 128 characters |
+| Confirm match | ✅ Validated |
+| Password hashing | ✅ `password_hash(PASSWORD_DEFAULT)` |
+| Session revocation | ✅ Deletes `user_tokens` |
+
+### `api/user/delete_account.php` (Delete account)
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Password confirmation | ✅ Required |
+| Soft delete | ✅ Anonymizes, doesn't hard delete |
+| Data cleanup | ✅ Removes addresses, cart, tokens |
+| Transaction | ✅ Atomic operation |
+| Session destroy | ✅ Clears session after delete |
+
+---
+
+## 6.3. Frontend Page (`account.php`)
+
+| Aspect | Status |
+|--------|--------|
+| Server-side auth guard | ✅ Redirects to signin if not logged in |
+| CSRF meta tag | ✅ Present |
+| Profile form validation | ✅ `required`, `minlength` attributes |
+| Password form validation | ✅ `minlength=8` |
+| Loading states | ✅ Both forms have loading indicators |
+| Error display | ✅ Toast notifications |
+| User stats display | ✅ Orders, recent orders, total spent |
+
+---
+
+## 6.4. Fixes Applied
+
+| ID | Issue | Fix |
+|----|-------|-----|
+| PF1 | No phone length validation | ✅ Added max 20 chars check |
+| PF2 | No min name length validation | ✅ Added min 2 chars check |
+| PF3 | No rate limit on password change | ✅ Added 5 attempts/15min per user |
+| PF4 | No max password length | ✅ Added 128 chars max |
+| PF5 | Profile form no loading state | ✅ Added loading indicator |
+
+---
+
+## 6.5. Security Features
+
+1. **Authentication required** — All profile APIs require login.
+2. **CSRF protection** — All mutation endpoints validate CSRF.
+3. **Rate limiting** — Password change limited to prevent brute-force.
+4. **Current password verification** — Required before password change.
+5. **Session revocation** — Other devices logged out on password change.
+6. **Soft delete** — Account anonymized for audit trail, not hard deleted.
+7. **Transaction safety** — Delete uses transaction for atomicity.
+8. **Input sanitization** — Phone stripped of invalid characters.
+9. **Length validation** — All fields have min/max length checks.
+
+---
+
+## 6.6. Manual Test Plan
+
+| # | Test Case | Expected |
+|---|-----------|----------|
+| 1 | Load account page without login | Redirect to signin.php |
+| 2 | Update first name to "A" (1 char) | "Name fields must be at least 2 characters" |
+| 3 | Update name with 101 chars | "Name fields must be 100 characters or fewer" |
+| 4 | Update phone with 25 chars | "Phone number is too long" |
+| 5 | Update profile with valid data | "Profile saved" toast |
+| 6 | Change password with wrong current | "Current password is incorrect" |
+| 7 | Change password with <8 char new | "New password must be at least 8 characters" |
+| 8 | Change password with mismatch | "New passwords do not match" |
+| 9 | Change password correctly | "Password updated successfully" |
+| 10 | Try password change >5 times in 15min | "Too many password change attempts" |
+| 11 | Delete account with wrong password | "Incorrect password" |
+| 12 | Delete account correctly | Logged out, account anonymized |
+
+---
+
+## 6.7. Open Follow-ups
+
+| ID | Severity | Description |
+|----|----------|-------------|
+| PF6 | Low | No delete account UI in `account.php` (API exists but no button). |
+| PF7 | Info | No email change functionality (email is readonly). |
+| PF8 | Info | No profile photo support. |
+| PF9 | Info | No password change notification email sent. |
+
+---
+
+## 6.8. Verdict
+
+**Status**: ✅ **Production-ready**
+
+Profile management is secure:
+- All endpoints require authentication
+- CSRF protection on all mutations
+- Rate limiting prevents password brute-force
+- Current password verification required
+- Proper input validation and sanitization
+- Soft delete preserves audit trail
+- Session revoked on password change
+
+---
+
+# 7. Delete Account (next)
+
+_Already covered in section 6 above._
+
+---
+
+# 8. Cart APIs
+
+**Scope**: Shopping cart management - add, list, update, remove, merge.
+
+---
+
+## 8.1. Endpoint Map
+
+| Purpose | File | Method | Auth | CSRF |
+|---------|------|--------|------|------|
+| Add to cart | `api/cart/add.php` | POST | ✅ Required | ✅ Yes |
+| List cart | `api/cart/list.php` | GET | ✅ Required | No (read-only) |
+| Update quantity | `api/cart/update.php` | POST | ✅ Required | ✅ Yes |
+| Remove item | `api/cart/remove.php` | POST | ✅ Required | ✅ Yes |
+| Merge guest cart | `api/cart/merge.php` | POST | ✅ Required | ✅ Yes |
+
+---
+
+## 8.2. API Analysis
+
+### `api/cart/add.php`
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Product validation | ✅ `apiEnsureProduct()` verifies product exists |
+| Quantity limit | ✅ Capped at 1-10 |
+| Available type | ✅ Validated (physical/digital/both) |
+| Duplicate handling | ✅ Updates existing item quantity |
+
+### `api/cart/list.php`
+
+| Aspect | Status |
+|--------|--------|
+| Auth check | ✅ `apiRequireUser()` |
+| Stale data cleanup | ✅ Removes invalid/archived products |
+| Fresh data | ✅ Joins with products table |
+| Only active products | ✅ `is_active = 1` filter |
+
+### `api/cart/update.php`
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Product ID validation | ✅ Checks > 0 |
+| Zero quantity | ✅ Deletes item if qty <= 0 |
+| Quantity limit | ✅ Capped at 10 |
+| Item existence | ✅ Returns 404 if not found |
+
+### `api/cart/remove.php`
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Product ID validation | ✅ Checks > 0 |
+| Idempotent | ✅ Success even if item not found |
+| Feedback | ✅ Returns `removed` flag |
+
+### `api/cart/merge.php`
+
+| Aspect | Status |
+|--------|--------|
+| Method check | ✅ `apiRequirePost()` |
+| Auth check | ✅ `apiRequireUser()` |
+| CSRF validation | ✅ `validateCsrf()` |
+| Product validation | ✅ `apiEnsureProduct()` for each item |
+| Quantity limit | ✅ Capped at 10 per item |
+| Items limit | ✅ Max 50 items per merge |
+| Available type | ✅ Validated |
+
+---
+
+## 8.3. Frontend (`cart.php`)
+
+| Aspect | Status |
+|--------|--------|
+| CSRF meta tag | ✅ Present |
+| Works for guests | ✅ Uses localStorage |
+| Works for logged in | ✅ Uses API |
+| Digital/physical sections | ✅ Separated |
+| Empty cart state | ✅ Handled |
+| Quantity controls | ✅ +/- buttons |
+| Remove item | ✅ X button |
+| Order summary | ✅ Subtotal, shipping, tax, total |
+
+---
+
+## 8.4. Client-Side Logic (`script.js`)
+
+| Function | Purpose |
+|----------|---------|
+| `addToCart()` | Add item - API for logged in, localStorage for guest |
+| `removeFromCart()` | Remove item |
+| `updateCartQuantity()` | Change quantity |
+| `fetchCartFromAPI()` | Sync cart from server |
+| Cart merge on login | Merges localStorage cart with server cart |
+
+---
+
+## 8.5. Fixes Applied
+
+| ID | Issue | Fix |
+|----|-------|-----|
+| CT1 | Update didn't verify item exists | ✅ Returns 404 if item not found |
+| CT2 | Remove had no feedback | ✅ Returns `removed` flag |
+| CT3 | Merge had no items limit | ✅ Added max 50 items limit |
+
+---
+
+## 8.6. Security Features
+
+1. **Authentication required** — All cart APIs require login.
+2. **CSRF protection** — All mutation endpoints validate CSRF.
+3. **Product validation** — `apiEnsureProduct()` verifies products exist and are active.
+4. **Quantity limits** — Capped at 10 per item.
+5. **User isolation** — Cart filtered by `user_id` in all queries.
+6. **Stale data cleanup** — List removes invalid products automatically.
+7. **Safe merge** — Limited to 50 items, validates each product.
+
+---
+
+## 8.7. Guest Cart Flow
+
+1. Guest adds items → stored in `localStorage`
+2. Guest signs in → JS calls `api/cart/merge.php` with localStorage cart
+3. Merge validates each item via `apiEnsureProduct()`
+4. Server cart updated, localStorage cleared
+5. Cart fetched fresh from API
+
+---
+
+## 8.8. Manual Test Plan
+
+| # | Test Case | Expected |
+|---|-----------|----------|
+| 1 | Add item as guest | Stored in localStorage, badge updates |
+| 2 | Add same item twice | Quantity increments (max 10) |
+| 3 | Add item when logged in | API called, cart synced |
+| 4 | Update quantity to 0 | Item removed |
+| 5 | Update quantity > 10 | Capped at 10 |
+| 6 | Remove item | Item removed, badge updates |
+| 7 | Remove non-existent item | Success (idempotent), `removed: false` |
+| 8 | Guest login with cart | Cart merged with server |
+| 9 | List cart with deleted product | Stale item auto-removed |
+| 10 | Merge 60 items | Only 50 processed |
+| 11 | Add invalid product ID | "Product not found" error |
+
+---
+
+## 8.9. Open Follow-ups
+
+| ID | Severity | Description |
+|----|----------|-------------|
+| CT4 | Info | No cart expiry (items stay forever until checkout/remove). |
+| CT5 | Info | No stock check on add (checked at checkout). |
+| CT6 | Info | No saved-for-later functionality. |
+
+---
+
+## 8.10. Verdict
+
+**Status**: ✅ **Production-ready**
+
+Cart system is secure and functional:
+- Authentication and CSRF on all mutations
+- Product validation prevents invalid items
+- Quantity limits prevent abuse
+- User isolation in all queries
+- Guest-to-user cart merge works correctly
+- Stale data auto-cleanup
+
+---
+
+# 9. Wishlist APIs (next)
+
+_To be filled when auditing `api/wishlist/add.php`, `list.php`, `remove.php`, `toggle.php`._

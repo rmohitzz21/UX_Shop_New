@@ -11,6 +11,11 @@ if (!is_array($items)) {
     $items = [];
 }
 
+// Limit merge to 50 items max to prevent abuse
+if (count($items) > 50) {
+    $items = array_slice($items, 0, 50);
+}
+
 foreach ($items as $item) {
     if (!is_array($item)) {
         continue;

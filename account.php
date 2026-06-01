@@ -262,10 +262,17 @@ if ($statsStmt) {
 <script>
 document.getElementById('account-form').addEventListener('submit', async (event) => {
   event.preventDefault();
+  const btn = event.target.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saving…';
   const payload = Object.fromEntries(new FormData(event.target).entries());
-  const response = await fetch('api/user/update_profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() }, body: JSON.stringify(payload) });
-  const data = await response.json();
-  showToast(data.message || (data.status === 'success' ? 'Profile saved.' : 'Could not save profile.'), data.status === 'success' ? 'success' : 'error');
+  try {
+    const response = await fetch('api/user/update_profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() }, body: JSON.stringify(payload) });
+    const data = await response.json();
+    showToast(data.message || (data.status === 'success' ? 'Profile saved.' : 'Could not save profile.'), data.status === 'success' ? 'success' : 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
 });
 
 document.getElementById('password-form').addEventListener('submit', async (event) => {
