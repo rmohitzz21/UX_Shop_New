@@ -336,7 +336,7 @@ HTML;
             <strong>₹{$bPrice} {$oldHtml}</strong>
 
             <div>
-              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$bId}" data-item-type="bundle">View Details</button>
+              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$bId}" data-item-type="bundle">Buy Now</button>
               <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart({$bId}, null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}, item_type: 'bundle'}, 'digital')">Add to Cart</button>
             </div>
           </div>

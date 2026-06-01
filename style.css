@@ -775,9 +775,9 @@ img {
 .uxp-category-heading h2 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(2.55rem, 4.6vw, 4rem);
+  font-size: 42px;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .uxp-category-heading p {
@@ -820,53 +820,42 @@ img {
   aspect-ratio: 1.45 / 1;
   overflow: hidden;
   border-radius: 14px;
-  background: linear-gradient(135deg, #069987, #078a80);
+  background: transparent;
 }
 
 .uxp-category-art::before,
 .uxp-category-art::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
+  display: none;
 }
 
 .uxp-category-art::before {
-  width: 150px;
-  height: 150px;
-  left: -56px;
-  bottom: -44px;
+  display: none;
 }
 
 .uxp-category-art::after {
-  width: 112px;
-  height: 112px;
-  right: -28px;
-  top: -34px;
+  display: none;
 }
 
 .uxp-category-bubble {
-  position: absolute;
-  right: 22px;
-  top: 18px;
-  width: 60px;
-  height: 60px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
+  display: none;
 }
 
 .uxp-category-icon {
   position: absolute;
-  right: 18px;
-  top: 18px;
+  inset: 0;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.22);
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: transparent;
   color: #ffffff;
-  backdrop-filter: blur(8px);
+}
+
+.uxp-category-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .uxp-category-icon svg {
@@ -875,15 +864,15 @@ img {
 }
 
 .uxp-category-pink .uxp-category-art {
-  background: linear-gradient(135deg, #ff6f87, #f40555);
+  background: transparent;
 }
 
 .uxp-category-purple .uxp-category-art {
-  background: linear-gradient(135deg, #a13cff, #4f24ea);
+  background: transparent;
 }
 
 .uxp-category-orange .uxp-category-art {
-  background: linear-gradient(135deg, #ff9800, #ff5f00);
+  background: transparent;
 }
 
 .uxp-category-body {
@@ -1078,25 +1067,6 @@ img {
   transform: scale(1.045);
 }
 
-.uxp-product-badge-icon {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  background: rgba(200, 185, 236, 0.68);
-  color: #ffffff;
-  backdrop-filter: blur(6px);
-}
-
-.uxp-product-badge-icon svg {
-  width: 20px;
-  height: 20px;
-}
 
 .uxp-product-body {
   display: flex;
@@ -1186,7 +1156,7 @@ img {
   border-radius: 999px;
   border: 1px solid transparent;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
@@ -1907,7 +1877,7 @@ body.shopAll .shop-all-header {
 }
 
 body.shopAll .shop-all-title {
-  font-size: clamp(2.4rem, 3.4vw, 3.1rem);
+  font-size: 42px;
   line-height: 1.1;
   letter-spacing: -0.03em;
   margin-bottom: 10px;
@@ -6910,6 +6880,7 @@ a:focus-visible {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
+  text-decoration: none;
 }
 
 .category-tab:hover {
@@ -6936,7 +6907,8 @@ a:focus-visible {
 }
 
 .sort-control select {
-  padding: 10px 16px;
+  padding: 10px 16px 10px 12px;
+  padding-right: 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -6944,6 +6916,11 @@ a:focus-visible {
   font-size: 0.9rem;
   cursor: pointer;
   outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
 }
 
 .sort-control select option {
@@ -7776,7 +7753,7 @@ body {
     letter-spacing: -1px;
 }
 .hero-subtitle {
-    font-size: 20px;
+    font-size: 18px;
     color: #8c89a0;
     margin: 0 auto 48px auto;
     max-width: 752px;
@@ -7922,9 +7899,9 @@ body {
 .uxp-top-products-heading h2 {
     margin: 0;
     color: #ffffff;
-    font-size: clamp(2.45rem, 4.6vw, 4rem);
+    font-size: 42px;
     line-height: 0.95;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: -0.02em;
 }
 
@@ -8158,9 +8135,9 @@ body {
 .uxp-bundle-heading h2 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(2.45rem, 4.6vw, 4rem);
+  font-size: 42px;
   line-height: 0.95;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .uxp-bundle-grid {
@@ -8321,7 +8298,7 @@ body {
   border-radius: 999px;
   border: 1px solid transparent;
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
@@ -8389,6 +8366,7 @@ body {
 
 .uxp-bundle-see-all b {
   font: inherit;
+  font-weight: 500;
 }
 
 @media (max-width: 1100px) {
@@ -8473,7 +8451,7 @@ body {
     align-items: center;
 }
 .explore-banner h2 {
-    font-size: 40px;
+    font-size: 42px;
     font-weight: 700;
     margin: 0 0 20px 0;
 }

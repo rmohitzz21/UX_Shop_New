@@ -306,3 +306,7 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 53
+[01-Jun-2026 13:43:28 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:01 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:07 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:33 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119

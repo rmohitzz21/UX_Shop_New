@@ -539,9 +539,6 @@ function uxpIndexProductCard(array $row): string {
   <a href="product.php?id={$id}" class="uxp-product-media js-product-popup" data-product-id="{$id}" aria-label="View {$name}">
     <img src="{$image}" alt="{$name}" loading="lazy" width="480" height="360" onerror="this.src='img/poster.webp'">
     {$featuredBadge}
-    <span class="uxp-product-badge-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"></path><circle cx="12" cy="12" r="8"></circle></svg>
-    </span>
   </a>
   <div class="uxp-product-body">
     <div class="uxp-product-title-row">
@@ -554,7 +551,7 @@ function uxpIndexProductCard(array $row): string {
       <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
     </div>
     <div class="uxp-product-actions">
-      <a href="product.php?id={$id}" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$id}">View Details</a>
+      <a href="product.php?id={$id}" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$id}">Buy Now</a>
       <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$row['price']}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}}, '{$availableType}')"{$disabled}>Add to Cart</button>
     </div>
   </div>

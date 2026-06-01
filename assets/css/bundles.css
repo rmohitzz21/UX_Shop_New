@@ -1076,7 +1076,7 @@
 }
 
 .bs-heading {
-  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  font-size: 42px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.025em;

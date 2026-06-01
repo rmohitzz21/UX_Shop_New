@@ -65,8 +65,8 @@ body.freebies-page .shop-all-header {
 }
 
 body.freebies-page .shop-all-title {
-  font-size: clamp(2.4rem, 5vw, 3.8rem);
-  font-weight: 800;
+  font-size: 42px;
+  font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.036em;
   margin-bottom: 16px;

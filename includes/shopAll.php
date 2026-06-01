@@ -205,19 +205,6 @@ function catSlug(string $name): string {
               </div>
             </div>
 
-            <!-- Promo Card -->
-            <div class="sidebar-promo">
-              <div class="promo-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                  <path d="M2 17l10 5 10-5"></path>
-                  <path d="M2 12l10 5 10-5"></path>
-                </svg>
-              </div>
-              <h4>Premium Resources</h4>
-              <p>Get 20% off on all digital products this month!</p>
-            </div>
-
           </aside>
 
           <!-- Product Grid -->
@@ -258,13 +245,6 @@ function catSlug(string $name): string {
                     <img src="<?= $imgSrc ?>" alt="<?= $name ?>"
                          loading="lazy" width="480" height="360"
                          onerror="this.src='img/sticker.webp'" />
-
-                    <span class="uxp-product-badge-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M12 3v18M3 12h18"></path>
-                        <circle cx="12" cy="12" r="8"></circle>
-                      </svg>
-                    </span>
                   </a>
 
                   <div class="uxp-product-body">
@@ -290,7 +270,7 @@ function catSlug(string $name): string {
                     <div class="uxp-product-actions">
                       <a href="product.php?id=<?= $id ?>"
                          class="uxp-card-btn uxp-card-btn-primary js-product-popup"
-                         data-product-id="<?= $id ?>">View Details</a>
+                         data-product-id="<?= $id ?>">Buy Now</a>
 
                       <button
                         onclick="addToCart('<?= $id ?>',null,1,{name:'<?= $jsName ?>',price:<?= $row['price'] ?>,image:'<?= $jsImage ?>',category:'<?= $jsCategory ?>'},'<?= $jsAvailType ?>')"

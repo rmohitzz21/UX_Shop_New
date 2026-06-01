@@ -398,7 +398,7 @@ if ($headerUserName === '') {
                             data-product-id="<?php echo $gridBundleId; ?>"
                             data-item-type="bundle">
 
-                            View Details
+                            Buy Now
 
                         </button>
 
