@@ -15,7 +15,11 @@ if (count($items) > 50) {
 }
 
 $paymentMethod = strtolower(trim((string) ($input['paymentMethod'] ?? 'cod')));
-if (!in_array($paymentMethod, ['cod', 'card', 'upi', 'razorpay'], true)) {
+$allowedMethods = ['cod', 'card', 'upi', 'razorpay'];
+if (getenv('ENABLE_TEST_PAYMENT') === 'true' && getenv('APP_ENV') !== 'production') {
+    $allowedMethods[] = 'test';
+}
+if (!in_array($paymentMethod, $allowedMethods, true)) {
     sendResponse('error', 'Invalid payment method.', null, 400);
 }
 
@@ -83,7 +87,7 @@ try {
     $tax          = round($subtotal * 0.18, 2);
     $total        = $subtotal + $shippingCost + $tax;
     $orderNumber  = 'UXP-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
-    $orderStatus  = ($paymentMethod === 'razorpay') ? 'awaiting_payment' : 'pending';
+    $orderStatus  = in_array($paymentMethod, ['razorpay', 'test'], true) ? 'awaiting_payment' : 'pending';
     $shippingJson = json_encode($shipping, JSON_UNESCAPED_SLASHES);
 
     $stmt = $conn->prepare('INSERT INTO orders (order_number, user_id, total, subtotal, shipping, tax, payment_method, status, shipping_address, status_updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())');
@@ -100,8 +104,8 @@ try {
         $itemStmt->bind_param('iiiidssss', $orderId, $productId, $bundleId, $item['quantity'], $item['price'], $item['size'], $item['name'], $item['image'], $item['type']);
         $itemStmt->execute();
 
-        // For Razorpay, cart is cleared by OrderPaymentService after payment verified
-        if ($paymentMethod !== 'razorpay') {
+        // For Razorpay/test, cart is cleared after payment confirmed
+        if (!in_array($paymentMethod, ['razorpay', 'test'], true)) {
             if ($item['type'] === 'product') {
                 $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
                 $del->bind_param('ii', $user['id'], $item['id']);
@@ -118,14 +122,21 @@ try {
 
     $conn->commit();
 
-    // Email is sent by razorpay-verify.php after payment confirmed; skip here for Razorpay
-    if ($paymentMethod !== 'razorpay') {
+    // Email is sent by the payment endpoint after confirmation; skip here for deferred methods
+    if (!in_array($paymentMethod, ['razorpay', 'test'], true)) {
         try {
             $emailItems = array_map(fn($i) => ['name' => $i['name'], 'quantity' => $i['quantity'], 'price' => $i['price']], $orderItems);
+            $appUrl = rtrim((string) (getenv('APP_URL') ?: ''), '/');
             sendOrderConfirmationEmail(
                 $user['email'],
                 $user['firstName'] . ' ' . $user['lastName'],
-                ['order_number' => $orderNumber, 'date' => date('Y-m-d'), 'items' => $emailItems, 'total' => $total]
+                [
+                    'order_number' => $orderNumber,
+                    'date'         => date('Y-m-d'),
+                    'items'        => $emailItems,
+                    'total'        => $total,
+                    'orders_url'   => $appUrl . '/orders.php',
+                ]
             );
         } catch (Throwable $ignored) {
             error_log('Order confirmation email failed for order ' . $orderNumber);

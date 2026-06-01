@@ -243,9 +243,14 @@ function getOrderConfirmationTemplate($name, $orderData) {
     }
     $totalFormatted = number_format((float) $total, 2);
 
+    $ordersUrl   = htmlspecialchars((string) ($orderData['orders_url'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $ordersLinkHtml = $ordersUrl !== ''
+        ? "<p style=\"margin:14px 0 0;\"><a href=\"{$ordersUrl}\" style=\"display:inline-block;padding:11px 26px;background:#7c5dfa;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;\">View My Orders &amp; Downloads</a></p>"
+        : '';
+
     $content = <<<HTML
 <p>Hello {$safeName},</p>
-<p>Thank you for your order. We have received it and started processing.</p>
+<p>Thank you for your order. Your digital files are ready — access them any time from your orders page.</p>
 <div class="panel">
   <p style="margin:0 0 8px;"><strong>Order number:</strong> {$orderNumber}</p>
   <p style="margin:0;"><strong>Order date:</strong> {$orderDate}</p>
@@ -263,7 +268,8 @@ function getOrderConfirmationTemplate($name, $orderData) {
   </tbody>
 </table>
 <p><strong>Total: INR {$totalFormatted}</strong></p>
-<p class="muted">Please keep this email for your records.</p>
+{$ordersLinkHtml}
+<p class="muted" style="margin-top:14px;">Please keep this email for your records. Downloads are available from your orders page.</p>
 HTML;
 
     return buildEmailLayout(

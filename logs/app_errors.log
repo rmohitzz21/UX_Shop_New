@@ -306,3 +306,20 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 53
+[01-Jun-2026 13:42:58 Europe/Berlin] razorpay-create-order.php: Payment system not configured
+[01-Jun-2026 13:43:32 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php:54
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php on line 54
+[01-Jun-2026 13:43:43 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php:54
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php on line 54
+[01-Jun-2026 13:45:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php:54
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php on line 54
+[01-Jun-2026 13:45:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php:54
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php on line 54

@@ -703,3 +703,106 @@ body.review-modal-open { overflow: hidden; }
     justify-content: flex-end;
     gap: 10px;
 }
+
+/* ── Digital Downloads section ──────────────────────────────────────────── */
+.order-downloads-section {
+    border-top: 1px solid rgba(124, 93, 250, 0.18);
+    padding: 18px 24px;
+    background: rgba(124, 93, 250, 0.04);
+}
+
+.order-downloads-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a78bfa;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.order-dl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.order-dl-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.order-dl-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.order-dl-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.order-dl-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.order-dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, #7c5dfa, #6d3dff);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+
+.order-dl-btn:hover {
+    opacity: 0.85;
+}
+
+.order-dl-pending,
+.order-dl-exhausted,
+.order-dl-expired {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.order-dl-pending {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.order-dl-exhausted,
+.order-dl-expired {
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 540px) {
+    .order-downloads-section { padding: 14px 16px; }
+    .order-dl-row { flex-direction: column; align-items: flex-start; }
+}

@@ -2076,6 +2076,30 @@ function handleCheckout(event) {
     return;
   }
 
+  // ── Test payment flow (dev only) ───────────────────────────────────────────
+  if (paymentMethod === 'test') {
+    createDraftOrder()
+      .then(serverData => {
+        const orderId = serverData.data.orderId;
+        return fetch('api/payment/test-pay.php', {
+          method: 'POST',
+          headers: orderHeaders,
+          body: JSON.stringify({ order_id: orderId })
+        })
+          .then(r => r.json())
+          .then(testRes => {
+            if (testRes.status !== 'success') throw new Error(testRes.message || 'Test payment failed');
+            handleOrderSuccess(orderPayload, serverData, testRes);
+          });
+      })
+      .catch(err => {
+        console.error('Test payment error:', err);
+        showToast('Test payment failed: ' + err.message, 'error');
+        resetOrderBtn();
+      });
+    return;
+  }
+
   // ── Razorpay (card / UPI) flow ─────────────────────────────────────────────
   // Normalise so the API creates the order in awaiting_payment state
   orderPayload.paymentMethod = 'razorpay';
@@ -2190,11 +2214,13 @@ function loadOrderConfirmationPage() {
   const paymentMethodEl = document.getElementById('payment-method');
   if (paymentMethodEl) {
     const paymentMethods = {
-      'card': 'Credit/Debit Card',
-      'upi': 'UPI',
-      'cod': 'Cash on Delivery'
+      'card':     'Credit/Debit Card',
+      'upi':      'UPI',
+      'cod':      'Cash on Delivery',
+      'razorpay': 'Online Payment',
+      'test':     'Test Payment',
     };
-    paymentMethodEl.textContent = paymentMethods[orderData.paymentMethod] || 'Credit Card';
+    paymentMethodEl.textContent = paymentMethods[orderData.paymentMethod] || 'Online Payment';
   }
   
   // Load order items from orderData.items (not cart, since cart is cleared)

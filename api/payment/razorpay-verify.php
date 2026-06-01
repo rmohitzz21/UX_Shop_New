@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../_bootstrap.php';
 require_once __DIR__ . '/../../includes/RazorpayClient.php';
 require_once __DIR__ . '/../../includes/OrderPaymentService.php';
+require_once __DIR__ . '/../../includes/DigitalDownloadService.php';
 
 apiRequirePost();
 $user  = apiRequireUser();
@@ -60,6 +61,15 @@ $result = order_capture_razorpay_payment(
 if (!$result['ok']) {
     $code = $result['http'] ?? 400;
     sendResponse('error', $result['message'] ?? 'Payment capture failed.', null, $code);
+}
+
+// Generate download tokens after capture (idempotent, non-fatal)
+if (empty($result['duplicate'])) {
+    try {
+        DigitalDownloadService::generateDownloadsForOrder($internalOrderId, $conn);
+    } catch (Throwable $e) {
+        error_log('razorpay-verify.php: download generation failed for order ' . $internalOrderId . ': ' . $e->getMessage());
+    }
 }
 
 // Send order confirmation email after capture (non-fatal)

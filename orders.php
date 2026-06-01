@@ -339,6 +339,43 @@ if ($userName === '') {
         </section>`;
     }
 
+    function renderDownloadsSection(order) {
+        const downloads = order.downloads || [];
+        if (downloads.length === 0) return '';
+
+        const dlHtml = downloads.map(dl => {
+            const usedLabel = `${dl.download_count}/${dl.download_limit} downloads used`;
+            const expiry    = dl.expires_at ? new Date(dl.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+            const expiryLabel = expiry ? ` · Expires ${expiry}` : '';
+
+            let action;
+            if (dl.is_available && dl.has_file) {
+                action = `<a class="order-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}" download>
+                    <i class="ph ph-download-simple"></i> Download
+                </a>`;
+            } else if (!dl.has_file) {
+                action = `<span class="order-dl-pending"><i class="ph ph-clock"></i> File pending</span>`;
+            } else if (dl.download_count >= dl.download_limit) {
+                action = `<span class="order-dl-exhausted"><i class="ph ph-x-circle"></i> Limit reached</span>`;
+            } else {
+                action = `<span class="order-dl-expired"><i class="ph ph-prohibit"></i> Expired</span>`;
+            }
+
+            return `<div class="order-dl-row">
+                <div class="order-dl-info">
+                    <span class="order-dl-name">${escHtml(dl.item_name)}</span>
+                    <span class="order-dl-meta">${usedLabel}${expiryLabel}</span>
+                </div>
+                ${action}
+            </div>`;
+        }).join('');
+
+        return `<div class="order-downloads-section">
+            <div class="order-downloads-header"><i class="ph ph-download-simple"></i> Your Digital Files</div>
+            ${dlHtml}
+        </div>`;
+    }
+
     function renderOrderCard(order) {
         const total = parseFloat(order.total) || 0;
         const isFreeOrder = total === 0;
@@ -371,6 +408,8 @@ if ($userName === '') {
             <div class="order-items-list">
                 ${itemsHtml || '<p class="order-no-items">No items found for this order.</p>'}
             </div>
+
+            ${renderDownloadsSection(order)}
 
             <div class="order-card-footer">
                 <div class="order-total-block">

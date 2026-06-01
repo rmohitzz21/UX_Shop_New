@@ -243,6 +243,16 @@ if (empty($_SESSION['user_id'])) {
                       </label>
                     </div>
 
+                    <?php if (getenv('ENABLE_TEST_PAYMENT') === 'true' && getenv('APP_ENV') !== 'production'): ?>
+                      <label class="payment-option" id="test-pay-option" style="border:2px dashed rgba(251,191,36,0.45);background:rgba(251,191,36,0.05);">
+                        <input type="radio" name="paymentMethod" value="test" />
+                        <div class="payment-option-content">
+                          <span class="payment-icon" style="font-size:1.25rem;">🧪</span>
+                          <span style="color:#fbbf24;">Test Payment <span style="font-size:0.78em;opacity:0.7;">(dev only)</span></span>
+                        </div>
+                      </label>
+                    <?php endif; ?>
+
                     <!-- Razorpay handles card/UPI — shown when card or UPI is selected -->
                     <div id="card-details" class="card-details" style="background:rgba(111,75,255,0.06);border:1px solid rgba(111,75,255,0.25);border-radius:8px;padding:16px;margin-top:12px">
                       <p style="margin:0;color:#ccc;font-size:0.9rem;">
