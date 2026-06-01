@@ -566,10 +566,15 @@ body.orders-page .main { padding-bottom: 80px; }
     letter-spacing: 0.05em;
 }
 
-.review-pending-tag {
+.review-pending-tag,
+.review-submitted-tag {
     font-size: 0.72rem;
-    color: rgba(251, 191, 36, 0.9);
-    margin-left: 6px;
+    color: rgba(139, 92, 246, 0.9);
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
 }
 
 body.review-modal-open { overflow: hidden; }

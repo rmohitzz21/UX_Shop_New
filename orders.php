@@ -412,8 +412,10 @@ if ($userName === '') {
         let reviewHtml = '';
         if (item.has_reviewed && item.review) {
             const stars = '★'.repeat(item.review.rating) + '☆'.repeat(5 - item.review.rating);
-            const pending = item.review.is_approved ? '' : ' <span class="review-pending-tag">Pending approval</span>';
-            reviewHtml = `<p class="order-item-review-done"><span class="review-stars-display">${stars}</span>${pending}</p>`;
+            const statusTag = item.review.is_approved 
+                ? '' 
+                : ' <span class="review-submitted-tag">Submitted</span>';
+            reviewHtml = `<p class="order-item-review-done"><span class="review-stars-display">${stars}</span>${statusTag}</p>`;
         } else if (item.can_review) {
             const pid = parseInt(item.product_id, 10) || 0;
             const bid = parseInt(item.bundle_id, 10) || 0;
