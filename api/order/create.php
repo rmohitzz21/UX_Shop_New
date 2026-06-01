@@ -10,6 +10,9 @@ $items = $input['items'] ?? [];
 if (!is_array($items) || count($items) === 0) {
     sendResponse('error', 'Cart is empty.', null, 400);
 }
+if (count($items) > 50) {
+    sendResponse('error', 'Too many items in cart. Maximum 50 allowed.', null, 400);
+}
 
 $paymentMethod = strtolower(trim((string) ($input['paymentMethod'] ?? 'cod')));
 if (!in_array($paymentMethod, ['cod', 'card', 'upi', 'razorpay'], true)) {
