@@ -260,7 +260,7 @@ function generateProductCardHTML(product) {
         <h3>${esc(product.name)}</h3>
         <p style="margin-bottom: 0.5rem; font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${esc(desc)}</p>
         <div class="product-meta">
-          <div class="product-price">$${price.toLocaleString()} ${oldPrice ? `<span>$${oldPrice.toLocaleString()}</span>` : ''}</div>
+          <div class="product-price">₹${price.toLocaleString()} ${oldPrice ? `<span>₹${oldPrice.toLocaleString()}</span>` : ''}</div>
           <div class="product-rating">★ ${esc(product.rating || '0.0')}</div>
         </div>
         <div class="product-actions">
@@ -673,6 +673,7 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
             quantity: quantity,
             size: size,
             available_type: available_type,
+            item_type: (explicitDetails && explicitDetails.item_type) ? explicitDetails.item_type : 'product',
             details: product
         };
   
@@ -720,7 +721,8 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
             size: size,
             quantity: quantity,
             available_type: available_type,
-            description: product.description
+            description: product.description,
+            item_type: (explicitDetails && explicitDetails.item_type) || 'product'
           });
         }
         
@@ -931,7 +933,7 @@ async function loadCartPage() {
               ${item.size ? `Size: ${esc(item.size)} • ` : ''}
               Quantity: ${item.quantity}
             </p>
-            <p class="cart-item-price">$${itemTotal.toLocaleString()}</p>
+            <p class="cart-item-price">₹${itemTotal.toLocaleString()}</p>
           </div>
           <div class="cart-item-actions">
             <div class="cart-item-qty">
@@ -998,10 +1000,10 @@ async function loadCartPage() {
       const total = subtotal + shipping + tax;
 
       if(document.getElementById('cart-subtotal')) {
-          document.getElementById('cart-subtotal').textContent = `$${subtotal.toLocaleString()}`;
-          document.getElementById('cart-shipping').textContent = shipping > 0 ? `$${shipping}` : 'Free';
-          document.getElementById('cart-tax').textContent = `$${tax.toLocaleString()}`;
-          document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
+          document.getElementById('cart-subtotal').textContent = `₹${subtotal.toLocaleString()}`;
+          document.getElementById('cart-shipping').textContent = shipping > 0 ? `₹${shipping}` : 'Free';
+          document.getElementById('cart-tax').textContent = `₹${tax.toLocaleString()}`;
+          document.getElementById('cart-total').textContent = `₹${total.toLocaleString()}`;
       }
 
       // Show/Hide checkout button based on signin
@@ -1051,6 +1053,13 @@ async function loadCartPage() {
 
       if (result.status === 'success') {
           globalProductDetailsCache = { ...globalProductDetailsCache, ...result.data };
+          const validIds = new Set(Object.keys(result.data || {}).map(String));
+          const beforeLen = cart.length;
+          cart = cart.filter(item => validIds.has(String(item.id)));
+          if (cart.length !== beforeLen) {
+              saveCart();
+              updateCartCount();
+          }
           renderCartHTML(globalProductDetailsCache);
       }
   } catch (e) {
@@ -1097,7 +1106,7 @@ function loadCheckoutPage() {
           ${item.size ? `Size: ${esc(item.size)} • ` : ''}Qty: ${item.quantity}
         </div>
       </div>
-      <div class="checkout-item-price">$${(item.price * item.quantity).toLocaleString()}</div>
+      <div class="checkout-item-price">₹${(item.price * item.quantity).toLocaleString()}</div>
     </div>
   `).join('');
 
@@ -1112,10 +1121,10 @@ function loadCheckoutPage() {
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + shipping + tax;
 
-  document.getElementById('checkout-subtotal').textContent = `$${subtotal.toLocaleString()}`;
-  document.getElementById('checkout-shipping').textContent = shipping > 0 ? `$${shipping}` : 'Free';
-  document.getElementById('checkout-tax').textContent = `$${tax.toLocaleString()}`;
-  document.getElementById('checkout-total').textContent = `$${total.toLocaleString()}`;
+  document.getElementById('checkout-subtotal').textContent = `₹${subtotal.toLocaleString()}`;
+  document.getElementById('checkout-shipping').textContent = shipping > 0 ? `₹${shipping}` : 'Free';
+  document.getElementById('checkout-tax').textContent = `₹${tax.toLocaleString()}`;
+  document.getElementById('checkout-total').textContent = `₹${total.toLocaleString()}`;
 
   // Show/hide shipping address fields based on cart composition
   const shippingFields = document.getElementById('shipping-fields');
@@ -1646,8 +1655,8 @@ function handleSignIn(event) {
   if (!password) {
     showFieldError(form.password, 'Password is required');
     isValid = false;
-  } else if (password.length < 6) {
-    showFieldError(form.password, 'Password must be at least 6 characters');
+  } else if (password.length < 8) {
+    showFieldError(form.password, 'Password must be at least 8 characters');
     isValid = false;
   } else {
     clearFieldError(form.password);
@@ -1972,6 +1981,7 @@ function handleCheckout(event) {
     userId: userId,
     items: cart.map(item => ({
       id: item.id,
+      item_type: item.item_type || 'product',
       name: item.name,
       price: item.price,
       image: item.image,
@@ -2066,16 +2076,78 @@ function handleCheckout(event) {
     return;
   }
 
-  // Manual order simulation: payment gateways are intentionally not required.
+  // ── Razorpay (card / UPI) flow ─────────────────────────────────────────────
+  // Normalise so the API creates the order in awaiting_payment state
+  orderPayload.paymentMethod = 'razorpay';
+
   createDraftOrder()
-    .then(data => handleOrderSuccess(orderPayload, data))
+    .then(serverData => {
+      const orderId = serverData.data.orderId;
+      return fetch('api/payment/razorpay-create-order.php', {
+        method: 'POST',
+        headers: orderHeaders,
+        body: JSON.stringify({ order_id: orderId })
+      })
+        .then(r => r.json())
+        .then(rzpRes => {
+          if (rzpRes.status !== 'success') throw new Error(rzpRes.message || 'Could not initiate payment');
+          return { serverData, rzpData: rzpRes.data };
+        });
+    })
+    .then(({ serverData, rzpData }) => {
+      if (!window.Razorpay) throw new Error('Payment gateway not loaded. Please refresh and try again.');
+      return new Promise((resolve, reject) => {
+        const options = {
+          key:      rzpData.key_id,
+          amount:   rzpData.amount_paise,
+          currency: rzpData.currency || 'INR',
+          order_id: rzpData.razorpay_order_id,
+          name:     'UX Pacific Shop',
+          description: 'Order ' + serverData.data.orderNumber,
+          handler: function(response) {
+            fetch('api/payment/razorpay-verify.php', {
+              method: 'POST',
+              headers: orderHeaders,
+              body: JSON.stringify({
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature:  response.razorpay_signature,
+                order_id:            serverData.data.orderId
+              })
+            })
+              .then(r => r.json())
+              .then(verifyData => {
+                if (verifyData.status !== 'success') throw new Error(verifyData.message || 'Payment verification failed');
+                resolve({ serverData, verifyData });
+              })
+              .catch(reject);
+          },
+          modal: {
+            ondismiss: function() {
+              reject(new Error('__dismissed__'));
+            }
+          },
+          prefill: {
+            email:   orderPayload.shipping?.email   || '',
+            contact: orderPayload.shipping?.phone   || ''
+          },
+          theme: { color: '#6d3dff' }
+        };
+        new window.Razorpay(options).open();
+      });
+    })
+    .then(({ serverData, verifyData }) => {
+      handleOrderSuccess(orderPayload, serverData, verifyData);
+    })
     .catch(err => {
-      console.error(err);
-      showToast(err.message || 'Failed to place order', 'error');
+      if (err.message === '__dismissed__') {
+        showToast('Payment cancelled. Your order is saved — you can retry from the orders page.', 'error');
+      } else {
+        console.error(err);
+        showToast(err.message || 'Payment failed. Please try again.', 'error');
+      }
       resetOrderBtn();
     });
-  return;
-
 }
 
 // Load order confirmation page with order details
@@ -2111,7 +2183,7 @@ function loadOrderConfirmationPage() {
   // Set order total
   const orderTotalEl = document.getElementById('order-total');
   if (orderTotalEl) {
-    orderTotalEl.textContent = `$${orderData.total || 0}`;
+    orderTotalEl.textContent = `₹${Number(orderData.total || 0).toLocaleString('en-IN')}`;
   }
   
   // Set payment method
@@ -2135,7 +2207,7 @@ function loadOrderConfirmationPage() {
           <h4>${esc(item.name)}</h4>
           <p>${item.size ? `Size: ${esc(item.size)} • ` : ''}Quantity: ${item.quantity}</p>
         </div>
-        <div class="item-price">$${item.price * item.quantity}</div>
+        <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
       </div>
     `).join('');
   } else if (itemsList) {
@@ -2279,15 +2351,6 @@ function handleSignUp(event) {
     }
     form.password.style.borderColor = '#ef4444';
     isValid = false;
-  } else if (!validatePassword(password)) {
-    const errorSpan = form.password.parentElement?.querySelector('.field-error-modern') || 
-                     form.password.parentElement?.querySelector('.field-error');
-    if (errorSpan) {
-      errorSpan.textContent = 'Password must contain uppercase, lowercase, and number';
-      errorSpan.style.display = 'block';
-    }
-    form.password.style.borderColor = '#ef4444';
-    isValid = false;
   } else {
     const errorSpan = form.password.parentElement?.querySelector('.field-error-modern') || 
                      form.password.parentElement?.querySelector('.field-error');
@@ -2360,13 +2423,43 @@ function handleSignUp(event) {
   .then(response => response.json())
   .then(data => {
     if (data.status === 'success') {
-      if (successDiv) {
-        successDiv.textContent = 'Account created successfully! Redirecting to sign in...';
-        successDiv.style.display = 'block';
+      const user = data.data?.user;
+      if (data.data?.csrf_token) {
+        setCsrfToken(data.data.csrf_token);
       }
-      setTimeout(() => {
-        window.location.href = 'signin.php?message=' + encodeURIComponent('Registration successful! Please sign in.');
-      }, 1500);
+      
+      if (user && data.data?.auto_login) {
+        const userData = {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          role: user.role,
+          loginTime: new Date().toISOString()
+        };
+        setUserSession(userData);
+        
+        if (successDiv) {
+          successDiv.textContent = 'Account created! Signing you in...';
+          successDiv.style.display = 'block';
+        }
+        setTimeout(() => {
+          const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+          window.location.href = redirectParam || 'index.php';
+        }, 1200);
+      } else {
+        if (successDiv) {
+          successDiv.textContent = 'Account created successfully! Redirecting to sign in...';
+          successDiv.style.display = 'block';
+        }
+        setTimeout(() => {
+          const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+          const signinUrl = 'signin.php?message=' + encodeURIComponent('Account created! Please sign in.')
+            + (redirectParam ? '&redirect=' + encodeURIComponent(redirectParam) : '');
+          window.location.href = signinUrl;
+        }, 1500);
+      }
     } else {
       if (errorDiv) {
         errorDiv.textContent = data.message || 'Registration failed';
@@ -2463,6 +2556,36 @@ window.handleSignUp = handleSignUp;
 window.handleForgotPassword = handleForgotPassword;
 window.handleContactSubmit = handleContactSubmit;
 window.handleCheckout = handleCheckout;
+
+// ==================== REORDER ====================
+
+window.handleReorder = function(orderId, items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    showToast('No items to reorder.', 'error');
+    return;
+  }
+  const adds = items.map(item => {
+    const isBundle = (item.item_type === 'bundle');
+    const itemId   = isBundle ? (item.bundle_id || item.product_id) : (item.product_id || item.id);
+    if (!itemId) return Promise.resolve();
+    return addToCart(
+      Number(itemId),
+      item.size || null,
+      item.quantity || 1,
+      {
+        name: item.name || 'Product',
+        price: parseFloat(item.price) || 0,
+        image: item.image || 'img/sticker.webp',
+        item_type: isBundle ? 'bundle' : 'product'
+      },
+      'digital'
+    ).catch(() => {});
+  });
+  Promise.allSettled(adds).then(() => {
+    showToast('Items added to cart!', 'success');
+    setTimeout(() => { window.location.href = 'cart.php'; }, 900);
+  });
+};
 
 // ==================== ADDRESS MANAGEMENT FUNCTIONS ====================
 
@@ -3247,7 +3370,7 @@ function initSearchModal() {
 }
 
 function formatMoney(value) {
-  return '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  return '$' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 }
 
 const marketplaceDetailCache = new Map();
@@ -4127,6 +4250,32 @@ document.addEventListener('DOMContentLoaded', () => {
 window.openMarketplaceModal = openMarketplaceModal;
 window.closeMarketplaceModal = closeMarketplaceModal;
 window.addMarketplaceItemToCart = addMarketplaceItemToCart;
+
+function toggleMarketplaceWishlist(itemType, itemId) {
+  const session = getUserSession();
+  if (!session || !session.id) {
+    window.location.href = 'signin.php?redirect=' + encodeURIComponent(window.location.pathname);
+    return;
+  }
+  const csrf = getCsrfToken();
+  fetch('api/wishlist/toggle.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+    credentials: 'same-origin',
+    body: JSON.stringify({ item_type: itemType, item_id: Number(itemId) })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const added = data.data?.action === 'added';
+        showToast(added ? 'Saved to wishlist!' : 'Removed from wishlist.', 'success');
+      } else {
+        showToast(data.message || 'Could not update wishlist.', 'error');
+      }
+    })
+    .catch(() => showToast('Could not update wishlist.', 'error'));
+}
+
 window.toggleMarketplaceWishlist = toggleMarketplaceWishlist;
 
 // Global navbar active states for both header systems used in the project.
@@ -4264,7 +4413,7 @@ function handleSignInRedirect() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirect = urlParams.get('redirect');
   // Only allow relative redirects to prevent open redirect attacks
-  const allowedPages = ['index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php', 'shopAll.php'];
+  const allowedPages = ['index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php', 'shopAll.php', 'wishlist.php', 'product.php', 'bundles.php', 'freebies.php', 'search.php'];
   if (redirect && allowedPages.some(page => redirect.includes(page)) && !redirect.includes('://')) {
     setTimeout(() => {
       window.location.href = redirect;

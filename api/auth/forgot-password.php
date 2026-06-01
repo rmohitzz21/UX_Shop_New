@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+require_once __DIR__ . '/../../includes/auth_rate_limit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
@@ -10,6 +11,11 @@ if (empty($_SERVER['HTTP_X_CSRF_TOKEN']) && !empty($input['csrf_token'])) {
     $_SERVER['HTTP_X_CSRF_TOKEN'] = (string) $input['csrf_token'];
 }
 validateCsrf();
+
+// IP-based rate limit: 5 forgot-password requests per IP per hour
+if (!authRateLimitByIp('forgot_password', 5, 3600)) {
+    sendResponse('error', 'Too many reset requests. Please try again later.', null, 429);
+}
 
 $email = strtolower(trim((string) ($input['email'] ?? '')));
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

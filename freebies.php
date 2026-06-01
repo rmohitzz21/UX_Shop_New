@@ -1,23 +1,6 @@
 <?php
 require_once 'includes/config.php';
 
-// Ensure freebies table exists
-$conn->query("CREATE TABLE IF NOT EXISTS freebies (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL,
-    description TEXT,
-    category VARCHAR(100) DEFAULT 'General',
-    image VARCHAR(500) DEFAULT '',
-    file_url VARCHAR(500) DEFAULT '',
-    is_active TINYINT(1) NOT NULL DEFAULT 1,
-    is_featured TINYINT(1) NOT NULL DEFAULT 0,
-    sort_order INT NOT NULL DEFAULT 0,
-    download_count INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
 // Fetch active freebies
 $freebies = [];
 $result = $conn->query(
@@ -61,9 +44,12 @@ $downloadTotal = array_sum(array_column($freebies, 'download_count'));
 
         <!-- ── Hero ── -->
         <section class="shop-all-header freebies-hero-section">
+            <div class="fh-eyebrow-wrap">
+                <span class="fh-eyebrow"><span class="fh-eyebrow-dot"></span>100% Free &nbsp;·&nbsp; No Sign-up Required</span>
+            </div>
             <h1 class="shop-all-title">Free <span>Design Resources</span></h1>
             <p class="shop-all-subtitle">
-                Curated UX/UI freebies from UX Pacific — templates, UI kits, icons, and assets. 100% free, no strings attached.
+                Curated UX/UI freebies from UX Pacific — templates, UI kits, icons, and assets. No strings attached.
             </p>
             <div class="freebies-stats">
                 <div class="freebies-stat">
@@ -135,6 +121,17 @@ $downloadTotal = array_sum(array_column($freebies, 'download_count'));
                         $nameLower = htmlspecialchars(strtolower($f['name']), ENT_QUOTES);
                         $descLower = htmlspecialchars(strtolower($f['description'] ?? ''), ENT_QUOTES);
                         $catRaw = htmlspecialchars($f['category'] ?? 'General', ENT_QUOTES);
+                        $fileExt = strtolower(pathinfo((string) ($f['file_url'] ?? ''), PATHINFO_EXTENSION));
+                        $formatLabel = match($fileExt) {
+                            'fig'           => 'Figma',
+                            'pdf'           => 'PDF',
+                            'zip', 'rar', '7z' => 'ZIP',
+                            'png', 'jpg', 'jpeg', 'webp' => 'Image',
+                            'svg'           => 'SVG',
+                            'xd'            => 'Adobe XD',
+                            'sketch'        => 'Sketch',
+                            default         => $fileExt ? strtoupper($fileExt) : '',
+                        };
                     ?>
                     <article class="prod-card freebie-card"
                              data-name="<?php echo $nameLower; ?>"
@@ -152,6 +149,9 @@ $downloadTotal = array_sum(array_column($freebies, 'download_count'));
                                 <span class="freebie-featured-badge">Featured</span>
                             <?php endif; ?>
                             <span class="freebie-free-badge">FREE</span>
+                            <?php if ($formatLabel): ?>
+                                <span class="freebie-format-badge"><?php echo htmlspecialchars($formatLabel); ?></span>
+                            <?php endif; ?>
                         </div>
 
                         <div class="prod-info">
@@ -196,6 +196,7 @@ $downloadTotal = array_sum(array_column($freebies, 'download_count'));
 
         <!-- ── Benefits ── -->
         <section class="top-products freebies-benefits">
+            <span class="freebies-benefits-eyebrow">Why us</span>
             <h2 class="freebies-benefits-title">Why Download Our Freebies?</h2>
             <div class="freebies-benefits-grid">
                 <div class="freebies-benefit-card">

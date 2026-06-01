@@ -21,7 +21,8 @@
         <span class="active">Pending</span><span>Processing</span><span>Shipped</span><span>Delivered</span>
       </div>
       <div class="confirmation-actions">
-        <a class="btn btn-primary" href="orders.php">Track Orders</a>
+        <a class="btn btn-outline" href="orders.php?review=1" id="confirmation-review-link" style="display:none;">Leave a Review</a>
+        <a class="btn btn-primary" href="orders.php" id="confirmation-orders-link">Track Orders</a>
         <a class="btn btn-outline" href="shopAll.php">Continue Shopping</a>
       </div>
     </section>
@@ -33,6 +34,11 @@
 const order = JSON.parse(localStorage.getItem('lastOrder') || '{}');
 if (order.orderNumber) {
   document.getElementById('confirmation-copy').textContent = `Order ${order.orderNumber} has been placed. Current status: ${order.status || 'Pending'}.`;
+}
+const paidStatuses = ['paid', 'processing', 'shipped', 'delivered', 'pending'];
+if (paidStatuses.includes(String(order.status || '').toLowerCase())) {
+  const reviewLink = document.getElementById('confirmation-review-link');
+  if (reviewLink) reviewLink.style.display = '';
 }
 </script>
 </body>

@@ -79,7 +79,7 @@
                   <div class="summary-details">
                     <div class="summary-row">
                       <span>Subtotal</span>
-                      <span id="cart-subtotal">$0</span>
+                      <span id="cart-subtotal">₹0</span>
                     </div>
                     <div class="summary-row">
                       <span>Shipping</span>
@@ -87,12 +87,12 @@
                     </div>
                     <div class="summary-row">
                       <span>Tax</span>
-                      <span id="cart-tax">$0</span>
+                      <span id="cart-tax">₹0</span>
                     </div>
                     <div class="summary-divider"></div>
                     <div class="summary-row total-row">
                       <span>Total</span>
-                      <span id="cart-total">$0</span>
+                      <span id="cart-total">₹0</span>
                     </div>
                   </div>
 

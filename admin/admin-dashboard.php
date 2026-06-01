@@ -289,6 +289,16 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
               <span class="stat-change bad">Stock &le; 5 units</span>
             </div>
           </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="switchTab('messages',document.querySelector('[data-tab=messages]')); return false;" title="Open Messages inbox">
+            <div class="stat-icon si-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-title">Unread Messages</div>
+              <div class="stat-value" id="stat-unread-messages">—</div>
+              <span class="stat-change neutral">Contact form inbox</span>
+            </div>
+          </div>
         </div>
 
         <!-- Recent Orders + Top Products -->
@@ -339,33 +349,37 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
             <div class="stat-icon si-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="stat-body">
               <div class="stat-title">Today's Revenue</div>
-              <div class="stat-value" id="analytics-today-revenue">₹0</div>
+              <div class="stat-value" id="analytics-today-revenue">—</div>
+              <span class="stat-change neutral"><span id="analytics-today-orders">0</span> paid orders today</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon si-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
             <div class="stat-body">
-              <div class="stat-title">This Month</div>
-              <div class="stat-value" id="analytics-month-revenue">₹0</div>
+              <div class="stat-title">This Month (paid)</div>
+              <div class="stat-value" id="analytics-month-revenue">—</div>
+              <span class="stat-change neutral" id="analytics-revenue-change">Loading</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon si-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             <div class="stat-body">
-              <div class="stat-title">Avg Order Value</div>
-              <div class="stat-value" id="analytics-avg-order">₹0</div>
+              <div class="stat-title">Avg Order (this month)</div>
+              <div class="stat-value" id="analytics-avg-order">—</div>
+              <span class="stat-change neutral"><span id="analytics-month-orders">0</span> paid orders this month</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon si-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
             <div class="stat-body">
-              <div class="stat-title">Conversion Rate</div>
-              <div class="stat-value" id="analytics-conversion">0%</div>
+              <div class="stat-title">Customer Conversion</div>
+              <div class="stat-value" id="analytics-conversion">—</div>
+              <span class="stat-change neutral" id="analytics-conversion-hint">Paid-order customers ÷ total customers</span>
             </div>
           </div>
         </div>
         <div class="panel" style="margin-top:8px;">
-          <div class="panel-head"><h2>Top Selling Products</h2></div>
+          <div class="panel-head"><div><h2>Top Sellers</h2><p>Products and bundles from paid orders only</p></div></div>
           <div class="tbl-wrap">
             <table class="tbl">
               <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue (₹)</th></tr></thead>
@@ -518,13 +532,19 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
               <!-- Section: Media -->
               <div class="form-section-label" style="margin-top:20px;">Media</div>
               <div class="form-grid">
-                <div class="form-group">
+                <div class="form-group form-col-full">
                   <label class="form-label">Cover Image</label>
-                  <input class="form-input" name="image" type="file" accept="image/*" />
+                  <span class="form-help">Primary image on bundle cards and popup</span>
+                  <input class="form-input" id="bundle-cover-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                  <div id="bundle-main-preview" class="product-media-preview product-media-preview--main"></div>
                 </div>
                 <div class="form-group form-col-full">
-                  <label class="form-label">Additional Gallery Images <span class="form-help">one path per line — shown in popup gallery</span></label>
-                  <textarea class="form-textarea" name="additional_images" rows="3" placeholder="assets/img/bundle-preview-2.jpg&#10;assets/img/bundle-preview-3.jpg"></textarea>
+                  <label class="form-label">Gallery Images</label>
+                  <span class="form-help">Select multiple files (JPG, PNG, WebP, GIF — max 5MB each). Shown in the bundle popup gallery.</span>
+                  <input class="form-input" id="bundle-gallery-input" name="media[]" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
+                  <input type="hidden" name="additional_images" id="bundle-additional-images" value="[]" />
+                  <div id="bundle-gallery-preview" class="product-media-preview product-media-gallery"></div>
+                  <div id="bundle-gallery-pending" class="product-media-pending"></div>
                 </div>
               </div>
 
@@ -628,9 +648,11 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                   <label class="form-label">Sort Order</label>
                   <input class="form-input" name="sort_order" type="number" min="0" placeholder="0" />
                 </div>
-                <div class="form-group">
+                <div class="form-group form-col-full">
                   <label class="form-label">Icon / Image</label>
-                  <input class="form-input" name="image" type="file" accept="image/*" />
+                  <span class="form-help">Optional category icon (JPG, PNG, WebP, GIF — max 5MB)</span>
+                  <input class="form-input" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                  <div id="category-icon-preview" class="product-media-preview"></div>
                 </div>
                 <div class="form-group form-col-full">
                   <label class="form-label">Description</label>
@@ -773,7 +795,20 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
           </div>
         </div>
         <div class="panel">
-          <div class="panel-head"><div><h2>All Reviews</h2><p>Approve or remove customer reviews</p></div></div>
+          <div class="panel-head">
+            <div><h2>All Reviews</h2><p>Approve or remove customer reviews (products and bundles)</p></div>
+            <div class="panel-filters">
+              <div class="f-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="review-search" placeholder="Search reviews…" oninput="filterReviews()" />
+              </div>
+              <select class="f-select" id="review-status-filter" onchange="filterReviews()">
+                <option value="">All status</option>
+                <option value="0">Pending</option>
+                <option value="1">Approved</option>
+              </select>
+            </div>
+          </div>
           <div class="tbl-wrap">
             <table class="tbl">
               <thead>
@@ -803,7 +838,20 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
           </div>
         </div>
         <div class="panel">
-          <div class="panel-head"><div><h2>Contact Messages</h2><p>Messages sent through your contact form</p></div></div>
+          <div class="panel-head">
+            <div><h2>Contact Messages</h2><p>Messages sent through your contact form</p></div>
+            <div class="panel-filters">
+              <div class="f-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="message-search" placeholder="Search messages…" oninput="filterMessages()" />
+              </div>
+              <select class="f-select" id="message-status-filter" onchange="filterMessages()">
+                <option value="">All</option>
+                <option value="0">Unread</option>
+                <option value="1">Read</option>
+              </select>
+            </div>
+          </div>
           <div class="tbl-wrap">
             <table class="tbl">
               <thead>
@@ -863,16 +911,18 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                 </div>
                 <div class="form-group">
                   <label class="form-label">Resource Link <span class="req">*</span></label>
-                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" placeholder="https://www.figma.com/… or https://www.canva.com/…" />
+                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" required placeholder="https://www.figma.com/… or https://www.canva.com/…" />
                   <small style="color:var(--text-2);font-size:.75rem;margin-top:4px;display:block;">Paste a Figma, Canva, Google Drive, or any public downloadable link</small>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Sort Order</label>
                   <input class="form-input" name="sort_order" id="freebie-sort-order" type="number" min="0" placeholder="0" />
                 </div>
-                <div class="form-group">
+                <div class="form-group form-col-full">
                   <label class="form-label">Cover Image</label>
-                  <input class="form-input" name="image" type="file" accept="image/*" />
+                  <span class="form-help">Optional thumbnail (JPG, PNG, WebP, GIF — max 5MB)</span>
+                  <input class="form-input" id="freebie-cover-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                  <div id="freebie-image-preview" class="product-media-preview"></div>
                 </div>
                 <div class="form-group" style="display:flex;align-items:center;gap:16px;padding-top:28px;">
                   <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;">
@@ -978,6 +1028,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
     <div class="modal-body">
       <div class="order-info-grid" style="grid-template-columns:1fr;">
         <div class="order-info-block">
+          <input type="hidden" id="modal-order-id" value="" />
           <p><strong>Order:</strong> <span id="modal-order-number">—</span></p>
           <p style="margin-top:6px;"><strong>Customer:</strong> <span id="modal-order-customer">—</span></p>
           <p style="margin-top:6px;"><strong>Current Status:</strong> <span id="modal-current-status">—</span></p>
@@ -1127,9 +1178,19 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
           </div>
           <div class="form-group">
             <label class="form-label">Main Image</label>
-            <input class="form-input" id="edit-product-image" name="image" type="file" accept="image/*" />
+            <span class="form-help">Primary image on product cards and detail page</span>
+            <input class="form-input" id="edit-product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
           </div>
-          <div id="current-image-preview" style="margin-top:12px;"></div>
+          <div id="current-image-preview" class="product-media-preview product-media-preview--main"></div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label class="form-label">Gallery Images</label>
+            <span class="form-help">Select multiple files (JPG, PNG, WebP, GIF — max 5MB each). Shown in the product popup gallery.</span>
+            <input class="form-input" id="edit-product-gallery" name="media[]" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
+          </div>
+          <input type="hidden" name="additional_images" id="edit-product-additional-images" value="[]" />
+          <div id="product-gallery-preview" class="product-media-preview product-media-gallery"></div>
+          <div id="product-gallery-pending" class="product-media-pending"></div>
         </div>
 
         <!-- Actions -->

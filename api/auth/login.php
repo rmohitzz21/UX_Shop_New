@@ -1,7 +1,12 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+require_once __DIR__ . '/../../includes/auth_rate_limit.php';
 
 apiRequirePost();
+
+if (!authRateLimitCheck('login', 5, 15, 900)) {
+    sendResponse('error', 'Too many login attempts. Please try again in 15 minutes.', null, 429);
+}
 
 $input = apiInput();
 if (empty($_SERVER['HTTP_X_CSRF_TOKEN']) && !empty($input['csrf_token'])) {
@@ -9,14 +14,21 @@ if (empty($_SERVER['HTTP_X_CSRF_TOKEN']) && !empty($input['csrf_token'])) {
 }
 validateCsrf();
 
-$email    = trim((string) ($input['email'] ?? ''));
+$email    = strtolower(trim((string) ($input['email'] ?? '')));
 $password = (string) ($input['password'] ?? '');
 
 if ($email === '' || $password === '') {
     sendResponse('error', 'Email and password are required.', null, 422);
 }
 
-$stmt = $conn->prepare('SELECT id, email, password_hash, first_name, last_name, phone, role, is_blocked FROM users WHERE email = ? ORDER BY id DESC LIMIT 1');
+if (strlen($password) < 8) {
+    sendResponse('error', 'Password must be at least 8 characters.', null, 422);
+}
+
+$stmt = $conn->prepare(
+    'SELECT id, email, password_hash, first_name, last_name, phone, role, is_blocked
+     FROM users WHERE LOWER(email) = ? ORDER BY id DESC LIMIT 1'
+);
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();

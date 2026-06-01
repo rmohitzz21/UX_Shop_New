@@ -120,6 +120,12 @@ if ($headerUserName === '') {
 
     <?php if ($featuredCount > 0): ?>
         <section class="bundles-bestseller" aria-label="Best seller bundles">
+
+            <div class="bs-section-label">
+                <p class="bs-eyebrow">★ Featured Bundles</p>
+                <h2 class="bs-heading">Best Sellers</h2>
+            </div>
+
             <nav class="bundles-filter-bar" aria-label="Bundle categories">
                 <?php foreach ($bundleFilterPills as $slug => $label): ?>
                     <button
@@ -146,6 +152,9 @@ if ($headerUserName === '') {
                             $tagsKey = strtolower(preg_replace('/[^a-z0-9]+/', '-', (string) ($featured['tags'] ?? '')));
                             $reviewCount = $bundleReviewCount((int) $featured['id']);
                             $rating = number_format((float) ($featured['rating'] ?: 4.9), 1);
+                            $fOld = (float) ($featured['old_price'] ?? 0);
+                            $fNew = (float) $featured['price'];
+                            $discountPct = ($fOld > $fNew && $fNew > 0) ? (int) round(($fOld - $fNew) / $fOld * 100) : 0;
                         ?>
                             <div
                                 class="swiper-slide"
@@ -159,6 +168,9 @@ if ($headerUserName === '') {
                                             onerror="this.src='img/poster.webp'"
                                         />
                                         <span class="bs-badge"><?php echo htmlspecialchars($featured['badge_text'] ?? 'Best Seller'); ?></span>
+                                        <?php if ($discountPct > 0): ?>
+                                        <span class="bs-discount-badge">Save <?php echo $discountPct; ?>%</span>
+                                        <?php endif; ?>
                                     </div>
 
                                     <div class="bs-card-body">
@@ -180,23 +192,17 @@ if ($headerUserName === '') {
                                             <?php echo htmlspecialchars($featured['description'] ?: 'Everything you need to build a professional UI/UX portfolio and land your dream job.'); ?>
                                         </p>
 
-                                        <h3 class="bs-includes-title">What's Included:</h3>
-                                        <ul class="bs-includes">
+                                        <p class="bs-includes-title">What's Included</p>
+                                        <div class="bs-chips">
                                             <?php
-                                            $listItems = !empty($featuredItems) ? $featuredItems : [
-                                                '15+ UI Screens',
-                                                'UX Workbook',
-                                                'Interview Guide',
-                                                'Portfolio Templates',
-                                            ];
-                                            foreach ($listItems as $item):
+                                            $chipItems = !empty($featuredItems)
+                                                ? array_slice($featuredItems, 0, 5)
+                                                : ['15+ UI Screens', 'UX Workbook', 'Interview Guide', 'Portfolio Templates', 'Design System'];
+                                            foreach ($chipItems as $chip):
                                             ?>
-                                                <li>
-                                                    <svg class="bs-check" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.2L6.4 11.1L12.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <?php echo htmlspecialchars($item); ?>
-                                                </li>
+                                                <span class="bs-chip"><?php echo htmlspecialchars($chip); ?></span>
                                             <?php endforeach; ?>
-                                        </ul>
+                                        </div>
 
                                         <div class="bs-pricing">
                                             <strong class="bs-price">₹<?php echo number_format((float) $featured['price']); ?></strong>
@@ -211,7 +217,7 @@ if ($headerUserName === '') {
                                                 class="bs-btn bs-btn--outline"
                                                 type="button"
                                                 onclick='addToCart(
-                                                    "bundle_<?php echo (int) $featured['id']; ?>",
+                                                    <?php echo (int) $featured['id']; ?>,
                                                     null,
                                                     1,
                                                     {
@@ -219,7 +225,8 @@ if ($headerUserName === '') {
                                                         price: <?php echo (float) $featured['price']; ?>,
                                                         image: <?php echo json_encode($featured['image']); ?>,
                                                         category: "Bundles",
-                                                        description: <?php echo json_encode($featured['description']); ?>
+                                                        description: <?php echo json_encode($featured['description']); ?>,
+                                                        item_type: "bundle"
                                                     },
                                                     "digital"
                                                 )'>
@@ -400,7 +407,7 @@ if ($headerUserName === '') {
                             type="button"
 
                             onclick='addToCart(
-                                "bundle_<?php echo $gridBundleId; ?>",
+                                <?php echo (int) $gridBundleId; ?>,
                                 null,
                                 1,
                                 {
@@ -408,9 +415,10 @@ if ($headerUserName === '') {
                                     price: <?php echo $gridBundlePrice; ?>,
                                     image: <?php echo json_encode($bundle["image"]); ?>,
                                     category: "Bundle",
-                                    description: <?php echo json_encode($bundle["description"]); ?>
+                                    description: <?php echo json_encode($bundle["description"]); ?>,
+                                    item_type: "bundle"
                                 },
-                                "bundle"
+                                "digital"
                             )'>
 
                             Add to Cart
@@ -486,11 +494,18 @@ if ($headerUserName === '') {
     const slideCount = parseInt(el.dataset.slideCount || '0', 10);
     const hasMultiple = slideCount > 1;
 
+    function triggerSlideAnim(slide) {
+      if (!slide) return;
+      slide.classList.remove('bs-anim');
+      void slide.offsetWidth; // force reflow to restart CSS animation
+      slide.classList.add('bs-anim');
+    }
+
     const featuredSwiper = new Swiper(el, {
       slidesPerView: 1,
       slidesPerGroup: 1,
       spaceBetween: 0,
-      speed: 650,
+      speed: 760,
       effect: 'slide',
       autoHeight: true,
       grabCursor: hasMultiple,
@@ -499,19 +514,23 @@ if ($headerUserName === '') {
       loop: hasMultiple,
       loopAdditionalSlides: hasMultiple ? 2 : 0,
       keyboard: { enabled: hasMultiple, onlyInViewport: true },
+      autoplay: hasMultiple ? {
+        delay: 4800,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      } : false,
       pagination: hasMultiple ? {
         el: section.querySelector('.bundles-featured-pagination'),
-        clickable: true
+        clickable: true,
       } : false,
       navigation: hasMultiple ? {
         prevEl: section.querySelector('.bundles-featured-prev'),
-        nextEl: section.querySelector('.bundles-featured-next')
+        nextEl: section.querySelector('.bundles-featured-next'),
       } : false,
-      breakpoints: {
-        0: { slidesPerView: 1 },
-        768: { slidesPerView: 1 },
-        1200: { slidesPerView: 1 }
-      }
+      on: {
+        init: function () { triggerSlideAnim(this.slides[this.activeIndex]); },
+        slideChangeTransitionStart: function () { triggerSlideAnim(this.slides[this.activeIndex]); },
+      },
     });
 
     function slideMatchesFilter(slide, filter) {

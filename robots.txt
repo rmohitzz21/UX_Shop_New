@@ -1,0 +1,27 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /apiold/
+Disallow: /migrations/
+Disallow: /cart.php
+Disallow: /checkout.php
+Disallow: /order-confirmation.php
+Disallow: /orders.php
+Disallow: /account.php
+Disallow: /signin.php
+Disallow: /signup.php
+Disallow: /forgot-password.php
+Disallow: /reset-password.php
+Disallow: /404.php
+Disallow: /500.php
+
+Allow: /
+Allow: /index.php
+Allow: /shopAll.php
+Allow: /bundles.php
+Allow: /product.php
+Allow: /freebies.php
+Allow: /search.php
+Allow: /policies.php
+
+Sitemap: https://uxpacific.shop/sitemap.xml

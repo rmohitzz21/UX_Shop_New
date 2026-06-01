@@ -1,8 +1,14 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+require_once __DIR__ . '/../../includes/auth_rate_limit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
+}
+
+// Rate limit: 10 verify attempts per IP per 15 minutes to prevent token brute-force
+if (!authRateLimitByIp('verify_reset_token', 10, 900)) {
+    sendResponse('error', 'Too many verification attempts. Please try again later.', null, 429);
 }
 
 $input = apiInput();

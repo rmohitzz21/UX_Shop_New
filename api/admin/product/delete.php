@@ -19,6 +19,12 @@ $orderCount = (int) ($chk->get_result()->fetch_assoc()['c'] ?? 0);
 
 if ($orderCount > 0) {
     // Soft-delete only — cannot hard-delete products tied to orders
+    $exists = $conn->prepare('SELECT id FROM products WHERE id = ? LIMIT 1');
+    $exists->bind_param('i', $id);
+    $exists->execute();
+    if (!$exists->get_result()->fetch_assoc()) {
+        sendResponse('error', 'Product not found.', null, 404);
+    }
     $stmt = $conn->prepare('UPDATE products SET is_active = 0 WHERE id = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();

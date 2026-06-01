@@ -917,3 +917,478 @@
     padding: 18px 14px;
   }
 }
+
+/* ==================== Slide Animations & Visual Polish ==================== */
+
+@keyframes bsIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes bsImgIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Image overlay for depth */
+.bs-card-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(155deg, transparent 30%, rgba(5, 4, 16, 0.55) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bs-badge  { position: absolute; z-index: 2; }
+
+/* Image zoom on card hover */
+.bs-card-media img {
+  transition: transform 0.75s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.bs-card:hover .bs-card-media img {
+  transform: scale(1.05);
+}
+
+/* Card hover glow */
+.bs-card {
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.bs-card:hover {
+  border-color: rgba(124, 92, 255, 0.35);
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(124, 92, 255, 0.2);
+}
+
+/* Discount badge */
+.bs-discount-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(10, 255, 140, 0.1);
+  border: 1px solid rgba(10, 255, 140, 0.28);
+  color: #0dff8c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: Inter, sans-serif;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(10px);
+}
+
+/* Premium swiper easing */
+.bundles-featured-swiper .swiper-wrapper {
+  transition-timing-function: cubic-bezier(0.65, 0, 0.35, 1) !important;
+}
+
+/* Content is invisible until slide is animated in via .bs-anim class */
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-card-media,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-card-title,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-rating,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-desc,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-includes-title,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-chips,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-pricing,
+.bundles-featured-swiper.swiper-initialized .swiper-slide .bs-actions {
+  opacity: 0;
+}
+
+/* Staggered entrance on .bs-anim (added by JS on slide change + init) */
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-card-media {
+  animation: bsImgIn 0.65s cubic-bezier(0.25, 0.8, 0.25, 1) 0s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-card-title {
+  animation: bsIn 0.5s ease-out 0.15s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-rating {
+  animation: bsIn 0.5s ease-out 0.22s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-desc {
+  animation: bsIn 0.5s ease-out 0.28s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-includes-title {
+  animation: bsIn 0.5s ease-out 0.33s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-chips {
+  animation: bsIn 0.5s ease-out 0.37s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-pricing {
+  animation: bsIn 0.5s ease-out 0.43s both;
+}
+.bundles-featured-swiper .swiper-slide.bs-anim .bs-actions {
+  animation: bsIn 0.5s ease-out 0.5s both;
+}
+
+/* Fix pagination bullet selectors (the > variants above don't reach bullets) */
+.bundles-bestseller .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  opacity: 1;
+  margin: 0 4px !important;
+  transition: width 0.35s ease, background 0.35s ease;
+  display: inline-block;
+}
+.bundles-bestseller .swiper-pagination-bullet-active {
+  width: 32px;
+  background: #7c5dfa;
+  box-shadow: 0 0 14px rgba(124, 92, 255, 0.5);
+}
+
+@media (max-width: 640px) {
+  .bs-discount-badge {
+    font-size: 0.6875rem;
+    padding: 4px 10px;
+    bottom: 12px;
+    left: 12px;
+  }
+}
+
+/* ==================== Best Seller v2 — Compact & Polished ==================== */
+
+/* Narrower section so card doesn't dominate the full viewport */
+.bundles-bestseller {
+  width: min(1060px, calc(100% - 40px));
+}
+
+/* Section eyebrow + heading */
+.bs-section-label {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.bs-eyebrow {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.1);
+  border: 1px solid rgba(124, 92, 255, 0.22);
+  color: #a78bfa;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: Inter, sans-serif;
+  margin-bottom: 8px;
+}
+
+.bs-heading {
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  font-family: Gabarito, Inter, sans-serif;
+  margin: 0;
+}
+
+/* ---- Compact card ---- */
+.bs-card {
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.bs-card-media {
+  border-radius: 10px;
+  min-height: 240px;
+}
+
+.bs-card-media img {
+  min-height: 240px;
+  max-height: 340px;
+}
+
+.bs-card-body {
+  padding: 2px 0;
+}
+
+.bs-card-title {
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
+  margin-bottom: 7px;
+}
+
+.bs-desc {
+  font-size: 0.875rem;
+  margin-bottom: 14px;
+  max-width: none;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.bs-includes-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 255, 255, 0.36);
+  margin-bottom: 9px;
+}
+
+.bs-pricing {
+  margin-bottom: 14px;
+}
+
+.bs-price {
+  font-size: 1.45rem;
+}
+
+.bs-actions {
+  gap: 10px;
+  max-width: 360px;
+}
+
+.bs-btn {
+  height: 42px;
+  font-size: 0.875rem;
+  padding: 0 18px;
+  border-radius: 21px;
+}
+
+/* ---- Chip pills (replaces checkmark list) ---- */
+.bs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.bs-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.1);
+  border: 1px solid rgba(124, 92, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.74rem;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.bs-chip:hover {
+  background: rgba(124, 92, 255, 0.18);
+  border-color: rgba(167, 139, 250, 0.4);
+  color: #fff;
+}
+
+/* Stack to single column at 860 px — overrides the existing 1024px breakpoint */
+@media (max-width: 860px) {
+  .bs-card {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .bs-card-media {
+    min-height: 200px;
+  }
+
+  .bs-card-media img {
+    min-height: 200px;
+    max-height: 230px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .bs-desc {
+    -webkit-line-clamp: 3;
+  }
+
+  .bs-actions {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .bs-section-label {
+    margin-bottom: 20px;
+  }
+
+  .bs-eyebrow {
+    font-size: 0.65rem;
+  }
+
+  .bs-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .bs-btn {
+    height: 44px;
+  }
+
+  .bs-chips {
+    gap: 5px;
+  }
+
+  .bs-chip {
+    font-size: 0.7rem;
+    padding: 3px 9px;
+  }
+}
+
+/* ==================== Best Seller — Definitive Layout ==================== */
+/* Parent-scoped selectors override all previous bare .bs-card layers       */
+
+.bundles-bestseller .bs-card {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  align-items: stretch;
+  background: linear-gradient(145deg, rgba(20, 20, 32, 0.98) 0%, rgba(11, 11, 20, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.bundles-bestseller .bs-card:hover {
+  border-color: rgba(124, 92, 255, 0.3);
+  box-shadow: 0 30px 72px rgba(0, 0, 0, 0.68), 0 0 0 1px rgba(124, 92, 255, 0.18);
+}
+
+.bundles-bestseller .bs-card-media {
+  position: relative;
+  border-radius: 0;
+  min-height: unset;
+  height: 100%;
+  overflow: hidden;
+  background: #141420;
+}
+
+.bundles-bestseller .bs-card-media img {
+  width: 100%;
+  height: 100%;
+  min-height: unset;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.75s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.bundles-bestseller .bs-card:hover .bs-card-media img {
+  transform: scale(1.05);
+}
+
+.bundles-bestseller .bs-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 30px;
+}
+
+.bundles-bestseller .bs-card-title {
+  font-size: clamp(1.2rem, 1.7vw, 1.6rem);
+  margin: 0 0 8px;
+}
+
+.bundles-bestseller .bs-rating {
+  margin-bottom: 12px;
+}
+
+.bundles-bestseller .bs-desc {
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  max-width: none;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.bundles-bestseller .bs-includes-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 10px;
+}
+
+.bundles-bestseller .bs-chips {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.bundles-bestseller .bs-pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  margin-bottom: 14px;
+}
+
+.bundles-bestseller .bs-price {
+  font-size: 1.55rem;
+}
+
+.bundles-bestseller .bs-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: none;
+  margin-top: 0;
+}
+
+.bundles-bestseller .bs-btn {
+  height: 44px;
+  font-size: 0.9rem;
+  padding: 0 18px;
+  border-radius: 22px;
+}
+
+@media (max-width: 840px) {
+  .bundles-bestseller .bs-card {
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+
+  .bundles-bestseller .bs-card-media {
+    height: 230px;
+    min-height: 230px;
+  }
+
+  .bundles-bestseller .bs-card-media img {
+    height: 230px;
+  }
+
+  .bundles-bestseller .bs-card-body {
+    padding: 22px 22px;
+  }
+
+  .bundles-bestseller .bs-desc {
+    -webkit-line-clamp: 3;
+  }
+
+  .bundles-bestseller .bs-pricing {
+    margin-top: 16px;
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .bundles-bestseller .bs-card-body {
+    padding: 18px 16px;
+  }
+
+  .bundles-bestseller .bs-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .bundles-bestseller .bs-btn {
+    height: 46px;
+  }
+}

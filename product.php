@@ -36,6 +36,11 @@ $stock = $product['stock'];
 $category = htmlspecialchars($product['category']);
 $available_type = $product['available_type'] ?? 'physical'; // physical, digital, both
 
+$reviewCountStmt = $conn->prepare('SELECT COUNT(*) AS c FROM reviews WHERE product_id = ? AND is_approved = 1');
+$reviewCountStmt->bind_param('i', $product_id);
+$reviewCountStmt->execute();
+$reviewCount = (int) ($reviewCountStmt->get_result()->fetch_assoc()['c'] ?? 0);
+
 $category_lower_raw = strtolower((string) ($product['category'] ?? ''));
 $fit_is_cover = ($available_type !== 'digital') && (
     strpos($category_lower_raw, 't-shirt') !== false ||
@@ -166,7 +171,7 @@ function getRelatedProducts($conn, $product) {
                       <h3>$r_name</h3>
                       <p>$r_desc</p>
                       <div class='product-related-meta'>
-                        <div class='product-related-price'>₹$r_price " . ($r_old ? "<span>₹$r_old</span>" : "") . "</div>
+                        <div class='product-related-price'>\$$r_price " . ($r_old ? "<span>\$$r_old</span>" : "") . "</div>
                         <div class='product-related-rating'>★ $r_rating</div>
                       </div>
                       <div class='product-related-actions'>
@@ -246,7 +251,7 @@ $related_html = getRelatedProducts($conn, $product);
         </div>
         <h1><?php echo $name; ?></h1>
         <p class="description"><?php echo $description; ?></p>
-        <div class="rating">★★★★★ <span><?php echo $rating; ?> (<?php echo rand(50, 500); ?> reviews)</span></div>
+        <div class="rating">★★★★★ <span><?php echo $rating; ?> (<?php echo $reviewCount; ?> reviews)</span></div>
         <div class="price">
           <span class="current">₹<?php echo $price; ?></span>
           <?php if ($old_price): ?>
@@ -475,10 +480,9 @@ $related_html = getRelatedProducts($conn, $product);
           const priceDisplay = document.querySelector('.price .current');
           
           if (format === 'digital' && license === 'Commercial') {
-              priceDisplay.innerText = '₹' + commercialPrice.toFixed(2);
+              priceDisplay.innerText = '₹' + Number(commercialPrice).toLocaleString('en-IN');
           } else {
-              // Default or Physical
-              priceDisplay.innerText = '₹' + basePrice.toFixed(2);
+              priceDisplay.innerText = '₹' + Number(basePrice).toLocaleString('en-IN');
           }
       }
 

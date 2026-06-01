@@ -88,4 +88,5 @@ if (empty($_SESSION['csrf_token'])) {
 // ── 6. Global helpers ─────────────────────────────────────────────────────────
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/marketplace.php';
+require_once __DIR__ . '/reviews.php';
 marketplaceEnsureSchema($conn);

@@ -273,20 +273,20 @@ if (empty($_SESSION['user_id'])) {
                   <div class="summary-details">
                     <div class="summary-row">
                       <span>Subtotal</span>
-                      <span id="checkout-subtotal">$0</span>
+                      <span id="checkout-subtotal">₹0</span>
                     </div>
                     <div class="summary-row">
                       <span>Shipping</span>
-                      <span id="checkout-shipping">$50</span>
+                      <span id="checkout-shipping">₹50</span>
                     </div>
                     <div class="summary-row">
                       <span>Tax</span>
-                      <span id="checkout-tax">$0</span>
+                      <span id="checkout-tax">₹0</span>
                     </div>
                     <div class="summary-divider"></div>
                     <div class="summary-row total-row">
                       <span>Total</span>
-                      <span id="checkout-total">$0</span>
+                      <span id="checkout-total">₹0</span>
                     </div>
                   </div>
 
@@ -383,6 +383,7 @@ if (empty($_SESSION['user_id'])) {
       </footer>
     </div>
 
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
 
   </body>

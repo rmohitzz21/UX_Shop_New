@@ -14,7 +14,7 @@ if (!$ids) {
 
 $placeholders = implode(',', array_fill(0, count($ids), '?'));
 $types = str_repeat('i', count($ids));
-$stmt = $conn->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+$stmt = $conn->prepare("SELECT * FROM products WHERE id IN ($placeholders) AND is_active = 1");
 $stmt->bind_param($types, ...$ids);
 $stmt->execute();
 $result = $stmt->get_result();

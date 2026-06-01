@@ -24,7 +24,13 @@ $signature = $_SERVER['HTTP_X_RAZORPAY_SIGNATURE'] ?? '';
 
 $webhookSecret = getenv('RAZORPAY_WEBHOOK_SECRET') ?: '';
 if ($webhookSecret === '' || str_contains($webhookSecret, 'REPLACE_ME')) {
-    error_log('webhook.php: RAZORPAY_WEBHOOK_SECRET not configured — accepting payload without verification (unsafe in production)');
+    if (getenv('APP_DEBUG') !== 'true') {
+        error_log('webhook.php: RAZORPAY_WEBHOOK_SECRET not configured — refusing webhook in production');
+        http_response_code(503);
+        echo json_encode(['status' => 'error', 'message' => 'Webhook not configured.']);
+        exit;
+    }
+    error_log('webhook.php: RAZORPAY_WEBHOOK_SECRET not configured — accepting without verification (debug only)');
 } else {
     if (!rzp_verify_webhook_signature($rawBody, $signature, $webhookSecret)) {
         error_log('webhook.php: invalid signature');

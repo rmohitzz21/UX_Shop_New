@@ -32,6 +32,8 @@ $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) {
     $decoded = json_decode((string) ($row['included_items'] ?? ''), true);
     $row['included_items_list'] = is_array($decoded) ? $decoded : [];
+    $gallery = json_decode((string) ($row['additional_images'] ?? ''), true);
+    $row['additional_images_list'] = is_array($gallery) ? array_values(array_filter($gallery, 'is_string')) : [];
     $rows[] = $row;
 }
 sendResponse('success', 'Bundles loaded.', $rows);

@@ -77,7 +77,25 @@ if (empty($_SESSION['csrf_token'])) {
           <span class="field-error-modern"></span>
         </div>
 
-        <input type="hidden" name="confirmPassword" id="confirm-password-hidden" value="" />
+        <div class="auth-premium-field auth-premium-field--password">
+          <input
+            id="confirm-password"
+            name="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+          <label for="confirm-password">Confirm password</label>
+          <button type="button" class="auth-premium-toggle" onclick="togglePassword('confirm-password')" aria-label="Show password">
+            <svg id="confirm-password-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+          <span class="field-error-modern"></span>
+        </div>
 
         <label class="auth-premium-terms">
           <input type="checkbox" name="terms" required />
@@ -108,12 +126,5 @@ if (empty($_SESSION['csrf_token'])) {
 
   <script src="script.js"></script>
   <?php include 'includes/auth-premium-scripts.php'; ?>
-  <script>
-    document.getElementById('signup-form').addEventListener('submit', function syncConfirmPassword() {
-      const pw = document.getElementById('password');
-      const hidden = document.getElementById('confirm-password-hidden');
-      if (pw && hidden) hidden.value = pw.value;
-    }, true);
-  </script>
 </body>
 </html>

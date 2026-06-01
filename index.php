@@ -328,16 +328,16 @@ HTML;
                       echo "<li>{$item}</li>";
                   }
 
-                  $oldHtml = $bOldPrice ? "<span>&#8377;{$bOldPrice}</span>" : '';
+                  $oldHtml = $bOldPrice ? "<span>₹{$bOldPrice}</span>" : '';
                   echo <<<HTML
           </ul>
 
           <div class="uxp-bundle-footer">
-            <strong>&#8377;{$bPrice} {$oldHtml}</strong>
+            <strong>₹{$bPrice} {$oldHtml}</strong>
 
             <div>
               <button type="button" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$bId}" data-item-type="bundle">View Details</button>
-              <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart('bundle-{$bId}', null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}}, 'digital')">Add to Cart</button>
+              <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart({$bId}, null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}, item_type: 'bundle'}, 'digital')">Add to Cart</button>
             </div>
           </div>
         </div>

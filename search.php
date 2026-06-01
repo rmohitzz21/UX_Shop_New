@@ -6,10 +6,10 @@ $products = [];
 
 if ($query !== '') {
     $like = '%' . $query . '%';
-    $stmt = $conn->prepare('SELECT * FROM products WHERE name LIKE ? OR category LIKE ? OR description LIKE ? ORDER BY name ASC LIMIT 48');
+    $stmt = $conn->prepare('SELECT * FROM products WHERE (name LIKE ? OR category LIKE ? OR description LIKE ?) AND is_active = 1 ORDER BY name ASC LIMIT 48');
     $stmt->bind_param('sss', $like, $like, $like);
 } else {
-    $stmt = $conn->prepare('SELECT * FROM products ORDER BY created_at DESC, id DESC LIMIT 48');
+    $stmt = $conn->prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC, id DESC LIMIT 48');
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -70,10 +70,9 @@ function searchAsset($value) {
                         <span><?php echo htmlspecialchars($category); ?></span>
                         <h2><?php echo htmlspecialchars($name); ?></h2>
                         <p><?php echo htmlspecialchars($description); ?></p>
-                        <strong>Rs. <?php echo number_format($price, 0); ?></strong>
+                        <strong>₹<?php echo number_format($price, 0); ?></strong>
                         <div class="search-product-actions">
                             <button type="button" data-add-to-cart="<?php echo $id; ?>" data-name="<?php echo htmlspecialchars($name); ?>" data-price="<?php echo htmlspecialchars((string) $price); ?>" data-image="<?php echo htmlspecialchars($image); ?>" data-category="<?php echo htmlspecialchars($category); ?>" data-description="<?php echo htmlspecialchars($description); ?>" data-type="<?php echo htmlspecialchars($type); ?>">Add to Cart</button>
-                            <button type="button" onclick="addToWishlist('<?php echo $id; ?>', <?php echo $jsName; ?>, <?php echo $price; ?>, <?php echo $jsImage; ?>, <?php echo $jsCategory; ?>, <?php echo $jsDescription; ?>, <?php echo (float) ($product['rating'] ?? 4.5); ?>)">Wishlist</button>
                         </div>
                     </div>
                 </article>

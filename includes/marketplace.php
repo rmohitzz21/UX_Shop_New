@@ -148,7 +148,7 @@ function marketplaceEnsureSchema(mysqli $conn): void {
         bundle_id INT NULL,
         rating TINYINT NOT NULL,
         comment TEXT NULL,
-        is_approved TINYINT(1) NOT NULL DEFAULT 1,
+        is_approved TINYINT(1) NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_reviews_product (product_id),
         INDEX idx_reviews_bundle (bundle_id)
@@ -190,9 +190,16 @@ function marketplaceEnsureSchema(mysqli $conn): void {
         subject VARCHAR(180) NULL,
         message TEXT NOT NULL,
         ip VARCHAR(64) NULL,
+        is_read TINYINT(1) NOT NULL DEFAULT 0,
+        archived TINYINT(1) NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_contact_created (created_at)
+        INDEX idx_contact_created (created_at),
+        INDEX idx_contact_read_archived (is_read, archived)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    if (tableExists($conn, 'contact_messages')) {
+        addColumnIfMissing($conn, 'contact_messages', 'is_read', '`is_read` TINYINT(1) NOT NULL DEFAULT 0');
+        addColumnIfMissing($conn, 'contact_messages', 'archived', '`archived` TINYINT(1) NOT NULL DEFAULT 0');
+    }
 
     $conn->query("CREATE TABLE IF NOT EXISTS password_reset_tokens (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -264,11 +271,10 @@ function marketplaceEnsureSchema(mysqli $conn): void {
         $stmt->execute();
     }
 
-    $count = (int) ($conn->query('SELECT COUNT(*) AS c FROM products WHERE is_active = 1')->fetch_assoc()['c'] ?? 0);
-    if ($count < 6) {
+    $conn->query("UPDATE products SET is_active = 1 WHERE is_active IS NULL");
+    $totalCount = (int) ($conn->query('SELECT COUNT(*) AS c FROM products')->fetch_assoc()['c'] ?? 0);
+    if ($totalCount === 0) {
         marketplaceSeedProducts($conn);
-    } else {
-        $conn->query("UPDATE products SET is_active = 1 WHERE is_active IS NULL");
     }
 
     $bundleCount = (int) ($conn->query('SELECT COUNT(*) AS c FROM bundles')->fetch_assoc()['c'] ?? 0);

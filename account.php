@@ -233,6 +233,27 @@ if ($statsStmt) {
           </div>
         </aside>
       </div>
+
+      <form class="account-card" id="password-form" style="max-width:560px;">
+        <h3>Change Password</h3>
+        <div class="account-form-grid">
+          <label class="full">
+            Current password
+            <input name="current_password" type="password" autocomplete="current-password" required>
+          </label>
+          <label>
+            New password
+            <input name="new_password" type="password" autocomplete="new-password" minlength="8" required>
+          </label>
+          <label>
+            Confirm new password
+            <input name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+          </label>
+        </div>
+        <div class="account-form-actions" style="justify-content:flex-end;">
+          <button class="btn btn-primary" type="submit">Update Password</button>
+        </div>
+      </form>
     </section>
   </main>
   <?php include 'includes/footer.php'; ?>
@@ -245,6 +266,22 @@ document.getElementById('account-form').addEventListener('submit', async (event)
   const response = await fetch('api/user/update_profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() }, body: JSON.stringify(payload) });
   const data = await response.json();
   showToast(data.message || (data.status === 'success' ? 'Profile saved.' : 'Could not save profile.'), data.status === 'success' ? 'success' : 'error');
+});
+
+document.getElementById('password-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const btn = event.target.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const payload = Object.fromEntries(new FormData(event.target).entries());
+  try {
+    const res = await fetch('api/user/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    showToast(data.message || (data.status === 'success' ? 'Password updated.' : 'Could not update password.'), data.status === 'success' ? 'success' : 'error');
+    if (data.status === 'success') event.target.reset();
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
 });
 </script>
 </body>

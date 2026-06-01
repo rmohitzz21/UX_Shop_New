@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../_admin.php';
+require_once __DIR__ . '/_helpers.php';
 
 $q      = trim((string) ($_GET['q'] ?? ''));
 $status = trim((string) ($_GET['status'] ?? ''));
@@ -18,9 +19,13 @@ if ($q !== '') {
     $types  .= 'ssss';
 }
 if ($status !== '') {
-    $where[] = 'o.status = ?';
-    $params[] = $status;
-    $types   .= 's';
+    $aliases = adminOrderStatusFilterValues($status);
+    $placeholders = implode(',', array_fill(0, count($aliases), '?'));
+    $where[] = "o.status IN ({$placeholders})";
+    foreach ($aliases as $alias) {
+        $params[] = $alias;
+        $types .= 's';
+    }
 }
 
 $whereSql = implode(' AND ', $where);

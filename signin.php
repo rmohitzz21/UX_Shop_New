@@ -37,6 +37,11 @@ if (empty($_SESSION['csrf_token'])) {
             <?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
           </div>
         <?php endif; ?>
+        <?php if (!empty($_GET['message'])): ?>
+          <div class="auth-premium-alert auth-premium-alert--success">
+            <?php echo htmlspecialchars($_GET['message']); ?>
+          </div>
+        <?php endif; ?>
 
         <div class="auth-premium-field">
           <input
@@ -58,7 +63,7 @@ if (empty($_SESSION['csrf_token'])) {
             type="password"
             placeholder="••••••••"
             autocomplete="current-password"
-            minlength="6"
+            minlength="8"
             required
           />
           <label for="password">Password</label>

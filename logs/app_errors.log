@@ -251,3 +251,58 @@ Stack trace:
 #0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\seed-bundles.php(164): mysqli_stmt->bind_param('ssssddssdiss', 'Ultimate UI/UX ...', 'Everything you ...', 'Career Pack', 'portfolio,caree...', 1499, 2999, 'img/poster.webp', 'Best Seller', 4.9, 1, '15+ UI Screens\n...', '["15+ UI Screen...', 'ultimate-ui-ux-...')
 #1 {main}
   thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\seed-bundles.php on line 164
+[28-May-2026 12:33:55 Europe/Berlin] PHP Warning:  Undefined variable $599 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:33:55 Europe/Berlin] PHP Warning:  Undefined variable $399 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:33:55 Europe/Berlin] PHP Warning:  Undefined variable $299 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:33:55 Europe/Berlin] PHP Warning:  Undefined variable $349 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:33:55 Europe/Berlin] PHP Warning:  Undefined variable $250 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:33:56 Europe/Berlin] PHP Warning:  Undefined variable $150 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $599 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $399 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $299 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $349 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $250 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:34:23 Europe/Berlin] PHP Warning:  Undefined variable $150 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $599 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $399 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $299 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $349 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $250 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 12:56:07 Europe/Berlin] PHP Warning:  Undefined variable $150 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 548
+[28-May-2026 13:35:27 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 
+[28-May-2026 18:29:16 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\product\save.php on line 61
+[29-May-2026 11:13:37 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function columnExists(), 2 passed in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php on line 106 and exactly 3 expected in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php:10
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php(106): columnExists(Object(mysqli), 'is_read')
+#1 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 10
+[29-May-2026 11:13:41 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function columnExists(), 2 passed in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php on line 106 and exactly 3 expected in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php:10
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php(106): columnExists(Object(mysqli), 'is_read')
+#1 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 10
+[29-May-2026 11:16:22 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function columnExists(), 2 passed in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php on line 106 and exactly 3 expected in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php:10
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\overview.php(106): columnExists(Object(mysqli), 'is_read')
+#1 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 10
+[29-May-2026 14:01:56 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #6 cannot be passed by reference in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php:41
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 41
+[29-May-2026 14:02:44 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #6 cannot be passed by reference in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php:41
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 41
+[29-May-2026 14:04:18 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #6 cannot be passed by reference in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php:46
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 46
+[29-May-2026 14:04:47 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #6 cannot be passed by reference in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php:50
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 50
+[29-May-2026 14:05:19 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #6 cannot be passed by reference in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php:53
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 53

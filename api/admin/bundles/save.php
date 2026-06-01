@@ -24,9 +24,18 @@ if ($badgeText === '') {
     $badgeText = $featured ? 'Best Seller' : 'Most Popular';
 }
 $slug = slugify($input['slug'] ?? $name);
-$image = trim((string) ($input['existing_image'] ?? $input['image'] ?? ''));
-$uploaded = adminUploadImages('image');
-if ($uploaded) $image = $uploaded[0];
+$image = trim((string) ($input['existing_image'] ?? ''));
+$imageUploads = adminUploadImages('image');
+$mediaUploads = adminUploadImages('media');
+if ($image === '' && !empty($imageUploads)) {
+    $image = $imageUploads[0];
+} elseif ($image === '' && empty($imageUploads)) {
+    // JSON toggle / legacy payloads send stored path in `image`, not a file upload
+    $pathCandidate = trim((string) ($input['image'] ?? ''));
+    if ($pathCandidate !== '' && strpos($pathCandidate, '..') === false) {
+        $image = $pathCandidate;
+    }
+}
 if ($image === '') $image = 'img/poster.webp';
 
 // Prefer whats_included textarea (one item per line) as the source of truth.
@@ -34,9 +43,9 @@ if ($image === '') $image = 'img/poster.webp';
 $whatsIncluded = trim((string) ($input['whats_included'] ?? ''));
 $fileSpec = trim((string) ($input['file_specification'] ?? ''));
 
-// Additional images: accept newline-separated (admin form) OR JSON array (toggle payload)
-$additionalImagesRaw = trim((string) ($input['additional_images'] ?? ''));
+// Additional images: JSON array (form) or newline-separated (legacy) + file uploads (media[])
 $additionalImagesArr = [];
+$additionalImagesRaw = trim((string) ($input['additional_images'] ?? ''));
 if ($additionalImagesRaw !== '') {
     $decoded = json_decode($additionalImagesRaw, true);
     if (is_array($decoded)) {
@@ -45,12 +54,21 @@ if ($additionalImagesRaw !== '') {
             if ($img !== '') $additionalImagesArr[] = $img;
         }
     } else {
-        foreach (preg_split('/\r?\n/', $additionalImagesRaw) as $line) {
+        foreach (preg_split('/\r\n|\r|\n/', $additionalImagesRaw) as $line) {
             $line = trim($line);
             if ($line !== '') $additionalImagesArr[] = $line;
         }
     }
 }
+if (!empty($mediaUploads)) {
+    $additionalImagesArr = array_values(array_unique(array_merge($additionalImagesArr, $mediaUploads)));
+}
+$additionalImagesArr = array_values(array_unique(array_filter(
+    $additionalImagesArr,
+    static function ($path) use ($image): bool {
+        return is_string($path) && $path !== '' && $path !== $image;
+    }
+)));
 $additionalImagesJson = $additionalImagesArr ? json_encode($additionalImagesArr, JSON_UNESCAPED_SLASHES) : null;
 
 $includedItems = [];
@@ -85,12 +103,29 @@ if (isset($input['product_ids'])) {
 }
 
 if ($id > 0) {
-    $beforeStmt = $conn->prepare('SELECT stock, image FROM bundles WHERE id = ? LIMIT 1');
+    $beforeStmt = $conn->prepare('SELECT stock, image, additional_images FROM bundles WHERE id = ? LIMIT 1');
     $beforeStmt->bind_param('i', $id);
     $beforeStmt->execute();
     $before = $beforeStmt->get_result()->fetch_assoc();
     if (!$before) sendResponse('error', 'Bundle not found.', null, 404);
-    if (!$uploaded && $image === '') $image = $before['image'] ?: 'img/poster.webp';
+    if (empty($imageUploads) && trim((string) ($input['existing_image'] ?? '')) === '' && !empty($before['image'])) {
+        $image = $before['image'];
+    }
+    if ($additionalImagesRaw === '' && empty($mediaUploads) && !empty($before['additional_images'])) {
+        $decoded = json_decode((string) $before['additional_images'], true);
+        if (is_array($decoded)) {
+            $additionalImagesArr = array_values(array_filter($decoded, 'is_string'));
+            $additionalImagesArr = array_values(array_filter(
+                $additionalImagesArr,
+                static function ($path) use ($image): bool {
+                    return $path !== '' && $path !== $image;
+                }
+            ));
+            $additionalImagesJson = $additionalImagesArr
+                ? json_encode($additionalImagesArr, JSON_UNESCAPED_SLASHES)
+                : null;
+        }
+    }
 
     $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, whats_included=?, file_specification=?, additional_images=?, price=?, old_price=?, image=?, badge_text=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
     $stmt->bind_param('sssssssssddssdiiii', $name, $slug, $description, $category, $tags, $includedJson, $whatsIncluded, $fileSpec, $additionalImagesJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active, $id);

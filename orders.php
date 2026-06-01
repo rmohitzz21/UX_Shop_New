@@ -105,9 +105,51 @@ if ($userName === '') {
 
                 <!-- Orders list -->
                 <div id="orders-list" class="orders-list"></div>
+
+                <div id="orders-review-banner" class="orders-review-banner" style="display:none;" role="status">
+                    <i class="ph ph-star"></i>
+                    <p>You have items ready to review. Scroll down and tap <strong>Write review</strong> on any eligible product.</p>
+                    <button type="button" class="btn-ghost small" id="orders-review-banner-dismiss">Dismiss</button>
+                </div>
             </div>
         </section>
     </main>
+
+    <!-- Review modal -->
+    <div id="review-modal" class="review-modal" aria-hidden="true" hidden>
+        <div class="review-modal-backdrop" data-review-close></div>
+        <div class="review-modal-panel" role="dialog" aria-labelledby="review-modal-title" aria-modal="true">
+            <header class="review-modal-head">
+                <h2 id="review-modal-title">Write a review</h2>
+                <button type="button" class="review-modal-close" data-review-close aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </header>
+            <p class="review-modal-product" id="review-modal-product-name"></p>
+            <form id="review-form" class="review-form">
+                <input type="hidden" id="review-product-id" name="product_id" value="" />
+                <input type="hidden" id="review-bundle-id" name="bundle_id" value="" />
+                <fieldset class="review-stars-field">
+                    <legend>Your rating</legend>
+                    <div class="review-stars" id="review-stars" role="radiogroup" aria-label="Rating from 1 to 5 stars">
+                        <button type="button" class="review-star" data-value="1" aria-label="1 star">★</button>
+                        <button type="button" class="review-star" data-value="2" aria-label="2 stars">★</button>
+                        <button type="button" class="review-star" data-value="3" aria-label="3 stars">★</button>
+                        <button type="button" class="review-star" data-value="4" aria-label="4 stars">★</button>
+                        <button type="button" class="review-star" data-value="5" aria-label="5 stars">★</button>
+                    </div>
+                    <input type="hidden" id="review-rating" name="rating" value="0" required />
+                </fieldset>
+                <label class="review-comment-label" for="review-comment">Your review (optional)</label>
+                <textarea id="review-comment" name="comment" rows="4" maxlength="2000" placeholder="What did you like about this item?"></textarea>
+                <p class="review-form-hint">Reviews are moderated before they appear on the shop.</p>
+                <div class="review-form-actions">
+                    <button type="button" class="btn-ghost" data-review-close>Cancel</button>
+                    <button type="submit" class="btn-primary" id="review-submit-btn">Submit review</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- ── Footer ── -->
     <footer class="site-footer">
@@ -204,6 +246,7 @@ if ($userName === '') {
                 buildStats();
                 showFilters();
                 renderOrders();
+                maybeShowReviewBanner();
             })
             .catch(() => {
                 hideSkeleton();
@@ -301,7 +344,7 @@ if ($userName === '') {
         const isFreeOrder = total === 0;
         const statusSlug = (order.status || 'pending').toLowerCase().replace(/\s+/g, '_');
 
-        const itemsHtml = (order.items || []).map(item => renderOrderItem(item)).join('');
+        const itemsHtml = (order.items || []).map(item => renderOrderItem(item, statusSlug)).join('');
 
         const payMethod = isFreeOrder ? 'free' : (order.paymentMethod || order.payment_method || '');
         const payLabel  = isFreeOrder ? 'Free' : paymentLabel(payMethod);
@@ -337,15 +380,18 @@ if ($userName === '') {
                     }
                 </div>
                 <div class="order-card-actions">
-                    <a href="checkout.php?reorder=${encodeURIComponent(order.orderNumber || order.id)}" class="btn-ghost small order-action-btn">
+                    <button type="button" class="btn-ghost small order-action-btn"
+                        data-order-id="${order.id}"
+                        data-items="${escHtml(JSON.stringify(order.items || []))}"
+                        onclick="handleReorder(+this.dataset.orderId, JSON.parse(this.dataset.items))">
                         <i class="ph ph-arrow-clockwise"></i> Reorder
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>`;
     }
 
-    function renderOrderItem(item) {
+    function renderOrderItem(item, orderStatus) {
         const price = parseFloat(item.price) || 0;
         const qty   = parseInt(item.quantity) || 1;
         const isFree = price === 0;
@@ -353,6 +399,7 @@ if ($userName === '') {
 
         const img = escHtml(item.image || 'img/poster.webp');
         const name = escHtml(item.name || 'Item');
+        const rawName = String(item.name || 'Item');
         const type = (item.item_type || 'product').toLowerCase();
         const typeLabel = type === 'bundle' ? 'Bundle' : 'Product';
 
@@ -362,8 +409,28 @@ if ($userName === '') {
         const sizeText = item.size ? `<span class="item-meta-chip">Size: ${escHtml(String(item.size))}</span>` : '';
         const typeChip = `<span class="item-meta-chip item-meta-chip--type">${typeLabel}</span>`;
 
+        let reviewHtml = '';
+        if (item.has_reviewed && item.review) {
+            const stars = '★'.repeat(item.review.rating) + '☆'.repeat(5 - item.review.rating);
+            const pending = item.review.is_approved ? '' : ' <span class="review-pending-tag">Pending approval</span>';
+            reviewHtml = `<p class="order-item-review-done"><span class="review-stars-display">${stars}</span>${pending}</p>`;
+        } else if (item.can_review) {
+            const pid = parseInt(item.product_id, 10) || 0;
+            const bid = parseInt(item.bundle_id, 10) || 0;
+            reviewHtml = `
+                <button type="button" class="btn-ghost small order-review-btn"
+                    data-product-id="${pid}"
+                    data-bundle-id="${bid}"
+                    data-item-name="${escHtml(rawName)}"
+                    onclick="openReviewModal(this)">
+                    <i class="ph ph-star"></i> Write review
+                </button>`;
+        }
+
+        const reviewableClass = item.can_review ? ' order-item-row--reviewable' : '';
+
         return `
-        <div class="order-item-row">
+        <div class="order-item-row${reviewableClass}" data-order-status="${escHtml(orderStatus || '')}">
             <div class="order-item-thumb">
                 <img src="${img}" alt="${name}" loading="lazy" onerror="this.src='img/poster.webp'" />
             </div>
@@ -374,12 +441,123 @@ if ($userName === '') {
                     ${sizeText}
                     <span class="item-meta-chip">Qty: ${qty}</span>
                 </div>
+                ${reviewHtml}
             </div>
             <div class="order-item-price-block">
                 <span class="${priceBadgeClass}">${priceBadgeText}</span>
             </div>
         </div>`;
     }
+
+    /* ── Review modal ─────────────────────────────────────────── */
+    let reviewSelectedRating = 0;
+
+    window.openReviewModal = function (btn) {
+        const modal = document.getElementById('review-modal');
+        const productId = parseInt(btn.dataset.productId, 10) || 0;
+        const bundleId  = parseInt(btn.dataset.bundleId, 10) || 0;
+        const itemName  = btn.dataset.itemName || 'Item';
+
+        document.getElementById('review-product-id').value = productId > 0 ? String(productId) : '';
+        document.getElementById('review-bundle-id').value  = bundleId > 0 ? String(bundleId) : '';
+        document.getElementById('review-modal-product-name').textContent = itemName;
+        document.getElementById('review-comment').value = '';
+        setReviewRating(0);
+
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('review-modal-open');
+        document.getElementById('review-comment').focus();
+    };
+
+    function closeReviewModal() {
+        const modal = document.getElementById('review-modal');
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('review-modal-open');
+    }
+
+    function setReviewRating(value) {
+        reviewSelectedRating = value;
+        document.getElementById('review-rating').value = value > 0 ? String(value) : '';
+        document.querySelectorAll('#review-stars .review-star').forEach(btn => {
+            const v = parseInt(btn.dataset.value, 10);
+            btn.classList.toggle('active', v > 0 && v <= value);
+            btn.setAttribute('aria-checked', v === value ? 'true' : 'false');
+        });
+    }
+
+    document.querySelectorAll('[data-review-close]').forEach(el => {
+        el.addEventListener('click', closeReviewModal);
+    });
+
+    document.getElementById('review-stars').addEventListener('click', function (e) {
+        const star = e.target.closest('.review-star');
+        if (star) setReviewRating(parseInt(star.dataset.value, 10));
+    });
+
+    document.getElementById('review-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (reviewSelectedRating < 1) {
+            if (typeof showToast === 'function') showToast('Please select a star rating.', 'error');
+            return;
+        }
+        const productId = parseInt(document.getElementById('review-product-id').value, 10) || 0;
+        const bundleId  = parseInt(document.getElementById('review-bundle-id').value, 10) || 0;
+        const payload = {
+            rating: reviewSelectedRating,
+            comment: document.getElementById('review-comment').value.trim(),
+        };
+        if (productId > 0) payload.product_id = productId;
+        else if (bundleId > 0) payload.bundle_id = bundleId;
+        else {
+            if (typeof showToast === 'function') showToast('Invalid item for review.', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('review-submit-btn');
+        submitBtn.disabled = true;
+
+        fetch('api/reviews/submit.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': typeof getCsrfToken === 'function' ? getCsrfToken() : '',
+            },
+            body: JSON.stringify(payload),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status !== 'success') throw new Error(data.message || 'Could not submit review');
+                if (typeof showToast === 'function') showToast(data.message || 'Review submitted!', 'success');
+                closeReviewModal();
+                loadOrders();
+            })
+            .catch(err => {
+                if (typeof showToast === 'function') showToast(err.message || 'Failed to submit review.', 'error');
+            })
+            .finally(() => { submitBtn.disabled = false; });
+    });
+
+    function maybeShowReviewBanner() {
+        const params = new URLSearchParams(window.location.search);
+        const wantsReview = params.get('review') === '1';
+        const hasReviewable = allOrders.some(o =>
+            (o.items || []).some(i => i.can_review)
+        );
+        const banner = document.getElementById('orders-review-banner');
+        if (!banner || !hasReviewable) return;
+        banner.style.display = '';
+        if (wantsReview) {
+            const first = document.querySelector('.order-item-row--reviewable');
+            if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    document.getElementById('orders-review-banner-dismiss')?.addEventListener('click', function () {
+        document.getElementById('orders-review-banner').style.display = 'none';
+    });
 
     /* ── Helpers ──────────────────────────────────────────────── */
     function hideSkeleton() {

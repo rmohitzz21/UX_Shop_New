@@ -80,7 +80,7 @@ try {
     $tax          = round($subtotal * 0.18, 2);
     $total        = $subtotal + $shippingCost + $tax;
     $orderNumber  = 'UXP-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
-    $orderStatus  = ($paymentMethod === 'razorpay') ? 'awaiting_payment' : 'Pending';
+    $orderStatus  = ($paymentMethod === 'razorpay') ? 'awaiting_payment' : 'pending';
     $shippingJson = json_encode($shipping, JSON_UNESCAPED_SLASHES);
 
     $stmt = $conn->prepare('INSERT INTO orders (order_number, user_id, total, subtotal, shipping, tax, payment_method, status, shipping_address, status_updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())');
@@ -97,33 +97,36 @@ try {
         $itemStmt->bind_param('iiiidssss', $orderId, $productId, $bundleId, $item['quantity'], $item['price'], $item['size'], $item['name'], $item['image'], $item['type']);
         $itemStmt->execute();
 
-        // Clear this item from cart for both products and bundles
-        if ($item['type'] === 'product') {
-            $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
-            $del->bind_param('ii', $user['id'], $item['id']);
-            $del->execute();
-        } elseif ($item['type'] === 'bundle') {
-            // Remove any product proxy that represents this bundle from cart
-            $del = $conn->prepare(
-                'DELETE FROM cart WHERE user_id = ? AND product_id IN (SELECT p.id FROM products p WHERE p.name = (SELECT b.name FROM bundles b WHERE b.id = ?) LIMIT 1)'
-            );
-            $del->bind_param('ii', $user['id'], $item['id']);
-            $del->execute();
+        // For Razorpay, cart is cleared by OrderPaymentService after payment verified
+        if ($paymentMethod !== 'razorpay') {
+            if ($item['type'] === 'product') {
+                $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
+                $del->bind_param('ii', $user['id'], $item['id']);
+                $del->execute();
+            } elseif ($item['type'] === 'bundle') {
+                $del = $conn->prepare(
+                    'DELETE FROM cart WHERE user_id = ? AND product_id IN (SELECT p.id FROM products p WHERE p.name = (SELECT b.name FROM bundles b WHERE b.id = ?) LIMIT 1)'
+                );
+                $del->bind_param('ii', $user['id'], $item['id']);
+                $del->execute();
+            }
         }
     }
 
     $conn->commit();
 
-    // Send order confirmation email (non-fatal)
-    try {
-        $emailItems = array_map(fn($i) => ['name' => $i['name'], 'quantity' => $i['quantity'], 'price' => $i['price']], $orderItems);
-        sendOrderConfirmationEmail(
-            $user['email'],
-            $user['firstName'] . ' ' . $user['lastName'],
-            ['order_number' => $orderNumber, 'date' => date('Y-m-d'), 'items' => $emailItems, 'total' => $total]
-        );
-    } catch (Throwable $ignored) {
-        error_log('Order confirmation email failed for order ' . $orderNumber);
+    // Email is sent by razorpay-verify.php after payment confirmed; skip here for Razorpay
+    if ($paymentMethod !== 'razorpay') {
+        try {
+            $emailItems = array_map(fn($i) => ['name' => $i['name'], 'quantity' => $i['quantity'], 'price' => $i['price']], $orderItems);
+            sendOrderConfirmationEmail(
+                $user['email'],
+                $user['firstName'] . ' ' . $user['lastName'],
+                ['order_number' => $orderNumber, 'date' => date('Y-m-d'), 'items' => $emailItems, 'total' => $total]
+            );
+        } catch (Throwable $ignored) {
+            error_log('Order confirmation email failed for order ' . $orderNumber);
+        }
     }
 
     sendResponse('success', 'Order placed successfully.', [

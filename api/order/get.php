@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+require_once __DIR__ . '/../../includes/reviews.php';
 
 $user = apiRequireUser();
 
@@ -48,14 +49,19 @@ foreach ($orderRows as $order) {
         'order_number'   => $order['order_number'],
         'date'           => $order['created_at'],
         'created_at'     => $order['created_at'],
-        'status'         => $order['status'],
+        'status'         => strtolower($order['status']),
         'paymentMethod'  => $order['payment_method'],
         'payment_method' => $order['payment_method'],
         'total'          => (float) $order['total'],
         'subtotal'       => (float) $order['subtotal'],
         'tax'            => (float) $order['tax'],
         'shipping'       => (float) $order['shipping'],
-        'items'          => $itemsByOrder[$oid] ?? [],
+        'items'          => reviewEnrichOrderItems(
+            $conn,
+            $user['id'],
+            strtolower((string) $order['status']),
+            $itemsByOrder[$oid] ?? []
+        ),
     ];
 }
 

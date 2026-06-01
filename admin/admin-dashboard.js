@@ -102,11 +102,26 @@ function getOrderCustomerName(order) {
 
 function getOrderEmail(order) {
   if (order.email) return order.email;
-  let shipping = order.shipping_address;
+  let shipping = order.shipping_address_parsed || order.shipping_address;
   if (typeof shipping === 'string') {
     try { shipping = JSON.parse(shipping); } catch { shipping = {}; }
   }
   return shipping?.email || 'N/A';
+}
+
+function formatOrderShipping(order) {
+  let shipping = order.shipping_address_parsed || order.shipping_address;
+  if (typeof shipping === 'string') {
+    try { shipping = JSON.parse(shipping); } catch { return shipping || '—'; }
+  }
+  if (!shipping || typeof shipping !== 'object') return '—';
+  const lines = [
+    `${shipping.firstName || ''} ${shipping.lastName || ''}`.trim(),
+    shipping.address || shipping.street || '',
+    [shipping.city, shipping.state, shipping.zip || shipping.postal].filter(Boolean).join(', '),
+    shipping.phone || '',
+  ].filter(Boolean);
+  return lines.length ? lines.map(line => escapeHtml(line)).join('<br>') : '—';
 }
 
 async function getProducts() {
@@ -114,19 +129,42 @@ async function getProducts() {
   return state.products;
 }
 
-async function getUsers() {
-  state.users = await fetchJson('../api/admin/user/list.php');
+async function getUsers(options = {}) {
+  const params = new URLSearchParams();
+  if (options.q) params.set('q', options.q);
+  if (options.blocked !== undefined && options.blocked !== '') {
+    params.set('blocked', String(options.blocked));
+  }
+  const qs = params.toString();
+  state.users = await fetchJson('../api/admin/user/list.php' + (qs ? `?${qs}` : ''));
   return state.users;
 }
 
-async function getOrders() {
-  const payload = await fetchJson('../api/admin/order/list.php');
+function userIsPrivileged(user) {
+  const role = String(user?.role || '').toLowerCase();
+  return ['admin', 'super_admin', 'superadmin'].includes(role);
+}
+
+async function getOrders(options = {}) {
+  const params = new URLSearchParams();
+  params.set('limit', String(options.limit ?? 500));
+  params.set('page', String(options.page ?? 1));
+  if (options.q) params.set('q', options.q);
+  if (options.status) params.set('status', options.status);
+  const payload = await fetchJson(`../api/admin/order/list.php?${params.toString()}`);
   if (Array.isArray(payload)) {
     state.orders = payload;
   } else if (payload && Array.isArray(payload.orders)) {
     state.orders = payload.orders;
+    state.ordersMeta = {
+      total: payload.total ?? payload.orders.length,
+      page: payload.page ?? 1,
+      limit: payload.limit ?? payload.orders.length,
+      has_more: Boolean(payload.has_more),
+    };
   } else {
     state.orders = [];
+    state.ordersMeta = { total: 0, page: 1, limit: 0, has_more: false };
   }
   return state.orders;
 }
@@ -147,7 +185,7 @@ function setText(id, value) {
 }
 
 function populateCategoryControls() {
-  const names = state.categories.map(c => c.name).filter(Boolean);
+  const names = state.categories.filter(c => c.is_active == 1).map(c => c.name).filter(Boolean);
   const fallback = ['T-Shirts', 'Stickers', 'Booklet', 'Workbook', 'Mockup', 'Badges', 'Template'];
   const values = Array.from(new Set([...names, ...fallback]));
   const filter = document.getElementById('product-category-filter');
@@ -177,6 +215,7 @@ async function loadOverview() {
     setText('stat-revenue-change', stats.revenue?.change || 'No change');
     setText('stat-pending-orders', stats.orders?.pending ?? 0);
     setText('stat-low-stock', stats.inventory?.low_stock_count ?? 0);
+    setText('stat-unread-messages', stats.messages?.unread ?? 0);
     renderRecentOrders(stats.recent_orders || []);
     renderTopProducts(stats.top_products || []);
   } catch (err) {
@@ -193,7 +232,7 @@ function renderRecentOrders(orders) {
     return;
   }
   table.innerHTML = orders.map(o => `
-    <tr>
+    <tr class="recent-order-row" style="cursor:pointer;" onclick="viewOrder(${Number(o.id)})" title="View order details">
       <td>${escapeHtml(o.order_number || 'N/A')}</td>
       <td>${escapeHtml(getOrderCustomerName(o))}</td>
       <td>${money(o.total)}</td>
@@ -209,49 +248,65 @@ function renderTopProducts(rows) {
     table.innerHTML = '<tr><td colspan="3" class="tbl-empty">No data yet</td></tr>';
     return;
   }
-  table.innerHTML = rows.slice(0, 6).map(row => `
+  table.innerHTML = rows.slice(0, 6).map(row => {
+    const typeLabel = row.item_type === 'bundle' ? 'Bundle · ' : '';
+    return `
     <tr>
-      <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(row.category || '')}</div></td>
+      <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(typeLabel + (row.category || ''))}</div></td>
       <td>${Number(row.units_sold || 0).toLocaleString('en-IN')}</td>
       <td>${money(row.revenue)}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function loadAnalytics() {
+  const analyticsTable = document.getElementById('analytics-top-products-table');
+  if (analyticsTable) {
+    analyticsTable.innerHTML = '<tr><td colspan="3" class="tbl-empty">Loading…</td></tr>';
+  }
   try {
-    const [orders, users, stats] = await Promise.all([getOrders(), getUsers(), fetchJson('../api/admin/stats/overview.php')]);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const month = new Date(today.getFullYear(), today.getMonth(), 1);
-    const todayOrders = orders.filter(o => {
-      const d = new Date(o.created_at || 0);
-      d.setHours(0, 0, 0, 0);
-      return d.getTime() === today.getTime();
-    });
-    const monthOrders = orders.filter(o => new Date(o.created_at || 0) >= month);
-    const total = rows => rows.reduce((sum, row) => sum + Number(row.total || 0), 0);
-    setText('analytics-today-revenue', money(total(todayOrders)));
-    setText('analytics-month-revenue', money(total(monthOrders)));
-    setText('analytics-avg-order', money(orders.length ? total(orders) / orders.length : 0));
-    setText('analytics-conversion', `${users.length ? ((orders.length / users.length) * 100).toFixed(1) : '0.0'}%`);
+    const stats = await fetchJson('../api/admin/stats/analytics.php');
+    const rev = stats.revenue || {};
+    const orders = stats.orders || {};
+    const customers = stats.customers || {};
+
+    setText('analytics-today-revenue', money(rev.today ?? 0));
+    setText('analytics-month-revenue', money(rev.month ?? 0));
+    setText('analytics-avg-order', money(rev.avg_order_month ?? 0));
+    setText('analytics-conversion', `${Number(customers.conversion_rate ?? 0).toFixed(1)}%`);
+
+    setText('analytics-today-orders', String(orders.paid_today ?? 0));
+    setText('analytics-month-orders', String(orders.paid_month ?? 0));
+    setText('analytics-revenue-change', rev.change || 'No change');
+    setText(
+      'analytics-conversion-hint',
+      customers.total
+        ? `${customers.with_paid_order ?? 0} of ${customers.total} customers placed a paid order`
+        : 'No customers yet'
+    );
+
     const topRows = stats.top_products || [];
-    const analyticsTable = document.getElementById('analytics-top-products-table');
     if (analyticsTable) {
       if (!topRows.length) {
-        analyticsTable.innerHTML = '<tr><td colspan="3" class="tbl-empty">No data yet</td></tr>';
+        analyticsTable.innerHTML = '<tr><td colspan="3" class="tbl-empty">No paid sales yet</td></tr>';
       } else {
-        analyticsTable.innerHTML = topRows.map(row => `
+        analyticsTable.innerHTML = topRows.map(row => {
+          const typeLabel = row.item_type === 'bundle' ? 'Bundle · ' : '';
+          return `
           <tr>
-            <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(row.category || '')}</div></td>
+            <td><strong>${escapeHtml(row.name || 'Item')}</strong><div style="font-size:.75rem;opacity:.65;">${escapeHtml(typeLabel + (row.category || ''))}</div></td>
             <td>${Number(row.units_sold || 0).toLocaleString('en-IN')}</td>
             <td>${money(row.revenue)}</td>
-          </tr>
-        `).join('');
+          </tr>`;
+        }).join('');
       }
     }
   } catch (err) {
     console.error(err);
+    showToast(err.message || 'Could not load analytics.', 'error');
+    if (analyticsTable) {
+      analyticsTable.innerHTML = `<tr><td colspan="3" class="tbl-empty">${escapeHtml(err.message || 'Failed to load')}</td></tr>`;
+    }
   }
 }
 
@@ -315,9 +370,92 @@ function filterProducts() {
   renderProducts(state.products);
 }
 
+const productMediaState = {
+  main: '',
+  gallery: [],
+  pendingMain: null,
+  pendingGallery: [],
+};
+
+function syncProductAdditionalImagesField() {
+  const hidden = document.getElementById('edit-product-additional-images');
+  if (!hidden) return;
+  const paths = productMediaState.gallery.filter(p => p && p !== productMediaState.main);
+  hidden.value = JSON.stringify(paths);
+}
+
+function productMediaThumbHtml(src, label, removeAction) {
+  const safeSrc = escapeHtml(src);
+  const safeLabel = escapeHtml(label || '');
+  const removeBtn = removeAction
+    ? `<button type="button" class="product-media-thumb-remove" title="Remove" onclick="${removeAction}">&times;</button>`
+    : '';
+  return `
+    <div class="product-media-thumb">
+      ${removeBtn}
+      <img src="${safeSrc}" alt="" onerror="this.src='../img/sticker.webp'">
+      <div class="product-media-thumb-label">${safeLabel}</div>
+    </div>`;
+}
+
+function renderProductMediaPreviews() {
+  const mainEl = document.getElementById('current-image-preview');
+  const galleryEl = document.getElementById('product-gallery-preview');
+  const pendingEl = document.getElementById('product-gallery-pending');
+  if (!mainEl || !galleryEl || !pendingEl) return;
+
+  if (productMediaState.main) {
+    mainEl.innerHTML = productMediaThumbHtml(
+      '../' + productMediaState.main,
+      productMediaState.main,
+      'removeProductMainImage()'
+    );
+  } else {
+    mainEl.innerHTML = '';
+  }
+
+  galleryEl.innerHTML = productMediaState.gallery
+    .map((path, index) => {
+      if (!path || path === productMediaState.main) return '';
+      return productMediaThumbHtml(
+        '../' + path,
+        path,
+        `removeProductGalleryImage(${index})`
+      );
+    })
+    .join('');
+
+  if (productMediaState.pendingMain || productMediaState.pendingGallery.length) {
+    let pendingHtml = '<p class="product-media-pending-title">New uploads (saved when you click Save Product)</p>';
+    if (productMediaState.pendingMain) {
+      pendingHtml += productMediaThumbHtml(productMediaState.pendingMain.url, productMediaState.pendingMain.name, '');
+    }
+    pendingHtml += productMediaState.pendingGallery
+      .map(item => productMediaThumbHtml(item.url, item.name, ''))
+      .join('');
+    pendingEl.innerHTML = pendingHtml;
+  } else {
+    pendingEl.innerHTML = '';
+  }
+
+  syncProductAdditionalImagesField();
+}
+
+function revokeProductPendingUrls() {
+  if (productMediaState.pendingMain?.url) URL.revokeObjectURL(productMediaState.pendingMain.url);
+  productMediaState.pendingGallery.forEach(item => {
+    if (item.url) URL.revokeObjectURL(item.url);
+  });
+}
+
 function clearProductForm() {
   const form = document.getElementById('edit-product-form');
   if (!form) return;
+  revokeProductPendingUrls();
+  productMediaState.main = '';
+  productMediaState.gallery = [];
+  productMediaState.pendingMain = null;
+  productMediaState.pendingGallery = [];
   form.reset();
   form.dataset.mode = 'create';
   document.getElementById('edit-product-id').value = '';
@@ -327,7 +465,192 @@ function clearProductForm() {
   document.getElementById('edit-product-active').value = '1';
   document.getElementById('edit-product-featured').value = '0';
   document.getElementById('edit-product-available').value = 'digital';
-  document.getElementById('current-image-preview').innerHTML = '';
+  const galleryInput = document.getElementById('edit-product-gallery');
+  if (galleryInput) galleryInput.value = '';
+  renderProductMediaPreviews();
+}
+
+function removeProductMainImage() {
+  productMediaState.main = '';
+  document.getElementById('edit-product-existing-image').value = '';
+  const mainInput = document.getElementById('edit-product-image');
+  if (mainInput) mainInput.value = '';
+  if (productMediaState.pendingMain?.url) URL.revokeObjectURL(productMediaState.pendingMain.url);
+  productMediaState.pendingMain = null;
+  renderProductMediaPreviews();
+}
+
+function removeProductGalleryImage(index) {
+  productMediaState.gallery.splice(index, 1);
+  renderProductMediaPreviews();
+}
+
+function onProductMainImageSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (productMediaState.pendingMain?.url) URL.revokeObjectURL(productMediaState.pendingMain.url);
+  productMediaState.pendingMain = { url: URL.createObjectURL(file), name: file.name };
+  renderProductMediaPreviews();
+}
+
+function onProductGalleryFilesSelected(event) {
+  productMediaState.pendingGallery.forEach(item => {
+    if (item.url) URL.revokeObjectURL(item.url);
+  });
+  productMediaState.pendingGallery = Array.from(event.target.files || []).map(file => ({
+    url: URL.createObjectURL(file),
+    name: file.name,
+  }));
+  renderProductMediaPreviews();
+}
+
+function loadProductMediaFromRow(p) {
+  revokeProductPendingUrls();
+  productMediaState.pendingMain = null;
+  productMediaState.pendingGallery = [];
+  productMediaState.main = (p.image || '').trim();
+  document.getElementById('edit-product-existing-image').value = productMediaState.main;
+
+  let gallery = [];
+  if (Array.isArray(p.additional_images_list) && p.additional_images_list.length) {
+    gallery = p.additional_images_list.filter(Boolean);
+  } else if (p.additional_images) {
+    try {
+      const parsed = JSON.parse(p.additional_images);
+      if (Array.isArray(parsed)) gallery = parsed.filter(Boolean);
+    } catch (_) { /* ignore */ }
+  }
+  productMediaState.gallery = gallery.filter(path => path !== productMediaState.main);
+  renderProductMediaPreviews();
+}
+
+const bundleMediaState = {
+  main: '',
+  gallery: [],
+  pendingMain: null,
+  pendingGallery: [],
+};
+
+function syncBundleAdditionalImagesField() {
+  const hidden = document.getElementById('bundle-additional-images');
+  if (!hidden) return;
+  const paths = bundleMediaState.gallery.filter(p => p && p !== bundleMediaState.main);
+  hidden.value = JSON.stringify(paths);
+}
+
+function revokeBundlePendingUrls() {
+  if (bundleMediaState.pendingMain?.url) URL.revokeObjectURL(bundleMediaState.pendingMain.url);
+  bundleMediaState.pendingGallery.forEach(item => {
+    if (item.url) URL.revokeObjectURL(item.url);
+  });
+}
+
+function renderBundleMediaPreviews() {
+  const mainEl = document.getElementById('bundle-main-preview');
+  const galleryEl = document.getElementById('bundle-gallery-preview');
+  const pendingEl = document.getElementById('bundle-gallery-pending');
+  if (!mainEl || !galleryEl || !pendingEl) return;
+
+  if (bundleMediaState.main) {
+    mainEl.innerHTML = productMediaThumbHtml(
+      '../' + bundleMediaState.main,
+      bundleMediaState.main,
+      'removeBundleMainImage()'
+    );
+  } else {
+    mainEl.innerHTML = '';
+  }
+
+  galleryEl.innerHTML = bundleMediaState.gallery
+    .map((path, index) => {
+      if (!path || path === bundleMediaState.main) return '';
+      return productMediaThumbHtml(
+        '../' + path,
+        path,
+        `removeBundleGalleryImage(${index})`
+      );
+    })
+    .join('');
+
+  if (bundleMediaState.pendingMain || bundleMediaState.pendingGallery.length) {
+    let pendingHtml = '<p class="product-media-pending-title">New uploads (saved when you submit the form)</p>';
+    if (bundleMediaState.pendingMain) {
+      pendingHtml += productMediaThumbHtml(bundleMediaState.pendingMain.url, bundleMediaState.pendingMain.name, '');
+    }
+    pendingHtml += bundleMediaState.pendingGallery
+      .map(item => productMediaThumbHtml(item.url, item.name, ''))
+      .join('');
+    pendingEl.innerHTML = pendingHtml;
+  } else {
+    pendingEl.innerHTML = '';
+  }
+
+  syncBundleAdditionalImagesField();
+}
+
+function clearBundleMediaState() {
+  revokeBundlePendingUrls();
+  bundleMediaState.main = '';
+  bundleMediaState.gallery = [];
+  bundleMediaState.pendingMain = null;
+  bundleMediaState.pendingGallery = [];
+  const galleryInput = document.getElementById('bundle-gallery-input');
+  if (galleryInput) galleryInput.value = '';
+  renderBundleMediaPreviews();
+}
+
+function loadBundleMediaFromRow(row) {
+  revokeBundlePendingUrls();
+  bundleMediaState.pendingMain = null;
+  bundleMediaState.pendingGallery = [];
+  bundleMediaState.main = (row.image || '').trim();
+
+  let gallery = [];
+  if (Array.isArray(row.additional_images_list) && row.additional_images_list.length) {
+    gallery = row.additional_images_list.filter(Boolean);
+  } else if (row.additional_images) {
+    try {
+      const parsed = JSON.parse(row.additional_images);
+      if (Array.isArray(parsed)) gallery = parsed.filter(Boolean);
+    } catch (_) { /* ignore */ }
+  }
+  bundleMediaState.gallery = gallery.filter(path => path !== bundleMediaState.main);
+  renderBundleMediaPreviews();
+}
+
+function removeBundleMainImage() {
+  bundleMediaState.main = '';
+  const form = document.getElementById('bundle-editor-form');
+  if (form?.elements['existing_image']) form.elements['existing_image'].value = '';
+  const mainInput = document.getElementById('bundle-cover-image');
+  if (mainInput) mainInput.value = '';
+  if (bundleMediaState.pendingMain?.url) URL.revokeObjectURL(bundleMediaState.pendingMain.url);
+  bundleMediaState.pendingMain = null;
+  renderBundleMediaPreviews();
+}
+
+function removeBundleGalleryImage(index) {
+  bundleMediaState.gallery.splice(index, 1);
+  renderBundleMediaPreviews();
+}
+
+function onBundleMainImageSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (bundleMediaState.pendingMain?.url) URL.revokeObjectURL(bundleMediaState.pendingMain.url);
+  bundleMediaState.pendingMain = { url: URL.createObjectURL(file), name: file.name };
+  renderBundleMediaPreviews();
+}
+
+function onBundleGalleryFilesSelected(event) {
+  bundleMediaState.pendingGallery.forEach(item => {
+    if (item.url) URL.revokeObjectURL(item.url);
+  });
+  bundleMediaState.pendingGallery = Array.from(event.target.files || []).map(file => ({
+    url: URL.createObjectURL(file),
+    name: file.name,
+  }));
+  renderBundleMediaPreviews();
 }
 
 async function openCreateProductModal() {
@@ -367,15 +690,15 @@ async function editProduct(productId) {
   set('edit-product-stock', p.stock);
   set('edit-product-active', String(p.is_active ?? 1));
   set('edit-product-featured', String(p.is_featured ?? 0));
-  document.getElementById('current-image-preview').innerHTML = p.image
-    ? `<img src="../${escapeHtml(p.image)}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right:10px;">${escapeHtml(p.image)}`
-    : '';
+  loadProductMediaFromRow(p);
   openEditProductModal();
 }
 
 async function saveProductForm(event) {
   event.preventDefault();
   const form = event.target;
+  syncProductAdditionalImagesField();
+  document.getElementById('edit-product-existing-image').value = productMediaState.main || '';
   const endpoint = form.querySelector('[name="id"]').value ? '../api/admin/product/update.php' : '../api/admin/product/create.php';
   const submit = form.querySelector('button[type="submit"]');
   const label = submit.textContent;
@@ -383,6 +706,9 @@ async function saveProductForm(event) {
   submit.textContent = 'Saving...';
   try {
     await fetchJson(endpoint, { method: 'POST', body: new FormData(form) });
+    revokeProductPendingUrls();
+    productMediaState.pendingMain = null;
+    productMediaState.pendingGallery = [];
     closeEditProductModal();
     await Promise.all([loadProducts(), loadOverview()]);
     showToast('Product saved.', 'success');
@@ -471,12 +797,25 @@ async function adminSaveCategory(event) {
 async function adminToggleCategory(id, isActive) {
   const row = state.categories.find(c => Number(c.id) === Number(id));
   if (!row) return;
-  await fetchJson('../api/admin/categories/save.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...row, is_active: isActive }),
-  });
-  await loadAdminCategories();
+  try {
+    await fetchJson('../api/admin/categories/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: row.id,
+        name: row.name,
+        description: row.description || '',
+        accent: row.accent || 'purple',
+        sort_order: row.sort_order ?? 0,
+        is_active: isActive,
+        existing_icon: row.icon || '',
+      }),
+    });
+    await Promise.all([loadAdminCategories(), loadProducts()]);
+    showToast(isActive ? 'Category shown.' : 'Category hidden.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 async function adminDeleteCategory(id) {
@@ -532,15 +871,24 @@ async function loadAdminBundles() {
 async function adminSaveBundle(event) {
   event.preventDefault();
   const form = event.target;
+  syncBundleAdditionalImagesField();
+  if (form.elements['existing_image']) {
+    form.elements['existing_image'].value = bundleMediaState.main || '';
+  }
   const fd = new FormData(form);
   const isFeaturedEl = form.querySelector('input[name="is_featured"]');
   const isActiveEl = form.querySelector('input[name="is_active"]');
   fd.set('is_featured', isFeaturedEl && isFeaturedEl.checked ? '1' : '0');
   fd.set('is_active', isActiveEl && isActiveEl.checked ? '1' : '0');
+  fd.set('additional_images', document.getElementById('bundle-additional-images')?.value || '[]');
   // whats_included is a textarea — server derives included_items JSON from it
   try {
     await fetchJson('../api/admin/bundles/save.php', { method: 'POST', body: fd });
+    revokeBundlePendingUrls();
+    bundleMediaState.pendingMain = null;
+    bundleMediaState.pendingGallery = [];
     form.reset();
+    clearBundleMediaState();
     closeBundleForm();
     await Promise.all([loadAdminBundles(), loadOverview()]);
     showToast('Bundle saved.', 'success');
@@ -558,6 +906,7 @@ function adminEditBundle(id) {
 
   form.elements['id'].value = String(row.id);
   form.elements['existing_image'].value = row.image || '';
+  loadBundleMediaFromRow(row);
   form.elements['name'].value = row.name || '';
   form.elements['price'].value = row.price ?? '';
   form.elements['old_price'].value = row.old_price ?? '';
@@ -580,18 +929,6 @@ function adminEditBundle(id) {
   }
   form.elements['whats_included'].value = whatsIncluded;
   form.elements['file_specification'].value = row.file_specification || '';
-
-  // additional_images: stored as JSON array → show as newline-separated paths
-  let additionalImages = '';
-  if (row.additional_images) {
-    try {
-      const imgs = JSON.parse(row.additional_images);
-      if (Array.isArray(imgs)) additionalImages = imgs.join('\n');
-    } catch (_) {
-      additionalImages = row.additional_images;
-    }
-  }
-  form.elements['additional_images'].value = additionalImages;
 
   const isFeaturedEl = form.querySelector('input[name="is_featured"]');
   const isActiveEl = form.querySelector('input[name="is_active"]');
@@ -618,6 +955,7 @@ function adminCancelBundleEdit() {
   form.reset();
   form.elements['id'].value = '';
   form.elements['existing_image'].value = '';
+  clearBundleMediaState();
 
   const submitBtn = document.getElementById('bundle-submit-btn');
   const cancelBtn = document.getElementById('bundle-cancel-btn');
@@ -642,6 +980,33 @@ function closeBundleForm() {
   panel.style.display = 'none';
 }
 
+function renderCategoryIconPreview(path) {
+  const el = document.getElementById('category-icon-preview');
+  if (!el) return;
+  if (!path) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = productMediaThumbHtml('../' + path, path, 'removeCategoryIcon()');
+}
+
+function removeCategoryIcon() {
+  document.getElementById('category-existing-icon').value = '';
+  const fileInput = document.querySelector('#category-form-panel [name="image"]');
+  if (fileInput) fileInput.value = '';
+  renderCategoryIconPreview('');
+}
+
+function onCategoryIconSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const el = document.getElementById('category-icon-preview');
+  if (el) {
+    el.innerHTML = productMediaThumbHtml(url, file.name, '');
+  }
+}
+
 function openCategoryForm() {
   const panel = document.getElementById('category-form-panel');
   if (!panel) return;
@@ -650,6 +1015,7 @@ function openCategoryForm() {
   document.getElementById('category-id').value = '';
   document.getElementById('category-slug').value = '';
   document.getElementById('category-existing-icon').value = '';
+  renderCategoryIconPreview('');
   const formTitle = document.getElementById('category-form-title');
   if (formTitle) formTitle.textContent = 'Add New Category';
   const submitBtn = document.getElementById('category-submit-btn');
@@ -666,6 +1032,7 @@ function closeCategoryForm() {
   document.getElementById('category-id').value = '';
   document.getElementById('category-slug').value = '';
   document.getElementById('category-existing-icon').value = '';
+  renderCategoryIconPreview('');
   panel.style.display = 'none';
 }
 
@@ -680,6 +1047,7 @@ function adminEditCategory(id) {
   document.getElementById('category-id').value = row.id;
   document.getElementById('category-slug').value = row.slug || '';
   document.getElementById('category-existing-icon').value = row.icon || row.image || '';
+  renderCategoryIconPreview(row.icon || row.image || '');
 
   const nameInput = form.querySelector('[name="name"]');
   if (nameInput) nameInput.value = row.name || '';
@@ -726,21 +1094,35 @@ async function adminDeleteBundle(id) {
   }
 }
 
-async function loadReviews() {
+async function loadReviews(options = {}) {
   const table = document.getElementById('reviews-table');
   if (!table) return;
   table.innerHTML = '<tr><td colspan="6" class="tbl-empty">Loading reviews...</td></tr>';
   try {
-    const rows = await fetchJson('../api/admin/reviews/list.php');
+    const params = new URLSearchParams();
+    if (options.q) params.set('q', options.q);
+    if (options.status !== undefined && options.status !== '') params.set('status', String(options.status));
+    const qs = params.toString();
+    const rows = await fetchJson('../api/admin/reviews/list.php' + (qs ? `?${qs}` : ''));
     if (!rows.length) {
-      table.innerHTML = '<tr><td colspan="6" class="tbl-empty">No reviews found</td></tr>';
+      const hasFilter = Boolean(options.q || (options.status !== undefined && options.status !== ''));
+      table.innerHTML = `<tr><td colspan="6" class="tbl-empty">${hasFilter ? 'No reviews match your search.' : 'No reviews yet. Add test rows in the database or wait for customer submissions — approved reviews show on product and bundle pages.'}</td></tr>`;
       return;
     }
-    table.innerHTML = rows.map(r => `
+    table.innerHTML = rows.map(r => {
+      const rating = Math.min(5, Math.max(0, Number(r.rating || 0)));
+      const itemLabel = r.item_type === 'bundle' ? 'Bundle' : (r.item_type === 'product' ? 'Product' : '—');
+      return `
       <tr>
-        <td><div class="cell-name">${escapeHtml(r.product_name || 'N/A')}</div></td>
-        <td><div class="cell-name">${escapeHtml(r.user_name || r.reviewer_name || 'Guest')}</div></td>
-        <td><span style="color:#f59e0b;letter-spacing:1px;">${'★'.repeat(Math.min(5, Math.max(0, Number(r.rating || 0))))}${'☆'.repeat(Math.max(0, 5 - Math.min(5, Number(r.rating || 0))))}</span></td>
+        <td>
+          <div class="cell-name">${escapeHtml(r.product_name || 'Unknown')}</div>
+          <div class="cell-sub">${itemLabel}</div>
+        </td>
+        <td>
+          <div class="cell-name">${escapeHtml(r.user_name || r.reviewer_name || 'Guest')}</div>
+          ${r.user_email ? `<div class="cell-sub">${escapeHtml(r.user_email)}</div>` : ''}
+        </td>
+        <td><span style="color:#f59e0b;letter-spacing:1px;" title="${rating}/5">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</span></td>
         <td style="max-width:260px;white-space:normal;font-size:.81rem;color:var(--text-2);">${escapeHtml(r.comment || r.body || '—')}</td>
         <td>${r.is_approved == 1 ? getStatusBadge('active') : getStatusBadge('pending')}</td>
         <td>
@@ -749,91 +1131,138 @@ async function loadReviews() {
             <button class="btn btn-xs btn-danger-ghost" onclick="deleteReview(${Number(r.id)})">Delete</button>
           </div>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   } catch (err) {
     table.innerHTML = `<tr><td colspan="6" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
+function filterReviews() {
+  const q = document.getElementById('review-search')?.value.trim() || '';
+  const status = document.getElementById('review-status-filter')?.value ?? '';
+  loadReviews({ q, status });
+}
+
 async function toggleReviewApproval(id, approve) {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/reviews/moderate.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, approve, csrf_token: csrfToken }),
-  });
-  await loadReviews();
-  showToast(approve ? 'Review approved.' : 'Review unapproved.', 'success');
+  try {
+    await fetchJson('../api/admin/reviews/moderate.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, approve }),
+    });
+    await loadReviews({
+      q: document.getElementById('review-search')?.value.trim() || '',
+      status: document.getElementById('review-status-filter')?.value ?? '',
+    });
+    showToast(approve ? 'Review approved.' : 'Review moved to pending.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 async function deleteReview(id) {
   if (!confirm('Delete this review permanently?')) return;
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/reviews/moderate.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, delete: 1, csrf_token: csrfToken }),
-  });
-  await loadReviews();
-  showToast('Review deleted.', 'success');
+  try {
+    await fetchJson('../api/admin/reviews/moderate.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, delete: 1 }),
+    });
+    await loadReviews({
+      q: document.getElementById('review-search')?.value.trim() || '',
+      status: document.getElementById('review-status-filter')?.value ?? '',
+    });
+    showToast('Review deleted.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function filterMessages() {
+  loadMessages();
 }
 
 async function loadMessages() {
   const table = document.getElementById('messages-table');
   if (!table) return;
   table.innerHTML = '<tr><td colspan="6" class="tbl-empty">Loading messages...</td></tr>';
+  const q = document.getElementById('message-search')?.value.trim() || '';
+  const status = document.getElementById('message-status-filter')?.value ?? '';
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (status === '0' || status === '1') params.set('status', status);
+  const url = '../api/admin/messages/list.php' + (params.toString() ? `?${params}` : '');
   try {
-    const rows = await fetchJson('../api/admin/messages/list.php');
+    const rows = await fetchJson(url);
     if (!rows.length) {
       table.innerHTML = '<tr><td colspan="6" class="tbl-empty">No messages found</td></tr>';
       return;
     }
-    table.innerHTML = rows.map(m => `
-      <tr>
+    table.innerHTML = rows.map(m => {
+      const isUnread = Number(m.is_read) !== 1;
+      const phone = m.phone ? `<div style="font-size:.72rem;color:var(--text-3);margin-top:2px;">${escapeHtml(m.phone)}</div>` : '';
+      return `
+      <tr class="${isUnread ? 'msg-row-unread' : ''}">
         <td>
           <div class="cell-name">
-            ${m.is_read != 1 ? '<span class="cell-read-dot" title="Unread"></span>' : ''}
+            ${isUnread ? '<span class="cell-read-dot" title="Unread"></span>' : ''}
             ${escapeHtml(m.name || 'N/A')}
           </div>
         </td>
-        <td style="font-size:.8rem;color:var(--text-2);">${escapeHtml(m.email || 'N/A')}</td>
+        <td style="font-size:.8rem;color:var(--text-2);">
+          <a href="mailto:${escapeHtml(m.email || '')}" style="color:inherit;">${escapeHtml(m.email || 'N/A')}</a>
+          ${phone}
+        </td>
         <td><div class="cell-name" style="font-weight:500;">${escapeHtml(m.subject || 'General')}</div></td>
         <td style="max-width:280px;white-space:normal;font-size:.8rem;color:var(--text-2);">${escapeHtml(String(m.message || '').substring(0, 130))}${String(m.message || '').length > 130 ? '…' : ''}</td>
         <td style="white-space:nowrap;font-size:.79rem;color:var(--text-3);">${new Date(m.created_at || Date.now()).toLocaleDateString()}</td>
         <td>
           <div class="tbl-actions">
-            ${m.is_read != 1 ? `<button class="btn btn-xs btn-success-ghost" onclick="markMessageRead(${Number(m.id)})">Mark Read</button>` : ''}
+            ${isUnread
+              ? `<button class="btn btn-xs btn-success-ghost" onclick="markMessageRead(${Number(m.id)})">Mark Read</button>`
+              : `<button class="btn btn-xs btn-ghost" onclick="markMessageUnread(${Number(m.id)})">Mark Unread</button>`}
+            <button class="btn btn-xs btn-ghost" onclick="archiveMessage(${Number(m.id)})">Archive</button>
             <button class="btn btn-xs btn-danger-ghost" onclick="deleteMessage(${Number(m.id)})">Delete</button>
           </div>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   } catch (err) {
     table.innerHTML = `<tr><td colspan="6" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
+async function messageAction(id, action, successMsg) {
+  try {
+    await fetchJson('../api/admin/messages/update.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action }),
+    });
+    showToast(successMsg, 'success');
+    await loadMessages();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 async function markMessageRead(id) {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/messages/update.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, action: 'read', csrf_token: csrfToken }),
-  });
-  await loadMessages();
+  await messageAction(id, 'read', 'Message marked as read.');
+}
+
+async function markMessageUnread(id) {
+  await messageAction(id, 'unread', 'Message marked as unread.');
+}
+
+async function archiveMessage(id) {
+  if (!confirm('Archive this message? It will be hidden from the inbox.')) return;
+  await messageAction(id, 'archive', 'Message archived.');
 }
 
 async function deleteMessage(id) {
   if (!confirm('Delete this message permanently?')) return;
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/messages/update.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, action: 'delete', csrf_token: csrfToken }),
-  });
-  await loadMessages();
-  showToast('Message deleted.', 'success');
+  await messageAction(id, 'delete', 'Message deleted.');
 }
 
 async function loadOrders() {
@@ -851,11 +1280,24 @@ async function loadOrders() {
 function renderOrders() {
   const table = document.getElementById('orders-table');
   const q = document.getElementById('order-search')?.value.toLowerCase().trim() || '';
-  const filter = normalizeStatus(document.getElementById('order-status-filter')?.value || '');
+  const filterRaw = (document.getElementById('order-status-filter')?.value || '').trim();
+  const filter = filterRaw ? normalizeStatus(filterRaw) : '';
+  const statusMatches = (orderStatus, filterKey) => {
+    if (!filterKey) return true;
+    const normalized = normalizeStatus(orderStatus);
+    if (normalized === filterKey) return true;
+    if (filterKey === 'cancelled' && normalized === 'failed') return true;
+    if (filterKey === 'paid' && normalized === 'processing') return true;
+    return false;
+  };
   const rows = state.orders.filter(order => {
     const text = `${order.order_number || ''} ${getOrderCustomerName(order)} ${getOrderEmail(order)} ${order.status || ''}`.toLowerCase();
-    return (!q || text.includes(q)) && (!filter || normalizeStatus(order.status) === filter);
+    return (!q || text.includes(q)) && statusMatches(order.status, filter);
   });
+  const meta = state.ordersMeta;
+  const moreHint = meta?.has_more
+    ? `<tr><td colspan="8" class="tbl-empty" style="font-size:.8rem;">Showing ${state.orders.length} of ${meta.total} orders. Use search or contact dev to raise list limit.</td></tr>`
+    : '';
   if (!rows.length) {
     table.innerHTML = '<tr><td colspan="8" class="tbl-empty">No orders found</td></tr>';
     return;
@@ -880,7 +1322,7 @@ function renderOrders() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `).join('') + moreHint;
 }
 
 function filterOrders() {
@@ -890,6 +1332,7 @@ function filterOrders() {
 function openStatusEditor(orderId) {
   const order = state.orders.find(o => Number(o.id) === Number(orderId));
   if (!order) return;
+  document.getElementById('modal-order-id').value = String(order.id);
   document.getElementById('modal-order-number').textContent = order.order_number || String(order.id);
   document.getElementById('modal-order-customer').textContent = getOrderCustomerName(order);
   document.getElementById('modal-current-status').innerHTML = getStatusBadge(order.status);
@@ -898,16 +1341,24 @@ function openStatusEditor(orderId) {
 }
 
 async function confirmStatusUpdate() {
-  const orderNumber = document.getElementById('modal-order-number').textContent;
+  const orderId = Number(document.getElementById('modal-order-id')?.value || 0);
   const status = document.getElementById('status-select').value;
-  await fetchJson('../api/admin/order/update_status.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ order_number: orderNumber, status }),
-  });
-  closeStatusModal();
-  await Promise.all([loadOrders(), loadOverview()]);
-  showToast('Order status updated.', 'success');
+  if (!orderId || !status) {
+    showToast('Select a valid status.', 'error');
+    return;
+  }
+  try {
+    await fetchJson('../api/admin/order/update_status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: orderId, status }),
+    });
+    closeStatusModal();
+    await Promise.all([loadOrders(), loadOverview()]);
+    showToast('Order status updated.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 async function viewOrder(orderId) {
@@ -917,18 +1368,34 @@ async function viewOrder(orderId) {
   try {
     const data = await fetchJson(`../api/admin/order/get_details.php?id=${encodeURIComponent(orderId)}`);
     const items = data.items || [];
+    const subtotal = Number(data.subtotal ?? 0);
+    const shipping = Number(data.shipping ?? 0);
+    const tax = Number(data.tax ?? 0);
     content.innerHTML = `
       <div class="order-info-grid">
         <div class="order-info-block">
           <h3>Customer</h3>
           <p>${escapeHtml(getOrderCustomerName(data))}</p>
           <p>${escapeHtml(getOrderEmail(data))}</p>
+          ${data.phone ? `<p>${escapeHtml(data.phone)}</p>` : ''}
         </div>
         <div class="order-info-block">
           <h3>Order</h3>
           <p>${escapeHtml(data.order_number || String(data.id))}</p>
           <p>${getStatusBadge(data.status)}</p>
+          <p style="font-size:.8rem;color:var(--text-2);margin-top:4px;">${new Date(data.created_at || Date.now()).toLocaleString()}</p>
           <p style="font-weight:700;font-size:1rem;margin-top:4px;">${money(data.total)}</p>
+          <p style="font-size:.75rem;color:var(--text-3);margin-top:4px;">Subtotal ${money(subtotal)} · Shipping ${money(shipping)} · Tax ${money(tax)}</p>
+        </div>
+        <div class="order-info-block">
+          <h3>Payment</h3>
+          <p>${escapeHtml(data.payment_method || '—')}</p>
+          ${data.payment_id ? `<p style="font-size:.8rem;">ID: ${escapeHtml(data.payment_id)}</p>` : ''}
+          ${data.razorpay_order_id ? `<p style="font-size:.8rem;">Razorpay: ${escapeHtml(data.razorpay_order_id)}</p>` : ''}
+        </div>
+        <div class="order-info-block">
+          <h3>Shipping</h3>
+          <p style="font-size:.85rem;line-height:1.5;">${formatOrderShipping(data)}</p>
         </div>
       </div>
       <div class="tbl-wrap">
@@ -952,20 +1419,25 @@ async function viewOrder(orderId) {
 
 async function deleteOrder(orderId) {
   if (!confirm('Delete this order? This cannot be undone.')) return;
-  await fetchJson('../api/admin/order/delete.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: orderId }),
-  });
-  await Promise.all([loadOrders(), loadOverview()]);
+  try {
+    await fetchJson('../api/admin/order/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: orderId }),
+    });
+    await Promise.all([loadOrders(), loadOverview()]);
+    showToast('Order deleted.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
-async function loadUsers() {
+async function loadUsers(options = {}) {
   const table = document.getElementById('users-table');
   if (!table) return;
   table.innerHTML = '<tr><td colspan="7" class="tbl-empty">Loading users...</td></tr>';
   try {
-    await getUsers();
+    await getUsers(options);
     renderUsers();
   } catch (err) {
     table.innerHTML = `<tr><td colspan="7" class="tbl-empty">${escapeHtml(err.message)}</td></tr>`;
@@ -974,8 +1446,7 @@ async function loadUsers() {
 
 function renderUsers() {
   const table = document.getElementById('users-table');
-  const q = document.getElementById('user-search')?.value.toLowerCase().trim() || '';
-  const rows = state.users.filter(u => `${u.name || ''} ${u.first_name || ''} ${u.last_name || ''} ${u.email || ''} ${u.phone || ''}`.toLowerCase().includes(q));
+  const rows = state.users;
   if (!rows.length) {
     table.innerHTML = '<tr><td colspan="7" class="tbl-empty">No users found</td></tr>';
     return;
@@ -984,6 +1455,10 @@ function renderUsers() {
     const name = user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || 'N/A';
     const initial = name.charAt(0).toUpperCase();
     const blocked = user.is_blocked == 1;
+    const privileged = userIsPrivileged(user);
+    const actionCell = privileged
+      ? '<span class="cell-sub">Admin account</span>'
+      : `<button class="btn btn-xs ${blocked ? 'btn-success-ghost' : 'btn-danger-ghost'}" onclick="toggleUserBlock(${Number(user.id)}, ${blocked ? 0 : 1})">${blocked ? 'Unblock' : 'Block'}</button>`;
     return `
       <tr>
         <td>
@@ -1000,23 +1475,29 @@ function renderUsers() {
         <td style="font-size:.79rem;color:var(--text-3);white-space:nowrap;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
         <td style="font-weight:600;">${Number(user.order_count || 0)}</td>
         <td>${blocked ? getStatusBadge('blocked') : getStatusBadge('active')}</td>
-        <td><button class="btn btn-xs ${blocked ? 'btn-success-ghost' : 'btn-danger-ghost'}" onclick="toggleUserBlock(${Number(user.id)}, ${blocked ? 0 : 1})">${blocked ? 'Unblock' : 'Block'}</button></td>
+        <td>${actionCell}</td>
       </tr>
     `;
   }).join('');
 }
 
 function filterUsers() {
-  renderUsers();
+  const q = document.getElementById('user-search')?.value.trim() || '';
+  loadUsers({ q });
 }
 
 async function toggleUserBlock(userId, block) {
-  await fetchJson('../api/admin/user/block.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: userId, action: block ? 'block' : 'unblock' }),
-  });
-  await loadUsers();
+  try {
+    await fetchJson('../api/admin/user/block.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: userId, action: block ? 'block' : 'unblock' }),
+    });
+    await loadUsers();
+    showToast(block ? 'User blocked.' : 'User unblocked.', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 function openEditProductModal() {
@@ -1050,25 +1531,67 @@ function closeStatusModal() {
 }
 
 function handleAdminLogout() {
-  fetch('../api/auth/logout.php').finally(() => { window.location.href = 'admin-login.php'; });
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  fetch('../api/auth/logout.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+    body: JSON.stringify({})
+  }).finally(() => { window.location.href = 'admin-login.php'; });
 }
 
 /* ─────────────────────────────────────────────
    FREEBIES ADMIN
 ───────────────────────────────────────────── */
 
+function renderFreebieImagePreview(path) {
+  const el = document.getElementById('freebie-image-preview');
+  if (!el) return;
+  if (!path) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = productMediaThumbHtml('../' + path, path, 'removeFreebieImage()');
+}
+
+function removeFreebieImage() {
+  document.getElementById('freebie-existing-image').value = '';
+  const fileInput = document.getElementById('freebie-cover-image');
+  if (fileInput) fileInput.value = '';
+  renderFreebieImagePreview('');
+}
+
+function onFreebieCoverSelected(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const el = document.getElementById('freebie-image-preview');
+  if (el) {
+    el.innerHTML = productMediaThumbHtml(URL.createObjectURL(file), file.name, '');
+  }
+}
+
+function resetFreebieForm() {
+  const form = document.getElementById('freebie-form');
+  if (form) form.reset();
+  document.getElementById('freebie-id').value = '0';
+  document.getElementById('freebie-existing-image').value = '';
+  document.getElementById('freebie-is-active').checked = true;
+  document.getElementById('freebie-is-featured').checked = false;
+  document.getElementById('freebie-form-title').textContent = 'Add New Freebie';
+  document.getElementById('freebie-submit-btn').innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Freebie`;
+  renderFreebieImagePreview('');
+}
+
 function openFreebiesForm() {
+  resetFreebieForm();
   document.getElementById('freebie-form-panel').style.display = '';
   document.getElementById('freebie-form-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function closeFreebiesForm() {
   document.getElementById('freebie-form-panel').style.display = 'none';
-  document.getElementById('freebie-form').reset();
-  document.getElementById('freebie-id').value = '0';
-  document.getElementById('freebie-existing-image').value = '';
-  document.getElementById('freebie-form-title').textContent = 'Add New Freebie';
-  document.getElementById('freebie-submit-btn').textContent = 'Add Freebie';
+  resetFreebieForm();
 }
 
 async function loadAdminFreebies(q) {
@@ -1125,6 +1648,7 @@ function adminEditFreebie(id) {
   document.getElementById('freebie-is-active').checked = row.is_active == 1;
   document.getElementById('freebie-is-featured').checked = row.is_featured == 1;
   document.getElementById('freebie-existing-image').value = row.image || '';
+  renderFreebieImagePreview(row.image || '');
   document.getElementById('freebie-form-title').textContent = 'Edit Freebie';
   document.getElementById('freebie-submit-btn').innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -1134,11 +1658,18 @@ function adminEditFreebie(id) {
 async function adminSaveFreebies(event) {
   event.preventDefault();
   const form = event.target;
+  document.getElementById('freebie-existing-image').value =
+    document.getElementById('freebie-existing-image').value || '';
   const fd = new FormData(form);
   if (document.getElementById('freebie-is-active').checked) fd.set('is_active', '1');
   else fd.set('is_active', '0');
   if (document.getElementById('freebie-is-featured').checked) fd.set('is_featured', '1');
   else fd.set('is_featured', '0');
+  const fileUrl = (document.getElementById('freebie-file-url')?.value || '').trim();
+  if (!fileUrl || !/^https?:\/\//i.test(fileUrl)) {
+    showToast('Enter a valid resource link (https://…).', 'error');
+    return;
+  }
   try {
     await fetchJson('../api/admin/freebies/save.php', { method: 'POST', body: fd });
     closeFreebiesForm();
@@ -1156,9 +1687,20 @@ async function adminToggleFreebie(id, isActive) {
     await fetchJson('../api/admin/freebies/save.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...row, is_active: isActive }),
+      body: JSON.stringify({
+        id: row.id,
+        name: row.name,
+        description: row.description || '',
+        category: row.category || 'General',
+        file_url: row.file_url || '',
+        sort_order: row.sort_order ?? 0,
+        is_active: isActive,
+        is_featured: row.is_featured ?? 0,
+        existing_image: row.image || '',
+      }),
     });
     await loadAdminFreebies();
+    showToast(isActive ? 'Freebie shown.' : 'Freebie hidden.', 'success');
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -1189,6 +1731,18 @@ function bindDashboard() {
   if (form) {
     form.onsubmit = saveProductForm;
   }
+  const mainImageInput = document.getElementById('edit-product-image');
+  const galleryInput = document.getElementById('edit-product-gallery');
+  if (mainImageInput) mainImageInput.addEventListener('change', onProductMainImageSelected);
+  if (galleryInput) galleryInput.addEventListener('change', onProductGalleryFilesSelected);
+  const bundleCoverInput = document.getElementById('bundle-cover-image');
+  const bundleGalleryInput = document.getElementById('bundle-gallery-input');
+  if (bundleCoverInput) bundleCoverInput.addEventListener('change', onBundleMainImageSelected);
+  if (bundleGalleryInput) bundleGalleryInput.addEventListener('change', onBundleGalleryFilesSelected);
+  const categoryIconInput = document.querySelector('#category-form-panel [name="image"]');
+  if (categoryIconInput) categoryIconInput.addEventListener('change', onCategoryIconSelected);
+  const freebieCoverInput = document.getElementById('freebie-cover-image');
+  if (freebieCoverInput) freebieCoverInput.addEventListener('change', onFreebieCoverSelected);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       closeStatusModal();
@@ -1222,6 +1776,7 @@ const exported = {
   adminToggleBundle,
   adminDeleteBundle,
   loadReviews,
+  filterReviews,
   toggleReviewApproval,
   deleteReview,
   loadMessages,
@@ -1250,6 +1805,12 @@ const exported = {
   closeStatusModal,
   closeOrderDetailsModal,
   closeEditProductModal,
+  removeProductMainImage,
+  removeProductGalleryImage,
+  removeBundleMainImage,
+  removeBundleGalleryImage,
+  removeCategoryIcon,
+  removeFreebieImage,
 };
 
 Object.assign(window, exported);

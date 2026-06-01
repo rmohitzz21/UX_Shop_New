@@ -27,20 +27,35 @@ $active = adminBool($input['is_active'] ?? 1, 1);
 $featured = adminBool($input['is_featured'] ?? 0, 0);
 $slug = slugify($input['slug'] ?? $name);
 
-$uploaded = adminUploadImages('image');
-$uploadedMedia = adminUploadImages('media');
-$allUploaded = array_values(array_merge($uploaded, $uploadedMedia));
+$imageUploads = adminUploadImages('image');
+$mediaUploads = adminUploadImages('media');
 $mainImage = trim((string) ($input['existing_image'] ?? $input['image_path'] ?? ''));
 $additionalImages = [];
 if (!empty($input['additional_images'])) {
-    $decoded = json_decode((string) $input['additional_images'], true);
-    if (is_array($decoded)) $additionalImages = array_values(array_filter($decoded, 'is_string'));
+    $raw = trim((string) $input['additional_images']);
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) {
+        $additionalImages = array_values(array_filter($decoded, 'is_string'));
+    } elseif ($raw !== '') {
+        foreach (preg_split('/\r\n|\r|\n/', $raw) as $line) {
+            $line = trim($line);
+            if ($line !== '') $additionalImages[] = $line;
+        }
+    }
 }
-if ($allUploaded) {
-    if ($mainImage === '') $mainImage = $allUploaded[0];
-    $additionalImages = array_values(array_unique(array_merge($additionalImages, $allUploaded)));
+if ($mainImage === '' && !empty($imageUploads)) {
+    $mainImage = $imageUploads[0];
+}
+if (!empty($mediaUploads)) {
+    $additionalImages = array_values(array_unique(array_merge($additionalImages, $mediaUploads)));
 }
 if ($mainImage === '') $mainImage = 'img/poster.webp';
+$additionalImages = array_values(array_unique(array_filter(
+    $additionalImages,
+    static function ($path) use ($mainImage): bool {
+        return is_string($path) && $path !== '' && $path !== $mainImage;
+    }
+)));
 $additionalJson = json_encode($additionalImages, JSON_UNESCAPED_SLASHES);
 
 if ($id > 0) {
@@ -49,7 +64,13 @@ if ($id > 0) {
     $beforeStmt->execute();
     $before = $beforeStmt->get_result()->fetch_assoc();
     if (!$before) sendResponse('error', 'Product not found.', null, 404);
-    if (!$allUploaded && $mainImage === '') $mainImage = $before['image'] ?: 'img/poster.webp';
+    if (empty($imageUploads) && $mainImage === '') $mainImage = $before['image'] ?: 'img/poster.webp';
+    if (empty($input['additional_images']) && empty($additionalImages) && !empty($before['additional_images'])) {
+        $decoded = json_decode((string) $before['additional_images'], true);
+        if (is_array($decoded)) {
+            $additionalImages = array_values(array_filter($decoded, 'is_string'));
+        }
+    }
 
     $stmt = $conn->prepare('UPDATE products SET name=?, slug=?, sku=?, description=?, whats_included=?, file_specification=?, category=?, tags=?, price=?, old_price=?, commercial_price=?, image=?, additional_images=?, stock=?, rating=?, available_type=?, is_active=?, is_featured=? WHERE id=?');
     $stmt->bind_param('ssssssssdddssidsiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $id);

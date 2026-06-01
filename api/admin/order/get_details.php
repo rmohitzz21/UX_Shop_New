@@ -17,4 +17,10 @@ $items = [];
 $res = $itemStmt->get_result();
 while ($row = $res->fetch_assoc()) $items[] = $row;
 $order['items'] = $items;
+if (!empty($order['shipping_address']) && is_string($order['shipping_address'])) {
+    $decoded = json_decode($order['shipping_address'], true);
+    if (is_array($decoded)) {
+        $order['shipping_address_parsed'] = $decoded;
+    }
+}
 sendResponse('success', 'Order loaded.', $order);
