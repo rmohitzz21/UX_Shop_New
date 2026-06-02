@@ -39,7 +39,7 @@ However, the site is not production-ready yet. The most serious issue is the che
 ## 1. Project Structure Summary
 
 | Area | Files/Folders | Purpose | Status | Issues |
-| ---- | ------------- | ------- | ------ | ------ |
+| ---- | ------------- | ------- | ------ | ------ |loc
 | Root public pages | `index.php`, `shopAll.php`, `product.php`, `bundles.php`, `freebies.php`, `cart.php`, `checkout.php`, `orders.php`, `account.php`, `signin.php`, `signup.php`, `forgot-password.php`, `reset-password.php`, `contact.php`, `wishlist.php`, `category.php`, `search.php`, `policies.php` | Customer storefront and account flows | Partly working | Payment, bundle cart, status filters, currency display, and stale/duplicate page logic issues |
 | Admin pages | `admin/admin-login.php`, `admin/admin-dashboard.php`, `admin/admin-dashboard.js`, `admin/admin.css`, `admin/addproduct.php`, `admin/editproduct.php` | Admin login, dashboard, product/order/user/content management | Partly working | Admin logout is broken; old `addproduct.php` and `editproduct.php` appear duplicated beside the dashboard modal workflow |
 | Active APIs | `api/auth`, `api/cart`, `api/order`, `api/payment`, `api/admin`, `api/address`, `api/catalog`, `api/product`, `api/contact`, `api/user`, `api/wishlist`, `api/freebies` | JSON endpoints for frontend/admin | Mixed | Good use of prepared statements and CSRF in many places, but payment APIs are unused by checkout frontend |

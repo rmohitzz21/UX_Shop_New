@@ -306,6 +306,7 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\scripts\test-user-signup-api.php on line 53
+<<<<<<< HEAD
 [01-Jun-2026 13:42:58 Europe/Berlin] razorpay-create-order.php: Payment system not configured
 [01-Jun-2026 13:43:32 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php:54
 Stack trace:
@@ -323,3 +324,9 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\order\get.php on line 54
+=======
+[01-Jun-2026 13:43:28 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:01 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:07 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+[01-Jun-2026 13:44:33 Europe/Berlin] PHP Warning:  Undefined array key "download_count" in C:\xampp\htdocs\SHOPMohitSir\UX_Shop_New\freebies.php on line 119
+>>>>>>> e399e11108a46af5794ac4420c8f699db6b49bd3

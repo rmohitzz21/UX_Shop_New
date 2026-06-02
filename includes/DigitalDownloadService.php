@@ -24,9 +24,10 @@ class DigitalDownloadService
                    oi.product_id,
                    oi.bundle_id,
                    COALESCE(oi.product_name, p.name, b.name, 'Item') AS item_name,
-                   COALESCE(p.digital_file_path,   b.digital_file_path,   '') AS file_path,
-                   COALESCE(p.download_limit,      b.download_limit,      5)  AS dl_limit,
-                   COALESCE(p.download_expiry_days,b.download_expiry_days, 30) AS expiry_days
+                   COALESCE(p.digital_file_path,    b.digital_file_path,    '') AS file_path,
+                   COALESCE(p.download_limit,       b.download_limit,       5)  AS dl_limit,
+                   COALESCE(p.download_expiry_days, b.download_expiry_days, 30) AS expiry_days,
+                   COALESCE(p.available_type,       b.available_type,       'physical') AS available_type
             FROM order_items oi
             LEFT JOIN products p ON p.id = oi.product_id AND oi.item_type = 'product'
             LEFT JOIN bundles  b ON b.id = oi.bundle_id  AND oi.item_type = 'bundle'
@@ -51,6 +52,11 @@ class DigitalDownloadService
         }
 
         foreach ($items as $item) {
+            // Skip physical-only items — they need no download token
+            if (!in_array($item['available_type'], ['digital', 'both'], true)) {
+                continue;
+            }
+
             $token       = bin2hex(random_bytes(32));
             $dlLimit     = max(1, (int) $item['dl_limit']);
             $expiryDays  = max(1, (int) $item['expiry_days']);

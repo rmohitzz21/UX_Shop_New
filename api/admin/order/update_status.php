@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../_admin.php';
 require_once __DIR__ . '/_helpers.php';
+require_once __DIR__ . '/../../../includes/DigitalDownloadService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
@@ -48,4 +49,16 @@ if ($id > 0) {
 if (!$stmt->execute()) {
     sendResponse('error', 'Could not update order status.', null, 500);
 }
+
+// Generate digital download tokens whenever an order becomes fulfillable.
+// INSERT IGNORE on order_item_id ensures this is idempotent.
+$fulfillableStatuses = ['paid', 'processing', 'shipped', 'delivered'];
+if (in_array($status, $fulfillableStatuses, true)) {
+    try {
+        DigitalDownloadService::generateDownloadsForOrder((int) $row['id'], $conn);
+    } catch (Throwable $e) {
+        error_log('update_status.php: download generation failed for order ' . $row['id'] . ': ' . $e->getMessage());
+    }
+}
+
 sendResponse('success', 'Order status updated.');
