@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/DigitalDownloadService.php';
 require_once __DIR__ . '/EmailService.php';
+require_once __DIR__ . '/InventoryReservationService.php';
 
 class OrderFulfillmentService
 {
@@ -13,7 +14,29 @@ class OrderFulfillmentService
      */
     public static function fulfillPaidOrder(int $orderId, mysqli $conn): void
     {
-        DigitalDownloadService::generateDownloadsForOrder($orderId, $conn);
+        $conn->begin_transaction();
+        try {
+            $stmt = $conn->prepare('SELECT id, payment_status FROM orders WHERE id = ? FOR UPDATE');
+            if ($stmt === false) {
+                throw new RuntimeException('Could not prepare order fulfillment check.');
+            }
+            $stmt->bind_param('i', $orderId);
+            $stmt->execute();
+            $order = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$order || strtolower((string) ($order['payment_status'] ?? 'pending')) !== 'paid') {
+                throw new RuntimeException('Order is not paid and cannot be fulfilled.');
+            }
+
+            InventoryReservationService::consumeOrder($conn, $orderId);
+            DigitalDownloadService::generateDownloadsForOrder($orderId, $conn);
+            $conn->commit();
+        } catch (Throwable $e) {
+            $conn->rollback();
+            throw $e;
+        }
+
         EmailService::sendPaidOrderEmails($orderId, $conn);
         self::notifyAdminOnce($orderId, $conn);
     }

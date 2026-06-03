@@ -14,7 +14,20 @@
       "Bash(C:/xampp/php/php.exe *)",
       "Bash(grep -E \"\\\\.\\(php|sql\\)$\")",
       "Bash(php *)",
-      "Bash(grep -E '\\\\.\\(php|env|htaccess\\)$')"
+      "Bash(grep -E '\\\\.\\(php|env|htaccess\\)$')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/Shop/UX_SHOP/UX_Shop_New/.env\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/Shop/UX_SHOP/UX_Shop_New/logs/app_errors.log\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/Shop/UX_SHOP/UX_Shop_New/includes/config.php\")",
+      "Bash(curl -s -b \"PHPSESSID=testcheck\" \"http://localhost/Shop/UX_SHOP/UX_Shop_New/api/order/get.php\")",
+      "Bash(C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe *)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l admin/admin-dashboard.php)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l api/admin/resources/save.php)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l api/admin/resources/upload.php)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l api/admin/resources/delete.php)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l api/admin/resources/list.php)",
+      "Bash(xargs -I{} \"C:\\\\xampp\\\\php\\\\php.exe\" -l \"{}\")",
+      "Bash(curl *)",
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' -r ' *)"
     ]
   }
 }

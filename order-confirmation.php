@@ -411,11 +411,12 @@ $ocPayload = [
         + (dl.expires_at ? ' · Expires ' + new Date(dl.expires_at).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '');
       let action;
       if (dl.is_available && dl.has_file) {
-        action = `<a class="oc-btn oc-btn-primary oc-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}" download>
+        const label = dl.action_label || (dl.delivery_mode === 'open_link' ? 'Open' : (dl.delivery_mode === 'instructions' ? 'View instructions' : 'Download'));
+        action = `<a class="oc-btn oc-btn-primary oc-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}">
           <svg viewBox="0 0 20 20" fill="none" width="14" height="14" aria-hidden="true">
             <path d="M10 2v10M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>Download</a>`;
+          </svg>${escOc(label)}</a>`;
       } else {
         const label = !dl.has_file ? 'File pending' : (dl.download_count >= dl.download_limit ? 'Limit reached' : 'Expired');
         action = `<span class="oc-dl-unavailable">${escOc(label)}</span>`;

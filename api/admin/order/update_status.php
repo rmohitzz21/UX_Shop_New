@@ -3,6 +3,7 @@ require_once __DIR__ . '/../_admin.php';
 require_once __DIR__ . '/_helpers.php';
 require_once __DIR__ . '/../../../includes/OrderFulfillmentService.php';
 require_once __DIR__ . '/../../../includes/EmailService.php';
+require_once __DIR__ . '/../../../includes/InventoryReservationService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
@@ -72,6 +73,12 @@ if (in_array($status, $paidStatuses, true)) {
         OrderFulfillmentService::fulfillPaidOrder($orderId, $conn);
     } catch (Throwable $e) {
         error_log('update_status.php: fulfillment failed for order ' . $orderId . ': ' . $e->getMessage());
+    }
+} elseif (in_array($status, ['failed', 'cancelled'], true)) {
+    try {
+        InventoryReservationService::releaseOrder($conn, $orderId);
+    } catch (Throwable $e) {
+        error_log('update_status.php: reservation release failed for order ' . $orderId . ': ' . $e->getMessage());
     }
 }
 

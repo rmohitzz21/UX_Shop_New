@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 require_once __DIR__ . '/../../includes/OrderFulfillmentService.php';
+require_once __DIR__ . '/../../includes/InventoryReservationService.php';
 
 apiRequirePost();
 $user  = apiRequireUser();
@@ -38,17 +39,21 @@ try {
 
     foreach ($items as $cartItem) {
         $type = ($cartItem['item_type'] ?? $cartItem['type'] ?? 'product') === 'bundle' ? 'bundle' : 'product';
-        $id   = (int) ($cartItem['id'] ?? $cartItem['product_id'] ?? 0);
+        $id   = $type === 'bundle'
+            ? (int) ($cartItem['bundle_id'] ?? $cartItem['id'] ?? $cartItem['product_id'] ?? 0)
+            : (int) ($cartItem['product_id'] ?? $cartItem['id'] ?? 0);
         $qty  = max(1, min(10, (int) ($cartItem['quantity'] ?? 1)));
         if ($id <= 0) {
             throw new InvalidArgumentException('Invalid cart item.');
         }
 
         if ($type === 'bundle') {
+            $table = 'bundles';
             $stmt = $conn->prepare(
                 'SELECT id, name, price, image, stock, "digital" AS available_type FROM bundles WHERE id = ? AND is_active = 1 LIMIT 1 FOR UPDATE'
             );
         } else {
+            $table = 'products';
             $stmt = $conn->prepare(
                 'SELECT id, name, price, image, stock, available_type FROM products WHERE id = ? AND is_active = 1 LIMIT 1 FOR UPDATE'
             );
@@ -180,6 +185,21 @@ try {
             $format
         );
         $itemStmt->execute();
+        $orderItemId = (int) $conn->insert_id;
+
+        if ($item['selected_format'] !== 'digital') {
+            InventoryReservationService::create(
+                $conn,
+                $orderId,
+                $orderItemId,
+                $item['type'],
+                $item['id'],
+                $item['quantity']
+            );
+            if ($isFreeOrder || !in_array($paymentMethod, ['razorpay', 'test'], true)) {
+                InventoryReservationService::consumeOrder($conn, $orderId);
+            }
+        }
 
         if ($isFreeOrder || !in_array($paymentMethod, ['razorpay', 'test'], true)) {
             if ($item['type'] === 'product') {

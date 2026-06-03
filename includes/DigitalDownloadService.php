@@ -21,7 +21,7 @@ class DigitalDownloadService
         $userId = (int) $orderRow['user_id'];
 
         $iStmt = $conn->prepare("
-            SELECT oi.id AS order_item_id, oi.item_type, oi.product_id, oi.bundle_id,
+            SELECT oi.id AS order_item_id, oi.item_type, oi.product_id, oi.bundle_id, oi.selected_format,
                    COALESCE(oi.product_name, p.name, b.name, 'Item') AS item_name,
                    COALESCE(p.digital_file_path, b.digital_file_path, '') AS legacy_file_path,
                    COALESCE(p.download_limit, b.download_limit, 5) AS dl_limit,
@@ -58,7 +58,7 @@ class DigitalDownloadService
         ");
 
         foreach ($items as $item) {
-            if (!in_array($item['available_type'], ['digital', 'both'], true) && $item['item_type'] !== 'bundle') {
+            if (($item['selected_format'] ?? 'digital') !== 'digital') {
                 continue;
             }
 
@@ -139,9 +139,13 @@ class DigitalDownloadService
         $stmt = $conn->prepare("
             SELECT dd.id, dd.token, dd.item_name, dd.download_count, dd.download_limit,
                    dd.expires_at, dd.file_path, dd.resource_id,
+                   dr.resource_type, dr.delivery_mode,
                    (dd.expires_at > NOW() AND dd.download_count < dd.download_limit) AS is_available
             FROM digital_downloads dd
-            WHERE dd.order_id = ? AND dd.user_id = ?
+            LEFT JOIN digital_resources dr ON dr.id = dd.resource_id AND dd.resource_id > 0
+            WHERE dd.order_id = ?
+              AND dd.user_id = ?
+              AND (dd.resource_id = 0 OR dr.is_active = 1)
             ORDER BY dd.id ASC
         ");
         if ($stmt === false) {
@@ -152,11 +156,20 @@ class DigitalDownloadService
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         return array_map(static function (array $row): array {
+            $mode = (string) ($row['delivery_mode'] ?? 'download');
             $hasFile = (int) $row['resource_id'] > 0 || $row['file_path'] !== '';
+            $label = match ($mode) {
+                'open_link' => 'Open',
+                'instructions' => 'View instructions',
+                default => 'Download',
+            };
             return [
                 'id'             => (int)  $row['id'],
                 'token'          => $row['token'],
                 'item_name'      => $row['item_name'],
+                'resource_type'  => $row['resource_type'] ?? 'file',
+                'delivery_mode'  => $mode,
+                'action_label'   => $label,
                 'download_count' => (int)  $row['download_count'],
                 'download_limit' => (int)  $row['download_limit'],
                 'expires_at'     => $row['expires_at'],
@@ -173,7 +186,7 @@ class DigitalDownloadService
             SELECT dd.id, dd.user_id, dd.file_path, dd.download_count, dd.download_limit,
                    dd.expires_at, dd.item_name, dd.resource_id, dd.order_id,
                    o.payment_status,
-                   dr.delivery_mode, dr.storage_key, dr.external_url, dr.instructions
+                   dr.delivery_mode, dr.storage_key, dr.external_url, dr.instructions, dr.is_active
             FROM digital_downloads dd
             INNER JOIN orders o ON o.id = dd.order_id
             LEFT JOIN digital_resources dr ON dr.id = dd.resource_id AND dd.resource_id > 0
@@ -196,6 +209,10 @@ class DigitalDownloadService
         if ((int) $row['user_id'] !== $userId) {
             $conn->rollback();
             self::jsonError(403, 'Access denied.');
+        }
+        if ((int) $row['resource_id'] > 0 && (int) ($row['is_active'] ?? 0) !== 1) {
+            $conn->rollback();
+            self::jsonError(404, 'This resource is no longer available.');
         }
         if (strtolower((string) ($row['payment_status'] ?? 'pending')) !== 'paid') {
             $conn->rollback();

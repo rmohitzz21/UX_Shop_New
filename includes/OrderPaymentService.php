@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/RazorpayClient.php';
+require_once __DIR__ . '/InventoryReservationService.php';
 
 /**
  * Mark order paid after Razorpay payment is verified (signature + API amount).
@@ -161,6 +162,7 @@ function order_mark_payment_failed(mysqli $conn, string $rzpOrderId, string $rzp
         $upd->bind_param('ssis', $failed, $rzpPaymentId, $row['id'], $await);
         $upd->execute();
         $upd->close();
+        InventoryReservationService::releaseOrder($conn, (int) $row['id']);
         $conn->commit();
         return ['ok' => true];
     } catch (Throwable $e) {

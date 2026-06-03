@@ -1734,6 +1734,81 @@ async function adminDeleteFreebie(id) {
 }
 
 const productResourcesState = { rows: [], productId: 0 };
+const RESOURCE_TYPES = ['file', 'zip', 'pdf', 'canva', 'figma', 'external_link', 'instructions'];
+
+function resourceDeliveryMode(type) {
+  if (['canva', 'figma', 'external_link'].includes(type)) return 'open_link';
+  if (type === 'instructions') return 'instructions';
+  return 'download';
+}
+
+function promptResourcePayload(ownerKey, ownerId) {
+  const title = window.prompt('Resource title');
+  if (!title || !title.trim()) return null;
+
+  const rawType = (window.prompt('Resource type: file, zip, pdf, canva, figma, external_link, instructions', 'file') || 'file').trim().toLowerCase();
+  const resourceType = RESOURCE_TYPES.includes(rawType) ? rawType : 'file';
+  const deliveryMode = resourceDeliveryMode(resourceType);
+
+  let externalUrl = '';
+  let instructions = '';
+  if (deliveryMode === 'open_link') {
+    externalUrl = window.prompt('Protected HTTPS link for this resource') || '';
+    if (!/^https:\/\//i.test(externalUrl.trim())) {
+      showToast('External resource links must start with https://', 'error');
+      return null;
+    }
+  } else if (deliveryMode === 'instructions') {
+    instructions = window.prompt('Instructions shown to entitled customers') || '';
+    if (!instructions.trim()) {
+      showToast('Instructions text is required.', 'error');
+      return null;
+    }
+  }
+
+  const downloadLimitRaw = window.prompt('Download/access limit', '5') || '5';
+  const expiryDaysRaw = window.prompt('Expiry days', '30') || '30';
+  const sortOrderRaw = window.prompt('Sort order', '0') || '0';
+
+  return {
+    [ownerKey]: ownerId,
+    title: title.trim(),
+    resource_type: resourceType,
+    external_url: externalUrl.trim(),
+    instructions: instructions.trim(),
+    download_limit: Math.max(1, Math.min(100, Number.parseInt(downloadLimitRaw, 10) || 5)),
+    expiry_days: Math.max(1, Math.min(3650, Number.parseInt(expiryDaysRaw, 10) || 30)),
+    sort_order: Number.parseInt(sortOrderRaw, 10) || 0,
+    is_active: 1,
+  };
+}
+
+function renderResourceRows(rows, uploadAction, deleteAction) {
+  return rows.map(r => {
+    const type = String(r.resource_type || 'file');
+    const mode = String(r.delivery_mode || resourceDeliveryMode(type));
+    const accessText = mode === 'open_link'
+      ? 'External HTTPS link'
+      : mode === 'instructions'
+        ? 'Instructions'
+        : (r.has_file ? 'Private file attached' : 'Upload required');
+    const uploadButton = mode === 'download'
+      ? `<button type="button" class="btn-ghost small" data-action="${uploadAction}" data-id="${r.id}">Upload file</button>`
+      : '';
+    return `
+    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <strong>${escapeHtml(r.title)}</strong>
+      <span style="opacity:0.7">(${escapeHtml(type)} - ${escapeHtml(mode)})</span>
+      <div style="color:#94a3b8;font-size:.82rem;margin-top:4px;">
+        ${escapeHtml(accessText)} - limit ${escapeHtml(r.download_limit || 5)} - expires in ${escapeHtml(r.expiry_days || 30)} days
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${uploadButton}
+        <button type="button" class="btn-ghost small" data-action="${deleteAction}" data-id="${r.id}">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 function toggleProductResourcesSection() {
   const avail = document.getElementById('edit-product-available')?.value || 'digital';
@@ -1756,7 +1831,7 @@ async function loadProductResources(productId) {
     productResourcesState.rows = Array.isArray(rows) ? rows : [];
     renderProductResourcesList();
   } catch (err) {
-    list.innerHTML = `<p class="form-hint">${esc(err.message)}</p>`;
+    list.innerHTML = `<p class="form-hint">${escapeHtml(err.message)}</p>`;
   }
 }
 
@@ -1767,15 +1842,7 @@ function renderProductResourcesList() {
     list.innerHTML = '<p class="form-hint">No resources yet.</p>';
     return;
   }
-  list.innerHTML = productResourcesState.rows.map(r => `
-    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
-      <strong>${esc(r.title)}</strong> <span style="opacity:0.7">(${esc(r.resource_type)} · ${esc(r.delivery_mode)})</span>
-      ${r.has_file ? '<span style="color:#4ade80"> · file attached</span>' : ''}
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" class="btn-ghost small" data-action="upload-resource" data-id="${r.id}">Upload file</button>
-        <button type="button" class="btn-ghost small" data-action="delete-resource" data-id="${r.id}">Remove</button>
-      </div>
-    </div>`).join('');
+  list.innerHTML = renderResourceRows(productResourcesState.rows, 'upload-resource', 'delete-resource');
 }
 
 async function addProductResourceRow() {
@@ -1784,14 +1851,13 @@ async function addProductResourceRow() {
     showToast('Save the product before adding resources.', 'error');
     return;
   }
-  const title = window.prompt('Resource title');
-  if (!title) return;
-  const type = window.prompt('Type: pdf, zip, file, canva, figma, instructions', 'pdf') || 'pdf';
-  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const payload = promptResourcePayload('product_id', productId);
+  if (!payload) return;
+  const productResourceCsrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
   await fetchJson('../api/admin/resources/save.php', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-    body: JSON.stringify({ product_id: productId, title, resource_type: type }),
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': productResourceCsrf },
+    body: JSON.stringify(payload),
   });
   await loadProductResources(productId);
   showToast('Resource saved.', 'success');
@@ -1857,27 +1923,18 @@ function renderBundleResourcesList() {
     list.innerHTML = '<p class="form-hint">No resources yet.</p>';
     return;
   }
-  list.innerHTML = bundleResourcesState.rows.map(r => `
-    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
-      <strong>${esc(r.title)}</strong> <span style="opacity:0.7">(${esc(r.resource_type)} · ${esc(r.delivery_mode)})</span>
-      ${r.has_file ? ' <span style="color:#4ade80;font-size:.8rem;">✓ file uploaded</span>' : ''}
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" class="btn-ghost small" data-action="upload-bundle-resource" data-id="${r.id}">Upload file</button>
-        <button type="button" class="btn-ghost small" data-action="delete-bundle-resource" data-id="${r.id}">Remove</button>
-      </div>
-    </div>
-  `).join('');
+  list.innerHTML = renderResourceRows(bundleResourcesState.rows, 'upload-bundle-resource', 'delete-bundle-resource');
 }
 
 async function addBundleResourceRow() {
   const bundleId = bundleResourcesState.bundleId || Number(document.querySelector('#bundle-editor-form [name="id"]')?.value || 0);
   if (!bundleId) { showToast('Save the bundle before adding resources.', 'error'); return; }
-  const title = window.prompt('Resource title');
-  if (!title) return;
-  const type = window.prompt('Resource type (file, zip, pdf, canva, figma, external_link, instructions)', 'file') || 'file';
+  const payload = promptResourcePayload('bundle_id', bundleId);
+  if (!payload) return;
   await fetchJson('../api/admin/resources/save.php', {
     method: 'POST',
-    body: JSON.stringify({ bundle_id: bundleId, title, resource_type: type }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
   await loadBundleResources(bundleId);
   showToast('Resource saved.', 'success');

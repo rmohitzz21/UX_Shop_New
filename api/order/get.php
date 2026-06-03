@@ -41,31 +41,15 @@ foreach ($allItems as $item) {
     $itemsByOrder[(int) $item['order_id']][] = $item;
 }
 
-// Fetch digital downloads for all orders in one query — non-fatal if table not yet created
+// Fetch digital downloads. Use the central service so legacy file_path rows and
+// normalized digital_resources rows behave the same in My Orders.
 $downloadsByOrder = [];
-$dlStmt = $conn->prepare(
-    "SELECT order_id, token, item_name, download_count, download_limit, expires_at, file_path,
-            (expires_at > NOW() AND download_count < download_limit) AS is_available
-     FROM digital_downloads
-     WHERE order_id IN ({$placeholders}) AND user_id = ?
-     ORDER BY order_id ASC, id ASC"
-);
-if ($dlStmt !== false) {
-    $dlTypes = $types . 'i';
-    $dlArgs  = [...$orderIds, $user['id']];
-    $dlStmt->bind_param($dlTypes, ...$dlArgs);
-    $dlStmt->execute();
-    foreach ($dlStmt->get_result()->fetch_all(MYSQLI_ASSOC) as $dl) {
-        $downloadsByOrder[(int) $dl['order_id']][] = [
-            'token'          => $dl['token'],
-            'item_name'      => $dl['item_name'],
-            'download_count' => (int)  $dl['download_count'],
-            'download_limit' => (int)  $dl['download_limit'],
-            'expires_at'     => $dl['expires_at'],
-            'has_file'       => $dl['file_path'] !== '',
-            'is_available'   => (bool) $dl['is_available'],
-        ];
-    }
+foreach ($orderIds as $downloadOrderId) {
+    $downloadsByOrder[(int) $downloadOrderId] = DigitalDownloadService::getDownloadsForOrder(
+        (int) $downloadOrderId,
+        (int) $user['id'],
+        $conn
+    );
 }
 
 $paidStatuses = ['paid', 'processing', 'shipped', 'delivered'];

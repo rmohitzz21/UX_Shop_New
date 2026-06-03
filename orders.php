@@ -351,8 +351,10 @@ if ($userName === '') {
 
             let action;
             if (dl.is_available && dl.has_file) {
-                action = `<a class="order-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}" download>
-                    <i class="ph ph-download-simple"></i> Download
+                const label = dl.action_label || (dl.delivery_mode === 'open_link' ? 'Open' : (dl.delivery_mode === 'instructions' ? 'View instructions' : 'Download'));
+                const icon = dl.delivery_mode === 'open_link' ? 'ph-arrow-square-out' : (dl.delivery_mode === 'instructions' ? 'ph-note' : 'ph-download-simple');
+                action = `<a class="order-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}">
+                    <i class="ph ${icon}"></i> ${escHtml(label)}
                 </a>`;
             } else if (!dl.has_file) {
                 action = `<span class="order-dl-pending"><i class="ph ph-clock"></i> File pending</span>`;
