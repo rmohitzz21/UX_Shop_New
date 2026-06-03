@@ -89,4 +89,9 @@ if (empty($_SESSION['csrf_token'])) {
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/marketplace.php';
 require_once __DIR__ . '/reviews.php';
-marketplaceEnsureSchema($conn);
+// Runtime DDL only before migration 004 marker; production uses migrations/*.sql.
+$appEnv = getenv('APP_ENV') ?: 'local';
+$migrationMarker = dirname(__DIR__) . '/.migration-complete';
+if ($appEnv === 'local' && !is_file($migrationMarker)) {
+    marketplaceEnsureSchema($conn);
+}

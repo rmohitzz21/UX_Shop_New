@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../includes/DigitalDownloadService.php';
 $user = apiRequireUser();
 
 // Fetch all orders for the user in one query
-$stmt = $conn->prepare('SELECT id, order_number, created_at, status, payment_method, total, subtotal, tax, shipping FROM orders WHERE user_id = ? ORDER BY created_at DESC');
+$stmt = $conn->prepare('SELECT id, order_number, created_at, status, payment_status, payment_method, total, subtotal, tax, shipping, shipping_address FROM orders WHERE user_id = ? ORDER BY created_at DESC');
 $stmt->bind_param('i', $user['id']);
 $stmt->execute();
 $orderRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -71,30 +71,37 @@ if ($dlStmt !== false) {
 $paidStatuses = ['paid', 'processing', 'shipped', 'delivered'];
 $orders = [];
 foreach ($orderRows as $order) {
-    $oid    = (int) $order['id'];
-    $status = strtolower((string) $order['status']);
+    $oid            = (int) $order['id'];
+    $status         = strtolower((string) $order['status']);
+    $paymentStatus  = strtolower((string) ($order['payment_status'] ?? 'pending'));
+    $canDownload    = $paymentStatus === 'paid' || in_array($status, $paidStatuses, true);
+    $shippingAddr   = json_decode((string) ($order['shipping_address'] ?? '{}'), true);
+    if (!is_array($shippingAddr)) {
+        $shippingAddr = [];
+    }
     $orders[] = [
-        'id'             => $oid,
-        'orderNumber'    => $order['order_number'],
-        'order_number'   => $order['order_number'],
-        'date'           => $order['created_at'],
-        'created_at'     => $order['created_at'],
-        'status'         => $status,
-        'paymentMethod'  => $order['payment_method'],
-        'payment_method' => $order['payment_method'],
-        'total'          => (float) $order['total'],
-        'subtotal'       => (float) $order['subtotal'],
-        'tax'            => (float) $order['tax'],
-        'shipping'       => (float) $order['shipping'],
-        'items'          => reviewEnrichOrderItems(
+        'id'              => $oid,
+        'orderId'         => $oid,
+        'orderNumber'     => $order['order_number'],
+        'order_number'    => $order['order_number'],
+        'date'            => $order['created_at'],
+        'created_at'      => $order['created_at'],
+        'status'          => $status,
+        'payment_status'  => $paymentStatus,
+        'paymentMethod'   => $order['payment_method'],
+        'payment_method'  => $order['payment_method'],
+        'total'           => (float) $order['total'],
+        'subtotal'        => (float) $order['subtotal'],
+        'tax'             => (float) $order['tax'],
+        'shipping'        => (float) $order['shipping'],
+        'shipping_address'=> $shippingAddr,
+        'items'           => reviewEnrichOrderItems(
             $conn,
             $user['id'],
             $status,
             $itemsByOrder[$oid] ?? []
         ),
-        'downloads'      => in_array($status, $paidStatuses, true)
-                            ? ($downloadsByOrder[$oid] ?? [])
-                            : [],
+        'downloads'       => $canDownload ? ($downloadsByOrder[$oid] ?? []) : [],
     ];
 }
 

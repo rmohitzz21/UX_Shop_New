@@ -81,14 +81,19 @@ function order_capture_razorpay_payment(
         }
 
         $now    = date('Y-m-d H:i:s');
-        $upd    = $conn->prepare('UPDATE orders SET status = ?, payment_method = ?, payment_id = ?, razorpay_order_id = ?, payment_verified_at = ?, payment_currency = ? WHERE id = ? AND status = ?');
+        $upd    = $conn->prepare(
+            'UPDATE orders SET status = ?, payment_status = ?, paid_at = ?, payment_method = ?, payment_id = ?, razorpay_order_id = ?, payment_verified_at = ?, payment_currency = ? WHERE id = ? AND status = ?'
+        );
         $paid   = 'paid';
+        $paySt  = 'paid';
         $method = 'razorpay';
         $cur    = 'INR';
         $await  = 'awaiting_payment';
         $upd->bind_param(
-            'ssssssis',
+            'ssssssssis',
             $paid,
+            $paySt,
+            $now,
             $method,
             $rzpPaymentId,
             $rzpOrderId,
@@ -149,7 +154,9 @@ function order_mark_payment_failed(mysqli $conn, string $rzpOrderId, string $rzp
         }
 
         $failed = 'failed';
-        $upd    = $conn->prepare('UPDATE orders SET status = ?, payment_id = ? WHERE id = ? AND status = ?');
+        $upd    = $conn->prepare(
+            "UPDATE orders SET status = ?, payment_status = 'failed', payment_id = ?, status_updated_at = NOW() WHERE id = ? AND status = ?"
+        );
         $await  = 'awaiting_payment';
         $upd->bind_param('ssis', $failed, $rzpPaymentId, $row['id'], $await);
         $upd->execute();

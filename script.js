@@ -665,18 +665,24 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
     if (available_type === 'both') available_type = 'physical';
     
     const userSession = getUserSession();
-  
+    const itemType = (explicitDetails && explicitDetails.item_type) ? explicitDetails.item_type : 'product';
+    const isBundle = itemType === 'bundle';
+
     if (userSession && userSession.id) {
         // LOGGED IN: Use API
         const payload = {
-            product_id: productId,
+            item_type: itemType,
             quantity: quantity,
             size: size,
             available_type: available_type,
-            item_type: (explicitDetails && explicitDetails.item_type) ? explicitDetails.item_type : 'product',
-            details: product
+            selected_format: available_type,
         };
-  
+        if (isBundle) {
+            payload.bundle_id = productId;
+        } else {
+            payload.product_id = productId;
+        }
+
         fetch('api/cart/add.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
@@ -715,14 +721,17 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
           if (quantity > 10) quantity = 10;
           cart.push({
             id: productId,
+            item_type: itemType,
+            product_id: isBundle ? undefined : productId,
+            bundle_id: isBundle ? productId : undefined,
             name: product.name,
             price: product.price,
             image: product.image,
             size: size,
             quantity: quantity,
             available_type: available_type,
+            selected_format: available_type,
             description: product.description,
-            item_type: (explicitDetails && explicitDetails.item_type) || 'product'
           });
         }
         
@@ -748,21 +757,21 @@ function normalizeSize(s) {
 // Remove from cart
 function removeFromCart(productId, size = null) {
   const userSession = getUserSession();
-  
-  // Find item to get its available_type (needed for API)
+
+  // Find item in local array to get cart_id (preferred) or fallback fields
   const item = cart.find(i => String(i.id) === String(productId) && normalizeSize(i.size) === normalizeSize(size));
   const available_type = item ? (item.available_type || 'physical') : 'physical';
+  const cartId = item ? (item.cart_id || null) : null;
 
   if (userSession && userSession.id) {
-      // LOGGED IN: API
+      // LOGGED IN: API — prefer cart_id, fall back to legacy key
+      const body = cartId
+          ? { cart_id: cartId }
+          : { product_id: productId, size: size, available_type: available_type };
       fetch('api/cart/remove.php', {
           method: 'POST',
           headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
-          body: JSON.stringify({
-              product_id: productId,
-              size: size,
-              available_type: available_type
-          })
+          body: JSON.stringify(body)
       })
       .then(res => res.json())
       .then(data => {
@@ -805,21 +814,20 @@ function updateCartQuantity(productId, size, newQuantity) {
       return;
   }
 
-  // Find item to get its available_type (needed for API)
+  // Find item to get cart_id (preferred) or fallback key fields
   const item = cart.find(i => String(i.id) === String(productId) && normalizeSize(i.size) === normalizeSize(size));
   const available_type = item ? (item.available_type || 'physical') : 'physical';
-  
+  const cartId = item ? (item.cart_id || null) : null;
+
   if (userSession && userSession.id) {
-     // LOGGED IN: API
+     // LOGGED IN: API — prefer cart_id, fall back to legacy key
+     const body = cartId
+         ? { cart_id: cartId, quantity: newQuantity }
+         : { product_id: productId, quantity: newQuantity, size: size, available_type: available_type };
      fetch('api/cart/update.php', {
          method: 'POST',
          headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
-         body: JSON.stringify({
-             product_id: productId,
-             quantity: newQuantity,
-             size: size,
-             available_type: available_type
-         })
+         body: JSON.stringify(body)
      })
      .then(res => res.json())
      .then(data => {
@@ -1040,22 +1048,35 @@ async function loadCartPage() {
       if (physicalSection) physicalSection.style.display = 'block';
   }
 
-  // Fetch up-to-date product details (Background update)
-  const uniqueIds = [...new Set(cart.map(item => parseInt(item.id)))];
+  // Background price refresh — only needed for guest/localStorage carts.
+  // Logged-in cart items already have fresh data from list.php (they have cart_id).
+  const needsFetch = cart.some(item => !item.cart_id);
+  if (!needsFetch) return;
+
+  // Only request product-type IDs; bundle items keep their API-provided data.
+  const productIds = [...new Set(
+    cart.filter(item => !item.item_type || item.item_type === 'product')
+        .map(item => parseInt(item.id))
+  )];
+  if (productIds.length === 0) return;
 
   try {
       const response = await fetch('api/product/get_details.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: uniqueIds })
+          body: JSON.stringify({ ids: productIds })
       });
       const result = await response.json();
 
       if (result.status === 'success') {
           globalProductDetailsCache = { ...globalProductDetailsCache, ...result.data };
-          const validIds = new Set(Object.keys(result.data || {}).map(String));
+          const validProductIds = new Set(Object.keys(result.data || {}).map(String));
           const beforeLen = cart.length;
-          cart = cart.filter(item => validIds.has(String(item.id)));
+          // Only remove product-type rows whose product no longer exists; keep bundles
+          cart = cart.filter(item => {
+              if (item.item_type === 'bundle') return true;
+              return validProductIds.has(String(item.id));
+          });
           if (cart.length !== beforeLen) {
               saveCart();
               updateCartCount();
@@ -1110,10 +1131,10 @@ function loadCheckoutPage() {
     </div>
   `).join('');
 
-  // Determine cart composition
-  const hasDigital = cart.some(item => item.available_type === 'digital');
-  const hasPhysical = cart.some(item => item.available_type === 'physical' || !item.available_type);
+  const hasDigital = cart.some(cartItemIsDigital);
+  const hasPhysical = cart.some(cartItemIsPhysical);
   const onlyDigital = hasDigital && !hasPhysical;
+  const onlyPhysical = hasPhysical && !hasDigital;
 
   // Update totals
   const subtotal = getCartTotal();
@@ -1144,17 +1165,40 @@ function loadCheckoutPage() {
   }
   syncCheckoutRequiredFields({ onlyDigital });
 
-  // Handle COD availability
+  const paymentSection = document.getElementById('checkout-payment-section');
+  const orderText = document.getElementById('order-text');
   const codOption = document.getElementById('cod-option');
   const codRadio = document.getElementById('cod-radio');
   const codMessage = document.getElementById('cod-disabled-message');
+  const cardRadio = document.querySelector('#checkout-form input[name="paymentMethod"][value="card"]');
 
-  if (codRadio) codRadio.disabled = false;
-  if (codMessage) codMessage.style.display = 'none';
-  if (codOption) {
-      codOption.style.opacity = '1';
-      codOption.style.cursor = 'pointer';
-      codOption.style.pointerEvents = 'auto';
+  if (total <= 0) {
+    if (paymentSection) paymentSection.style.display = 'none';
+    if (orderText) orderText.textContent = 'Get Free Download';
+  } else {
+    if (paymentSection) paymentSection.style.display = '';
+    if (orderText) orderText.textContent = 'Place Order';
+    if (onlyPhysical) {
+      if (codRadio) codRadio.disabled = false;
+      if (codMessage) codMessage.style.display = 'none';
+      if (codOption) {
+        codOption.style.opacity = '1';
+        codOption.style.cursor = 'pointer';
+        codOption.style.pointerEvents = 'auto';
+      }
+    } else {
+      if (codRadio) {
+        codRadio.disabled = true;
+        codRadio.checked = false;
+      }
+      if (codMessage) codMessage.style.display = 'block';
+      if (codOption) {
+        codOption.style.opacity = '0.5';
+        codOption.style.cursor = 'not-allowed';
+        codOption.style.pointerEvents = 'none';
+      }
+      if (cardRadio) cardRadio.checked = true;
+    }
   }
 }
 
@@ -1162,7 +1206,7 @@ function syncCheckoutRequiredFields(options = {}) {
   const form = document.getElementById('checkout-form');
   if (!form) return;
 
-  const hasPhysicalInCart = cart.some(item => item.available_type === 'physical' || !item.available_type);
+  const hasPhysicalInCart = cart.some(cartItemIsPhysical);
   const onlyDigital = typeof options.onlyDigital === 'boolean' ? options.onlyDigital : !hasPhysicalInCart;
   const usingSavedAddress = isUsingSavedAddress();
 
@@ -1862,8 +1906,7 @@ function handleCheckout(event) {
   const btnText = document.getElementById('order-text');
   const btnLoader = document.getElementById('order-loader');
 
-  // Determine cart composition for conditional validation
-  const hasPhysicalInCart = cart.some(item => item.available_type === 'physical' || !item.available_type);
+  const hasPhysicalInCart = cart.some(cartItemIsPhysical);
   const onlyDigitalInCart = !hasPhysicalInCart;
 
   // Validation
@@ -2026,23 +2069,10 @@ function handleCheckout(event) {
     cart = [];
     saveCart();
     updateCartCount();
-    const apiStatus =
-      (verifyData && verifyData.data && verifyData.data.status) ||
-      (serverData.data && serverData.data.status) ||
-      'pending';
-    const confirmationData = {
-      ...orderData,
-      orderNumber: serverData.data.orderNumber,
-      orderId:     serverData.data.orderId,
-      date:        new Date().toISOString(),
-      status:      apiStatus,
-      total:        serverData.data.total        ?? orderData.total,
-      subtotal:     serverData.data.subtotal     ?? orderData.subtotal,
-      tax:          serverData.data.tax          ?? orderData.tax,
-      shipping_cost: serverData.data.shipping_cost ?? orderData.shipping_cost,
-    };
-    localStorage.setItem('lastOrder', JSON.stringify(confirmationData));
-    setTimeout(() => { window.location.href = 'order-confirmation.php'; }, 1000);
+    const confirmId = serverData.data.orderId || '';
+    const redirect = serverData.data.redirect
+      || ('order-confirmation.php' + (confirmId ? '?order_id=' + encodeURIComponent(confirmId) : ''));
+    setTimeout(() => { window.location.href = redirect; }, serverData.data.free_order ? 400 : 1000);
   }
 
   function createDraftOrder() {
@@ -2062,6 +2092,18 @@ function handleCheckout(event) {
       if (data.status !== 'success') throw new Error(data.message || 'Order creation failed');
       return data;
     });
+  }
+
+  if (total <= 0) {
+    orderPayload.paymentMethod = 'razorpay';
+    createDraftOrder()
+      .then(data => handleOrderSuccess(orderPayload, data))
+      .catch(err => {
+        console.error('Order error:', err);
+        showToast('Failed to place order: ' + err.message, 'error');
+        resetOrderBtn();
+      });
+    return;
   }
 
   // ── COD flow ──────────────────────────────────────────────────────────────
@@ -2472,7 +2514,7 @@ function handleSignUp(event) {
         }
         setTimeout(() => {
           const redirectParam = new URLSearchParams(window.location.search).get('redirect');
-          window.location.href = redirectParam || 'index.php';
+          window.location.href = getSafeRedirect(redirectParam);
         }, 1200);
       } else {
         if (successDiv) {
@@ -2565,12 +2607,12 @@ async function handleForgotPassword(event) {
 
 // Social sign in
 function signInWithGoogle() {
-  showToast('Google sign in coming soon!', 'success');
+  showToast('Google sign-in is not available yet.', 'error');
 }
 
 // Social sign up
 function signUpWithGoogle() {
-  showToast('Google sign up coming soon!', 'success');
+  showToast('Google sign-up is not available yet.', 'error');
 }
 
 // Make functions globally available
@@ -4218,10 +4260,10 @@ async function addMarketplaceItemToCart(type, id) {
     const qty = getMpModalQty();
     const size = getMpModalSize();
     await addToCart(
-      type === 'bundle' ? `bundle-${item.id}` : item.id,
+      item.id,
       size,
       qty,
-      item,
+      { ...item, item_type: type },
       item.available_type || 'digital',
     );
     showToast('Added to cart!', 'success');
@@ -4434,21 +4476,56 @@ function checkAuthBeforeCheckout(event) {
   return true;
 }
 
-// Handle redirect after sign in
+const SAFE_REDIRECT_PATHS = [
+  'index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php',
+  'order-confirmation.php', 'shopAll.php', 'wishlist.php', 'product.php',
+  'bundles.php', 'freebies.php', 'search.php', 'contact.php', 'policies.php',
+];
+
+function getSafeRedirect(rawParam) {
+  if (!rawParam || typeof rawParam !== 'string') return 'index.php';
+  let decoded;
+  try {
+    decoded = decodeURIComponent(rawParam);
+  } catch (_) {
+    return 'index.php';
+  }
+  if (
+    decoded.startsWith('//') ||
+    decoded.startsWith('http:') ||
+    decoded.startsWith('https:') ||
+    decoded.includes('..') ||
+    decoded.includes('\\') ||
+    decoded.includes('\n') ||
+    decoded.includes('\r')
+  ) {
+    return 'index.php';
+  }
+  const pathOnly = decoded.split('?')[0].split('#')[0];
+  if (SAFE_REDIRECT_PATHS.includes(pathOnly)) {
+    return decoded;
+  }
+  return 'index.php';
+}
+
+function cartItemIsDigital(item) {
+  if ((item.item_type || 'product') === 'bundle') return true;
+  const fmt = String(item.selected_format || item.available_type || '').toLowerCase();
+  if (fmt === 'digital') return true;
+  if (fmt === 'physical') return false;
+  return String(item.available_type || '').toLowerCase() === 'digital';
+}
+
+function cartItemIsPhysical(item) {
+  return !cartItemIsDigital(item);
+}
+
 function handleSignInRedirect() {
   const urlParams = new URLSearchParams(window.location.search);
-  const redirect = urlParams.get('redirect');
-  // Only allow relative redirects to prevent open redirect attacks
-  const allowedPages = ['index.php', 'cart.php', 'checkout.php', 'account.php', 'orders.php', 'shopAll.php', 'wishlist.php', 'product.php', 'bundles.php', 'freebies.php', 'search.php'];
-  if (redirect && allowedPages.some(page => redirect.includes(page)) && !redirect.includes('://')) {
-    setTimeout(() => {
-      window.location.href = redirect;
-    }, 1500);
-  } else {
-    setTimeout(() => {
-      window.location.href = 'index.php';
-    }, 1500);
-  }
+  const redirectUrl = getSafeRedirect(urlParams.get('redirect'));
+  setTimeout(() => {
+    window.location.href = redirectUrl;
+  }, 1500);
 }
 
 window.buyNow = buyNow;
@@ -4856,14 +4933,16 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
       const button = event.target.closest('[data-add-to-cart]');
       if (!button) return;
       event.preventDefault();
+      const itemType = button.dataset.itemType || 'product';
       const details = {
         name: button.dataset.name || 'Product',
         price: Number(button.dataset.price || 0),
         image: button.dataset.image || 'img/sticker.webp',
         category: button.dataset.category || 'Products',
-        description: button.dataset.description || ''
+        description: button.dataset.description || '',
+        item_type: itemType,
       };
-      window.addToCart(button.dataset.addToCart, null, 1, details, button.dataset.type || 'physical');
+      window.addToCart(button.dataset.addToCart, null, 1, details, button.dataset.type || 'digital');
     });
   }
 

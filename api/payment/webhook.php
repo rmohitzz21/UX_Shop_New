@@ -10,6 +10,8 @@
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/RazorpayClient.php';
 require_once __DIR__ . '/../../includes/OrderPaymentService.php';
+require_once __DIR__ . '/../../includes/OrderFulfillmentService.php';
+require_once __DIR__ . '/../../includes/EmailService.php';
 
 header('Content-Type: application/json');
 
@@ -85,10 +87,22 @@ switch ($eventName) {
             echo json_encode(['status' => 'error', 'message' => 'Capture failed.']);
             exit;
         }
+        // Fulfill: generate downloads + send confirmation email (idempotent)
+        try {
+            OrderFulfillmentService::fulfillPaidOrder($internalOrderId, $conn);
+        } catch (Throwable $e) {
+            error_log("webhook.php: fulfillment failed for order {$internalOrderId}: " . $e->getMessage());
+        }
         break;
 
     case 'payment.failed':
         order_mark_payment_failed($conn, $rzpOrderId, $rzpPaymentId);
+        try {
+            EmailService::sendPaymentFailed($internalOrderId, $conn);
+            EmailService::notifyAdminPaymentFailed($internalOrderId, $conn);
+        } catch (Throwable $e) {
+            error_log('webhook.php: payment failed emails: ' . $e->getMessage());
+        }
         break;
 
     default:

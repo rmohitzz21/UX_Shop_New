@@ -25,7 +25,7 @@
       <aside class="profile-card">
         <h2>Direct support</h2>
         <p>Phone: +91 9274061063</p>
-        <p>Email: hello@uxpacific.com</p>
+        <p>Email: <?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></p>
         <p>512, Majestic Building, Near Law Garden BRTS Stand, Ahmedabad</p>
       </aside>
     </section>

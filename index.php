@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="UX Pacific Shop - Premium UX/UI design resources" />
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
+    <?php $appUrl = rtrim((string) (getenv('APP_URL') ?: ''), '/'); $canonical = $appUrl !== '' ? $appUrl . '/index.php' : ''; ?>
+    <?php if ($canonical !== ''): ?><link rel="canonical" href="<?php echo htmlspecialchars($canonical); ?>" /><?php endif; ?>
+    <meta property="og:title" content="UX Pacific — Design Resources" />
+    <meta property="og:description" content="Premium UI templates, mockups, and design kits for creators." />
+    <meta property="og:type" content="website" />
+    <?php if ($canonical !== ''): ?><meta property="og:url" content="<?php echo htmlspecialchars($canonical); ?>" /><?php endif; ?>
+    <?php if ($appUrl !== ''): ?><meta property="og:image" content="<?php echo htmlspecialchars($appUrl . '/img/poster.webp'); ?>" /><?php endif; ?>
+    <meta name="twitter:card" content="summary_large_image" />
     <title>UX Pacific – Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />

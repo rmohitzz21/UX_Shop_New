@@ -41,6 +41,9 @@ if ($image === '') $image = 'img/poster.webp';
 // Prefer whats_included textarea (one item per line) as the source of truth.
 // Falls back to included_items JSON for legacy toggle calls.
 $whatsIncluded = trim((string) ($input['whats_included'] ?? ''));
+if ($whatsIncluded === '') {
+    sendResponse('error', "What's Included is required for bundles.", null, 422);
+}
 $fileSpec = trim((string) ($input['file_specification'] ?? ''));
 
 // Additional images: JSON array (form) or newline-separated (legacy) + file uploads (media[])

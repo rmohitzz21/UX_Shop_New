@@ -58,89 +58,48 @@ function isAdmin() {
 /* ================= EMAIL SYSTEM ================= */
 
 function sendWelcomeEmail($email, $name) {
+    require_once __DIR__ . '/EmailService.php';
     try {
-        require_once __DIR__ . '/../core/Mailer.php';
-
-        $mailer = new Mailer();
-        $html = getWelcomeEmailTemplate($name);
-
-        return $mailer->send($email, "Welcome to UX Pacific Shop!", $html);
-    } catch (Exception $e) {
-        error_log($e->getMessage());
+        return EmailService::sendWelcome(['email' => $email, 'first_name' => $name]);
+    } catch (Throwable $e) {
+        error_log('sendWelcomeEmail: ' . $e->getMessage());
         return false;
     }
 }
 
 function sendOrderConfirmationEmail($email, $name, $orderData) {
+    // Legacy wrapper — prefer EmailService::sendOrderConfirmation($orderId, $conn) when order id is known.
     try {
         require_once __DIR__ . '/../core/Mailer.php';
-
         $mailer = new Mailer();
         $html = getOrderConfirmationTemplate($name, $orderData);
-
-        return $mailer->send($email, "Order Confirmation", $html);
-    } catch (Exception $e) {
-        error_log($e->getMessage());
+        return $mailer->send($email, 'Order Confirmation — UX Pacific', $html);
+    } catch (Throwable $e) {
+        error_log('sendOrderConfirmationEmail: ' . $e->getMessage());
         return false;
     }
 }
 
 function sendContactEmail($data) {
+    require_once __DIR__ . '/EmailService.php';
     try {
-        require_once __DIR__ . '/../core/Mailer.php';
-
-        $mailer = new Mailer();
-        $adminSent = false;
+        $adminSent = EmailService::sendContactFormNotification(
+            (string) ($data['name'] ?? ''),
+            (string) ($data['email'] ?? ''),
+            (string) ($data['subject'] ?? 'General enquiry'),
+            (string) ($data['message'] ?? ''),
+            (string) ($data['phone'] ?? '')
+        );
         $userSent = false;
-
-        // Allow one or many admin recipients via ADMIN_EMAIL (comma-separated).
-        $adminRaw = trim((string) (getenv('ADMIN_EMAIL') ?: ''));
-        $adminRecipients = [];
-        if ($adminRaw !== '') {
-            $parts = array_map('trim', explode(',', $adminRaw));
-            foreach ($parts as $recipient) {
-                if (filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
-                    $adminRecipients[] = $recipient;
-                }
-            }
-        }
-        if (count($adminRecipients) === 0) {
-            $fallbackAdmin = trim((string) (getenv('SMTP_FROM') ?: 'support@uxpacific.com'));
-            if (filter_var($fallbackAdmin, FILTER_VALIDATE_EMAIL)) {
-                $adminRecipients[] = $fallbackAdmin;
-            }
-        }
-
-        $adminHtml = getContactFormTemplate($data);
-        foreach ($adminRecipients as $recipient) {
-            try {
-                if ($mailer->send($recipient, "New Contact Form", $adminHtml)) {
-                    $adminSent = true;
-                    break;
-                }
-            } catch (Exception $e) {
-                error_log("Contact form admin email failed for {$recipient}: " . $e->getMessage());
-            }
-        }
-
         if (!empty($data['email']) && filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $userName = trim((string) ($data['name'] ?? 'Customer'));
-            $userHtml = getContactAcknowledgmentTemplate($userName !== '' ? $userName : 'Customer');
-            try {
-                $userSent = $mailer->send($data['email'], "We received your message", $userHtml);
-            } catch (Exception $e) {
-                error_log("Contact acknowledgment email failed for {$data['email']}: " . $e->getMessage());
-            }
+            $userSent = EmailService::sendContactConfirmation(
+                (string) ($data['name'] ?? 'Customer'),
+                (string) $data['email']
+            );
         }
-
-        if (!$adminSent && !$userSent) {
-            error_log('Contact email delivery failed for both admin and user recipients.');
-        }
-
         return $adminSent || $userSent;
-
-    } catch (Exception $e) {
-        error_log($e->getMessage());
+    } catch (Throwable $e) {
+        error_log('sendContactEmail: ' . $e->getMessage());
         return false;
     }
 }
@@ -334,12 +293,17 @@ function validateCsrfFromToken(string $token): void {
 /* ================= PASSWORD RESET EMAIL ================= */
 
 function sendPasswordResetEmail(string $email, string $name, string $resetLink): bool {
+    require_once __DIR__ . '/EmailService.php';
     try {
-        require_once __DIR__ . '/../core/Mailer.php';
-        $mailer = new Mailer();
-        $html = getPasswordResetEmailTemplate($name, $resetLink);
-        return $mailer->send($email, "Reset Your UX Pacific Password", $html);
-    } catch (Exception $e) {
+        $token = '';
+        if (preg_match('/[?&]token=([^&]+)/', $resetLink, $m)) {
+            $token = urldecode($m[1]);
+        }
+        return EmailService::sendPasswordReset(
+            ['email' => $email, 'first_name' => $name],
+            $token
+        );
+    } catch (Throwable $e) {
         error_log('sendPasswordResetEmail: ' . $e->getMessage());
         return false;
     }

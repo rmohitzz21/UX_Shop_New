@@ -10,7 +10,8 @@
  *   $mailer->send('user@example.com', 'Subject', '<p>HTML body</p>');
  *
  * Required .env vars (when using SMTP):
- *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_FROM_NAME
+ *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM or SMTP_FROM_EMAIL, SMTP_FROM_NAME
+ *   SMTP_ENCRYPTION (ssl|tls), SUPPORT_EMAIL (reply-to)
  */
 class Mailer
 {
@@ -21,6 +22,7 @@ class Mailer
     private string $from;
     private string $fromName;
     private bool   $debug;
+    private string $replyTo = '';
 
     public function __construct()
     {
@@ -28,9 +30,14 @@ class Mailer
         $this->port     = (int)   (getenv('SMTP_PORT') ?: 587);
         $this->user     = (string) (getenv('SMTP_USER') ?: '');
         $this->pass     = (string) (getenv('SMTP_PASS') ?: '');
-        $this->from     = (string) (getenv('SMTP_FROM') ?: $this->user);
-        $this->fromName = (string) (getenv('SMTP_FROM_NAME') ?: 'UX Pacific Shop');
+        $this->from     = (string) (getenv('SMTP_FROM_EMAIL') ?: getenv('SMTP_FROM') ?: $this->user);
+        $this->fromName = (string) (getenv('SMTP_FROM_NAME') ?: 'UX Pacific');
         $this->debug    = (getenv('APP_DEBUG') === 'true');
+    }
+
+    public function setReplyTo(string $email): void
+    {
+        $this->replyTo = $email;
     }
 
     /**
@@ -78,6 +85,9 @@ class Mailer
             $headers .= "MIME-Version: 1.0\r\n";
             $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
             $headers .= "X-Mailer: UX-Pacific-Mailer/1.0\r\n";
+            if ($this->replyTo !== '' && filter_var($this->replyTo, FILTER_VALIDATE_EMAIL)) {
+                $headers .= "Reply-To: <{$this->replyTo}>\r\n";
+            }
 
             $message = $headers . "\r\n" . $mimeBody;
 
@@ -132,7 +142,10 @@ class Mailer
         $errno = 0; $errstr = '';
         $timeout = 30;
 
-        if ($this->port === 465) {
+        $encryption = strtolower((string) (getenv('SMTP_ENCRYPTION') ?: ''));
+        $useSsl     = ($this->port === 465) || ($encryption === 'ssl');
+
+        if ($useSsl) {
             $context = stream_context_create(['ssl' => [
                 'verify_peer'      => true,
                 'verify_peer_name' => true,
@@ -199,6 +212,9 @@ class Mailer
         $headers .= "MIME-Version: 1.0\r\n";
         $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
         $headers .= "X-Mailer: UX-Pacific-Mailer/1.0\r\n";
+        if ($this->replyTo !== '' && filter_var($this->replyTo, FILTER_VALIDATE_EMAIL)) {
+            $headers .= "Reply-To: <{$this->replyTo}>\r\n";
+        }
 
         $body   = $this->buildMime($html, $text, $boundary);
         $result = mail($to, $this->encodeHeader($subject), $body, $headers);

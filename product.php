@@ -1,8 +1,15 @@
 <?php
 require_once 'includes/config.php';
 
-// Get product ID. If navbar opens product.php without an id, show the first active product.
-$product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$explicitId = array_key_exists('id', $_GET);
+$product_id = $explicitId ? (int) $_GET['id'] : 0;
+
+if ($explicitId && $product_id <= 0) {
+    http_response_code(404);
+    require __DIR__ . '/404.php';
+    exit;
+}
+
 if ($product_id <= 0) {
     $firstProduct = $conn->query("SELECT id FROM products WHERE is_active = 1 ORDER BY is_featured DESC, id ASC LIMIT 1");
     if ($firstProduct && ($first = $firstProduct->fetch_assoc())) {
@@ -10,17 +17,15 @@ if ($product_id <= 0) {
     }
 }
 
-// Fetch product details
-// We also fetch available_type column
-$stmt = $conn->prepare("SELECT * FROM products WHERE id = ? AND is_active = 1");
-$stmt->bind_param("i", $product_id);
+$stmt = $conn->prepare('SELECT * FROM products WHERE id = ? AND is_active = 1');
+$stmt->bind_param('i', $product_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
 if (!$product) {
-    // Redirect to shop if product not found or inactive
-    header("Location: shopAll.php");
+    http_response_code(404);
+    require __DIR__ . '/404.php';
     exit;
 }
 

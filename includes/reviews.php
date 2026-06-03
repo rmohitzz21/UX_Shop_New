@@ -7,7 +7,7 @@ declare(strict_types=1);
 /** Order statuses that count as a completed purchase for leaving a review. */
 function reviewEligibleOrderStatuses(): array
 {
-    return ['paid', 'processing', 'shipped', 'delivered', 'pending'];
+    return ['paid', 'processing', 'shipped', 'delivered'];
 }
 
 function reviewOrderStatusAllows(string $status): bool

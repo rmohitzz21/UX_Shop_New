@@ -81,7 +81,8 @@ if (!$stmt->execute()) {
 
 $userId = (int) $conn->insert_id;
 try {
-    sendWelcomeEmail($email, $firstName);
+    require_once __DIR__ . '/../../includes/EmailService.php';
+    EmailService::sendWelcome(['email' => $email, 'first_name' => $firstName]);
 } catch (Throwable $e) {
     error_log('api/auth/signup.php welcome email: ' . $e->getMessage());
 }

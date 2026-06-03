@@ -175,7 +175,7 @@
                 <p>
                   For privacy-related requests, contact us at:
                   <br />
-                  <strong>hello@uxpacific.com</strong>
+                  <strong>support@uxpacific.com</strong>
                 </p>
               </div>
             </div>
@@ -479,7 +479,7 @@
                 <p>
                   For any questions regarding these Terms & Conditions:
                   <br />
-                  <strong>hello@uxpacific.com</strong>
+                  <strong>support@uxpacific.com</strong>
                   <br />
                   Serving customers worldwide
                 </p>
@@ -756,7 +756,7 @@
                 <p>
                   For refund, return, or replacement inquiries:
                   <br />
-                  <strong>hello@uxpacific.com</strong>
+                  <strong>support@uxpacific.com</strong>
                   <br />
                   Serving customers worldwide
                 </p>
@@ -1223,7 +1223,7 @@
                 <p>
                   For questions about cookies or data privacy:
                   <br />
-                  <strong>hello@uxpacific.com</strong>
+                  <strong>support@uxpacific.com</strong>
                   <br />
                   Serving customers worldwide
                 </p>
@@ -1631,7 +1631,7 @@
                 <p>
                   For any questions regarding this Disclaimer:
                   <br />
-                  <strong>hello@uxpacific.com</strong>
+                  <strong>support@uxpacific.com</strong>
                   <br />
                   Serving customers worldwide
                 </p>
@@ -1698,10 +1698,10 @@
               <p>
                 Email :
                 <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@uxpacific.com"
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=support@uxpacific.com"
                   style="text-decoration: none; color: inherit"
                   target="_blank"
-                  >hello@uxpacific.com</a
+                  >support@uxpacific.com</a
                 >
                 &nbsp;&nbsp;&nbsp;&nbsp;
               </p>

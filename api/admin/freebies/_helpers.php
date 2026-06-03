@@ -1,6 +1,11 @@
 <?php
 
 function adminEnsureFreebiesTable(mysqli $conn): void {
+    // Table managed by migrations/006_freebies_wishlist_tables.sql
+    // Guard kept here only for fresh installs that haven't run migrations yet
+    if ((getenv('APP_ENV') ?: 'local') === 'production') {
+        return;
+    }
     $conn->query("CREATE TABLE IF NOT EXISTS freebies (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,

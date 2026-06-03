@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
-require_once __DIR__ . '/../../includes/DigitalDownloadService.php';
+require_once __DIR__ . '/../../includes/OrderFulfillmentService.php';
 
 // Guard: only available in non-production environments with the flag set
 if (getenv('ENABLE_TEST_PAYMENT') !== 'true' || getenv('APP_ENV') === 'production') {
@@ -18,7 +18,7 @@ if ($orderId <= 0) {
 }
 
 // Fetch order and verify ownership
-$stmt = $conn->prepare('SELECT id, user_id, status, order_number FROM orders WHERE id = ? LIMIT 1');
+$stmt = $conn->prepare('SELECT id, user_id, status FROM orders WHERE id = ? LIMIT 1');
 $stmt->bind_param('i', $orderId);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
@@ -38,53 +38,23 @@ if (!$alreadyPaid) {
         sendResponse('error', 'Order cannot be paid in its current state.', null, 409);
     }
 
-    $upd = $conn->prepare("UPDATE orders SET status = 'paid', payment_method = 'test', status_updated_at = NOW() WHERE id = ?");
+    $upd = $conn->prepare("UPDATE orders SET status = 'paid', payment_status = 'paid', paid_at = NOW(), payment_method = 'test', status_updated_at = NOW() WHERE id = ?");
     $upd->bind_param('i', $orderId);
     if (!$upd->execute()) {
         sendResponse('error', 'Failed to update order status.', null, 500);
     }
+
+    // Clear cart after test payment (mirrors what OrderPaymentService does for Razorpay)
+    $clr = $conn->prepare('DELETE FROM cart WHERE user_id = ?');
+    $clr->bind_param('i', $user['id']);
+    $clr->execute();
 }
 
-// Generate download tokens (idempotent)
+// Fulfill: downloads + confirmation email (idempotent)
 try {
-    DigitalDownloadService::generateDownloadsForOrder($orderId, $conn);
+    OrderFulfillmentService::fulfillPaidOrder($orderId, $conn);
 } catch (Throwable $e) {
-    error_log('test-pay.php: download generation failed for order ' . $orderId . ': ' . $e->getMessage());
-}
-
-// Send confirmation email (non-fatal, only on first payment)
-if (!$alreadyPaid) {
-    try {
-        $emailStmt = $conn->prepare('
-            SELECT u.email, u.first_name, u.last_name, o.order_number, o.total
-            FROM orders o JOIN users u ON u.id = o.user_id
-            WHERE o.id = ? LIMIT 1
-        ');
-        $emailStmt->bind_param('i', $orderId);
-        $emailStmt->execute();
-        $emailRow = $emailStmt->get_result()->fetch_assoc();
-        if ($emailRow) {
-            $itemStmt = $conn->prepare('SELECT product_name AS name, quantity, price FROM order_items WHERE order_id = ?');
-            $itemStmt->bind_param('i', $orderId);
-            $itemStmt->execute();
-            $emailItems = $itemStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-            $appUrl = rtrim((string) (getenv('APP_URL') ?: ''), '/');
-            sendOrderConfirmationEmail(
-                $emailRow['email'],
-                trim(($emailRow['first_name'] ?? '') . ' ' . ($emailRow['last_name'] ?? '')),
-                [
-                    'order_number' => $emailRow['order_number'],
-                    'date'         => date('Y-m-d'),
-                    'items'        => $emailItems,
-                    'total'        => (float) $emailRow['total'],
-                    'orders_url'   => $appUrl . '/orders.php',
-                ]
-            );
-        }
-    } catch (Throwable $ignored) {
-        error_log('test-pay.php: email failed for order ' . $orderId);
-    }
+    error_log('test-pay.php: fulfillment failed for order ' . $orderId . ': ' . $e->getMessage());
 }
 
 sendResponse('success', 'Test payment accepted.', [

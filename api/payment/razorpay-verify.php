@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../_bootstrap.php';
 require_once __DIR__ . '/../../includes/RazorpayClient.php';
 require_once __DIR__ . '/../../includes/OrderPaymentService.php';
-require_once __DIR__ . '/../../includes/DigitalDownloadService.php';
+require_once __DIR__ . '/../../includes/OrderFulfillmentService.php';
 
 apiRequirePost();
 $user  = apiRequireUser();
@@ -63,43 +63,11 @@ if (!$result['ok']) {
     sendResponse('error', $result['message'] ?? 'Payment capture failed.', null, $code);
 }
 
-// Generate download tokens after capture (idempotent, non-fatal)
-if (empty($result['duplicate'])) {
-    try {
-        DigitalDownloadService::generateDownloadsForOrder($internalOrderId, $conn);
-    } catch (Throwable $e) {
-        error_log('razorpay-verify.php: download generation failed for order ' . $internalOrderId . ': ' . $e->getMessage());
-    }
-}
-
-// Send order confirmation email after capture (non-fatal)
-if (empty($result['duplicate'])) {
-    try {
-        $emailStmt = $conn->prepare('
-            SELECT u.email, u.first_name, u.last_name, o.order_number, o.total
-            FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ? LIMIT 1
-        ');
-        $emailStmt->bind_param('i', $internalOrderId);
-        $emailStmt->execute();
-        $emailRow = $emailStmt->get_result()->fetch_assoc();
-        if ($emailRow) {
-            $itemStmt = $conn->prepare('SELECT product_name, quantity, price FROM order_items WHERE order_id = ?');
-            $itemStmt->bind_param('i', $internalOrderId);
-            $itemStmt->execute();
-            $emailItems = [];
-            $itemRes = $itemStmt->get_result();
-            while ($row = $itemRes->fetch_assoc()) {
-                $emailItems[] = ['name' => $row['product_name'], 'quantity' => $row['quantity'], 'price' => $row['price']];
-            }
-            sendOrderConfirmationEmail(
-                $emailRow['email'],
-                trim(($emailRow['first_name'] ?? '') . ' ' . ($emailRow['last_name'] ?? '')),
-                ['order_number' => $emailRow['order_number'], 'date' => date('Y-m-d'), 'items' => $emailItems, 'total' => (float) $emailRow['total']]
-            );
-        }
-    } catch (Throwable $ignored) {
-        error_log('razorpay-verify.php: email failed for order ' . $internalOrderId);
-    }
+// Fulfill: generate downloads + send confirmation email (idempotent, non-fatal)
+try {
+    OrderFulfillmentService::fulfillPaidOrder($internalOrderId, $conn);
+} catch (Throwable $e) {
+    error_log('razorpay-verify.php: fulfillment failed for order ' . $internalOrderId . ': ' . $e->getMessage());
 }
 
 sendResponse('success', 'Payment verified successfully.', [

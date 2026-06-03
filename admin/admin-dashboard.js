@@ -468,6 +468,8 @@ function clearProductForm() {
   const galleryInput = document.getElementById('edit-product-gallery');
   if (galleryInput) galleryInput.value = '';
   renderProductMediaPreviews();
+  toggleProductResourcesSection();
+  loadProductResources(0);
 }
 
 function removeProductMainImage() {
@@ -522,6 +524,8 @@ function loadProductMediaFromRow(p) {
   }
   productMediaState.gallery = gallery.filter(path => path !== productMediaState.main);
   renderProductMediaPreviews();
+  toggleProductResourcesSection();
+  loadProductResources(0);
 }
 
 const bundleMediaState = {
@@ -691,6 +695,8 @@ async function editProduct(productId) {
   set('edit-product-active', String(p.is_active ?? 1));
   set('edit-product-featured', String(p.is_featured ?? 0));
   loadProductMediaFromRow(p);
+  toggleProductResourcesSection();
+  loadProductResources(p.id);
   openEditProductModal();
 }
 
@@ -942,6 +948,8 @@ function adminEditBundle(id) {
   if (cancelBtn) cancelBtn.style.display = 'inline-flex';
   if (formTitle) formTitle.textContent = 'Edit Bundle';
 
+  loadBundleResources(row.id);
+
   // Show panel and scroll into view
   const panel = document.getElementById('bundle-form-panel');
   if (panel) panel.style.display = 'block';
@@ -956,6 +964,10 @@ function adminCancelBundleEdit() {
   form.elements['id'].value = '';
   form.elements['existing_image'].value = '';
   clearBundleMediaState();
+  bundleResourcesState.bundleId = 0;
+  bundleResourcesState.rows = [];
+  const bResList = document.getElementById('bundle-resources-list');
+  if (bResList) bResList.innerHTML = '<p class="form-hint">Save the bundle first, then add digital resources.</p>';
 
   const submitBtn = document.getElementById('bundle-submit-btn');
   const cancelBtn = document.getElementById('bundle-cancel-btn');
@@ -1721,6 +1733,190 @@ async function adminDeleteFreebie(id) {
   }
 }
 
+const productResourcesState = { rows: [], productId: 0 };
+
+function toggleProductResourcesSection() {
+  const avail = document.getElementById('edit-product-available')?.value || 'digital';
+  const section = document.getElementById('product-digital-resources-section');
+  if (!section) return;
+  section.style.display = (avail === 'digital' || avail === 'both') ? '' : 'none';
+}
+
+async function loadProductResources(productId) {
+  productResourcesState.productId = Number(productId) || 0;
+  productResourcesState.rows = [];
+  const list = document.getElementById('product-resources-list');
+  if (!list) return;
+  if (productResourcesState.productId <= 0) {
+    list.innerHTML = '<p class="form-hint">Save the product first, then add digital resources.</p>';
+    return;
+  }
+  try {
+    const rows = await fetchJson(`../api/admin/resources/list.php?product_id=${productResourcesState.productId}`);
+    productResourcesState.rows = Array.isArray(rows) ? rows : [];
+    renderProductResourcesList();
+  } catch (err) {
+    list.innerHTML = `<p class="form-hint">${esc(err.message)}</p>`;
+  }
+}
+
+function renderProductResourcesList() {
+  const list = document.getElementById('product-resources-list');
+  if (!list) return;
+  if (!productResourcesState.rows.length) {
+    list.innerHTML = '<p class="form-hint">No resources yet.</p>';
+    return;
+  }
+  list.innerHTML = productResourcesState.rows.map(r => `
+    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <strong>${esc(r.title)}</strong> <span style="opacity:0.7">(${esc(r.resource_type)} · ${esc(r.delivery_mode)})</span>
+      ${r.has_file ? '<span style="color:#4ade80"> · file attached</span>' : ''}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-ghost small" data-action="upload-resource" data-id="${r.id}">Upload file</button>
+        <button type="button" class="btn-ghost small" data-action="delete-resource" data-id="${r.id}">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addProductResourceRow() {
+  const productId = productResourcesState.productId || Number(document.getElementById('edit-product-id')?.value || 0);
+  if (productId <= 0) {
+    showToast('Save the product before adding resources.', 'error');
+    return;
+  }
+  const title = window.prompt('Resource title');
+  if (!title) return;
+  const type = window.prompt('Type: pdf, zip, file, canva, figma, instructions', 'pdf') || 'pdf';
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/resources/save.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+    body: JSON.stringify({ product_id: productId, title, resource_type: type }),
+  });
+  await loadProductResources(productId);
+  showToast('Resource saved.', 'success');
+}
+
+async function uploadProductResourceFile(resourceId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.zip,.png,.jpg,.jpeg,.webp,.svg';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('resource_id', String(resourceId));
+    fd.append('file', file);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const res = await fetch('../api/admin/resources/upload.php', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrf },
+      body: fd,
+    });
+    const data = await res.json();
+    if (data.status !== 'success') throw new Error(data.message || 'Upload failed');
+    await loadProductResources(productResourcesState.productId);
+    showToast('File uploaded.', 'success');
+  };
+  input.click();
+}
+
+async function deleteProductResource(resourceId) {
+  if (!window.confirm('Remove this resource?')) return;
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  await fetchJson('../api/admin/resources/delete.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+    body: JSON.stringify({ id: resourceId }),
+  });
+  await loadProductResources(productResourcesState.productId);
+  showToast('Resource removed.', 'success');
+}
+
+// ── Bundle Digital Resources ──────────────────────────────────────────────────
+const bundleResourcesState = { rows: [], bundleId: 0 };
+
+async function loadBundleResources(bundleId) {
+  bundleResourcesState.bundleId = Number(bundleId) || 0;
+  bundleResourcesState.rows = [];
+  const list = document.getElementById('bundle-resources-list');
+  if (!list) return;
+  if (bundleResourcesState.bundleId <= 0) {
+    list.innerHTML = '<p class="form-hint">Save the bundle first, then add digital resources.</p>';
+    return;
+  }
+  const rows = await fetchJson(`../api/admin/resources/list.php?bundle_id=${bundleResourcesState.bundleId}`);
+  bundleResourcesState.rows = Array.isArray(rows) ? rows : [];
+  renderBundleResourcesList();
+}
+
+function renderBundleResourcesList() {
+  const list = document.getElementById('bundle-resources-list');
+  if (!list) return;
+  if (!bundleResourcesState.rows.length) {
+    list.innerHTML = '<p class="form-hint">No resources yet.</p>';
+    return;
+  }
+  list.innerHTML = bundleResourcesState.rows.map(r => `
+    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <strong>${esc(r.title)}</strong> <span style="opacity:0.7">(${esc(r.resource_type)} · ${esc(r.delivery_mode)})</span>
+      ${r.has_file ? ' <span style="color:#4ade80;font-size:.8rem;">✓ file uploaded</span>' : ''}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-ghost small" data-action="upload-bundle-resource" data-id="${r.id}">Upload file</button>
+        <button type="button" class="btn-ghost small" data-action="delete-bundle-resource" data-id="${r.id}">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addBundleResourceRow() {
+  const bundleId = bundleResourcesState.bundleId || Number(document.querySelector('#bundle-editor-form [name="id"]')?.value || 0);
+  if (!bundleId) { showToast('Save the bundle before adding resources.', 'error'); return; }
+  const title = window.prompt('Resource title');
+  if (!title) return;
+  const type = window.prompt('Resource type (file, zip, pdf, canva, figma, external_link, instructions)', 'file') || 'file';
+  await fetchJson('../api/admin/resources/save.php', {
+    method: 'POST',
+    body: JSON.stringify({ bundle_id: bundleId, title, resource_type: type }),
+  });
+  await loadBundleResources(bundleId);
+  showToast('Resource saved.', 'success');
+}
+
+async function uploadBundleResourceFile(resourceId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.zip,.png,.jpg,.jpeg,.webp,.svg';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('resource_id', String(resourceId));
+    fd.append('file', file);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const res = await fetch('../api/admin/resources/upload.php', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrf },
+      body: fd,
+    });
+    const data = await res.json();
+    if (data.status !== 'success') { showToast(data.message || 'Upload failed.', 'error'); return; }
+    await loadBundleResources(bundleResourcesState.bundleId);
+    showToast('File uploaded.', 'success');
+  };
+  input.click();
+}
+
+async function deleteBundleResource(resourceId) {
+  if (!window.confirm('Remove this resource?')) return;
+  await fetchJson('../api/admin/resources/delete.php', {
+    method: 'POST',
+    body: JSON.stringify({ id: resourceId }),
+  });
+  await loadBundleResources(bundleResourcesState.bundleId);
+  showToast('Resource removed.', 'success');
+}
+
 function initDashboard() {
   Promise.allSettled([getCategories()]).then(populateCategoryControls);
   loadOverview();
@@ -1743,6 +1939,23 @@ function bindDashboard() {
   if (categoryIconInput) categoryIconInput.addEventListener('change', onCategoryIconSelected);
   const freebieCoverInput = document.getElementById('freebie-cover-image');
   if (freebieCoverInput) freebieCoverInput.addEventListener('change', onFreebieCoverSelected);
+  document.getElementById('edit-product-available')?.addEventListener('change', toggleProductResourcesSection);
+  document.getElementById('product-resource-add-btn')?.addEventListener('click', addProductResourceRow);
+  document.getElementById('product-resources-list')?.addEventListener('click', event => {
+    const btn = event.target.closest('[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id || 0);
+    if (btn.dataset.action === 'upload-resource') uploadProductResourceFile(id);
+    if (btn.dataset.action === 'delete-resource') deleteProductResource(id);
+  });
+  document.getElementById('bundle-resource-add-btn')?.addEventListener('click', addBundleResourceRow);
+  document.getElementById('bundle-resources-list')?.addEventListener('click', event => {
+    const btn = event.target.closest('[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id || 0);
+    if (btn.dataset.action === 'upload-bundle-resource') uploadBundleResourceFile(id);
+    if (btn.dataset.action === 'delete-bundle-resource') deleteBundleResource(id);
+  });
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       closeStatusModal();

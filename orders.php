@@ -183,6 +183,7 @@ if ($userName === '') {
     </footer>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script src="script.js"></script>
 <script>
 /* ── Orders page controller ────────────────────────────────────── */
@@ -419,6 +420,14 @@ if ($userName === '') {
                     }
                 </div>
                 <div class="order-card-actions">
+                    ${statusSlug === 'awaiting_payment' ? `
+                    <button type="button" class="btn-primary small order-action-btn"
+                        data-order-id="${order.id}"
+                        data-order-number="${escHtml(String(order.orderNumber || order.order_number || ''))}"
+                        data-total="${total}"
+                        onclick="handleOrderPayNow(this)">
+                        <i class="ph ph-credit-card"></i> Pay Now
+                    </button>` : ''}
                     <button type="button" class="btn-ghost small order-action-btn"
                         data-order-id="${order.id}"
                         data-items="${escHtml(JSON.stringify(order.items || []))}"
@@ -618,6 +627,70 @@ if ($userName === '') {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
+
+    /* ── Pay Now retry: open Razorpay modal for awaiting_payment orders ── */
+    window.handleOrderPayNow = async function(btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner"></i> Loading…';
+
+        const orderId      = +btn.dataset.orderId;
+        const orderNumber  = btn.dataset.orderNumber || ('Order #' + orderId);
+        const csrf         = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const headers      = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
+
+        try {
+            const rzpRes = await fetch('api/payment/razorpay-create-order.php', {
+                method: 'POST', headers,
+                body: JSON.stringify({ order_id: orderId })
+            }).then(r => r.json());
+
+            if (rzpRes.status !== 'success') throw new Error(rzpRes.message || 'Could not initiate payment.');
+            const rzpData = rzpRes.data;
+
+            if (!window.Razorpay) throw new Error('Payment gateway not loaded. Please refresh.');
+
+            await new Promise((resolve, reject) => {
+                const options = {
+                    key:      rzpData.key_id,
+                    amount:   rzpData.amount_paise,
+                    currency: rzpData.currency || 'INR',
+                    order_id: rzpData.razorpay_order_id,
+                    name:     'UX Pacific Shop',
+                    description: orderNumber,
+                    handler: function(response) {
+                        fetch('api/payment/razorpay-verify.php', {
+                            method: 'POST', headers,
+                            body: JSON.stringify({
+                                razorpay_order_id:   response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature:  response.razorpay_signature,
+                                order_id: orderId
+                            })
+                        }).then(r => r.json()).then(vRes => {
+                            if (vRes.status !== 'success') { reject(new Error(vRes.message || 'Verification failed.')); return; }
+                            resolve(vRes);
+                        }).catch(reject);
+                    },
+                    modal: { ondismiss: () => reject(new Error('__dismissed__')) },
+                    theme: { color: '#6d3dff' }
+                };
+                new window.Razorpay(options).open();
+            });
+
+            if (typeof showToast === 'function') showToast('Payment successful!', 'success');
+            setTimeout(() => loadOrders(), 800);
+        } catch (err) {
+            if (err.message === '__dismissed__') {
+                if (typeof showToast === 'function') showToast('Payment cancelled.', 'error');
+            } else {
+                console.error(err);
+                if (typeof showToast === 'function') showToast(err.message || 'Payment failed.', 'error');
+            }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph ph-credit-card"></i> Pay Now';
+        }
+    };
 
     /* ── Filter pills event delegation ───────────────────────── */
     document.getElementById('orders-filters').addEventListener('click', function (e) {

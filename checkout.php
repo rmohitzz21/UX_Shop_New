@@ -210,7 +210,7 @@ if (empty($_SESSION['user_id'])) {
                   <div class="checkout-block">
                     <h2 class="block-title">Payment Method</h2>
                     
-                    <div class="payment-methods">
+                    <div class="payment-methods" id="checkout-payment-section">
                       <label class="payment-option">
                         <input type="radio" name="paymentMethod" value="card" checked required />
                         <div class="payment-option-content">

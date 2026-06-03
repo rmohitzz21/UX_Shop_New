@@ -1,5 +1,9 @@
 Options -Indexes
 
+# ── Custom error pages ────────────────────────────────────────────────────────
+ErrorDocument 404 /Shop/UX_SHOP/UX_Shop_New/404.php
+ErrorDocument 500 /Shop/UX_SHOP/UX_Shop_New/500.php
+
 # ── Block direct access to sensitive files ──────────────────────────────────
 <FilesMatch "\.(env|log|sql|sh|bak|ini|lock|htpasswd)$">
     <IfModule mod_authz_core.c>
@@ -28,7 +32,7 @@ Options -Indexes
     RewriteRule ^includes(/|$) - [F,L]
 
     # Block access to diagnostic/debug scripts left in root
-    RewriteRule ^(check-users|create-test-user|test-login|test-session|seed-bundles)\.php$ - [F,L]
+    RewriteRule ^(check-users|create-test-user|test-login|test-session|seed-bundles|test_cart_phase2)\.php$ - [F,L]
 </IfModule>
 
 # ── PHP settings ──────────────────────────────────────────────────────────────

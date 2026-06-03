@@ -1,347 +1,548 @@
 <?php
-// includes/EmailService.php
+declare(strict_types=1);
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once __DIR__ . '/../core/Mailer.php';
 
-class EmailService {
-    private $mailer;
-    private $logger;
-
-    public function __construct() {
-        require_once __DIR__ . '/../vendor/autoload.php';
-        
-        $this->mailer = new PHPMailer(true);
-        $this->logger = new Logger();
-
-        // SMTP configuration
-        $this->mailer->isSMTP();
-        $this->mailer->Host = getenv('SMTP_HOST') ?: 'mail.uxpacific.com';
-        $this->mailer->Port = getenv('SMTP_PORT') ?: 465;
-        $this->mailer->SMTPSecure = getenv('SMTP_SECURE') ?: 'ssl';
-        $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = getenv('SMTP_USER') ?: 'support@uxpacific.com';
-        $this->mailer->Password = getenv('SMTP_PASS') ?: '';
-        
-        $this->mailer->setFrom(
-            getenv('SMTP_FROM') ?: 'support@uxpacific.com',
-            getenv('SMTP_FROM_NAME') ?: 'UX Pacific Shop'
-        );
-
-        $this->mailer->isHTML(true);
-        $this->mailer->CharSet = 'UTF-8';
+/**
+ * Central outbound email service for UX Pacific Shop.
+ * Credentials and domains come from .env only — never hardcode secrets.
+ */
+class EmailService
+{
+    private static function mailer(): Mailer
+    {
+        $m = new Mailer();
+        $reply = trim((string) (getenv('SUPPORT_EMAIL') ?: getenv('SMTP_FROM_EMAIL') ?: getenv('SMTP_FROM') ?: ''));
+        if ($reply !== '') {
+            $m->setReplyTo($reply);
+        }
+        return $m;
     }
 
-    /**
-     * Send welcome email to new user
-     */
-    public function sendWelcomeEmail(string $email, string $name): bool {
-        try {
-            $this->mailer->addAddress($email, $name);
-            $this->mailer->Subject = 'Welcome to UX Pacific Shop!';
-            $this->mailer->Body = $this->getWelcomeEmailTemplate($name);
-            $this->mailer->AltBody = strip_tags($this->mailer->Body);
+    private static function appUrl(): string
+    {
+        return rtrim((string) (getenv('APP_URL') ?: 'http://localhost'), '/');
+    }
 
-            $result = $this->mailer->send();
-            $this->logger->log('email', "Welcome email sent to {$email}");
-            $this->mailer->clearAddresses();
-            return $result;
-        } catch (Exception $e) {
-            $this->logger->log('email_error', "Failed to send welcome email to {$email}: " . $e->getMessage());
+    private static function supportEmail(): string
+    {
+        return (string) (getenv('SUPPORT_EMAIL') ?: getenv('SMTP_FROM_EMAIL') ?: getenv('SMTP_FROM') ?: 'support@uxpacific.com');
+    }
+
+    private static function adminNotifyEmail(): string
+    {
+        $admin = trim((string) (getenv('ADMIN_NOTIFICATION_EMAIL') ?: getenv('ADMIN_EMAIL') ?: ''));
+        if ($admin !== '' && filter_var($admin, FILTER_VALIDATE_EMAIL)) {
+            return $admin;
+        }
+        return self::supportEmail();
+    }
+
+    private static function send(string $to, string $subject, string $bodyHtml, string $plainText = ''): bool
+    {
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+        try {
+            $html = self::wrapInTemplate($subject, $bodyHtml);
+            $ok   = self::mailer()->send($to, $subject, $html, $plainText);
+            if ($ok) {
+                error_log('EmailService: sent "' . $subject . '" to ' . $to);
+            }
+            return $ok;
+        } catch (Throwable $e) {
+            error_log('EmailService::send failed for ' . $to . ': ' . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Send order confirmation email to user
-     */
-    public function sendOrderConfirmationEmail(string $email, string $name, array $orderData): bool {
-        try {
-            $this->mailer->addAddress($email, $name);
-            $this->mailer->Subject = 'Order Confirmation - UX Pacific Shop';
-            $this->mailer->Body = $this->getOrderConfirmationTemplate($name, $orderData);
-            $this->mailer->AltBody = strip_tags($this->mailer->Body);
+    private static function wrapInTemplate(string $title, string $bodyHtml): string
+    {
+        $appUrl       = htmlspecialchars(self::appUrl(), ENT_QUOTES, 'UTF-8');
+        $supportEmail = htmlspecialchars(self::supportEmail(), ENT_QUOTES, 'UTF-8');
+        $safeTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+        $year         = date('Y');
 
-            $result = $this->mailer->send();
-            $this->logger->log('email', "Order confirmation email sent to {$email}");
-            $this->mailer->clearAddresses();
-            return $result;
-        } catch (Exception $e) {
-            $this->logger->log('email_error', "Failed to send order confirmation to {$email}: " . $e->getMessage());
-            return false;
+        return "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0'></head>
+<body style='margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;'>
+<div style='max-width:600px;margin:0 auto;padding:20px;'>
+<div style='text-align:center;padding:24px 0;'><h1 style='margin:0;font-size:24px;color:#111827;'>UX Pacific</h1>
+<p style='margin:4px 0 0;color:#6b7280;font-size:13px;'>Premium Design Resources</p></div>
+<div style='background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);'>
+<h2 style='margin:0 0 16px;font-size:20px;color:#111827;'>{$safeTitle}</h2>
+{$bodyHtml}
+</div>
+<div style='text-align:center;padding:24px 0;color:#9ca3af;font-size:12px;'>
+<p>&copy; {$year} UX Pacific. All rights reserved.</p>
+<p><a href='{$appUrl}/shopAll.php' style='color:#6b7280;text-decoration:none;'>Shop</a> ·
+<a href='{$appUrl}/contact.php' style='color:#6b7280;text-decoration:none;'>Contact</a> ·
+<a href='mailto:{$supportEmail}' style='color:#6b7280;text-decoration:none;'>{$supportEmail}</a></p>
+</div></div></body></html>";
+    }
+
+    private static function btn(string $label, string $href): string
+    {
+        $safeHref = htmlspecialchars($href, ENT_QUOTES, 'UTF-8');
+        return "<p style='text-align:center;margin:24px 0;'><a href='{$safeHref}' style='background:#2563eb;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:500;display:inline-block;'>{$label}</a></p>";
+    }
+
+    /** @return array{order:array,items:array,has_digital:bool,has_physical:bool}|null */
+    private static function fetchOrderContext(int $orderId, mysqli $conn): ?array
+    {
+        $stmt = $conn->prepare("
+            SELECT o.*, u.email AS user_email, u.first_name, u.last_name
+            FROM orders o
+            JOIN users u ON u.id = o.user_id
+            WHERE o.id = ?
+            LIMIT 1
+        ");
+        if ($stmt === false) {
+            return null;
         }
-    }
-
-    /**
-     * Send contact form submission to admin
-     */
-    public function sendContactFormToAdmin(array $contactData): bool {
-        try {
-            $adminEmail = getenv('ADMIN_EMAIL') ?: 'hello@uxpacific.com';
-            $this->mailer->addAddress($adminEmail);
-            $this->mailer->Subject = "New Contact Form Submission from " . $contactData['name'];
-            $this->mailer->Body = $this->getContactFormTemplate($contactData);
-            $this->mailer->AltBody = strip_tags($this->mailer->Body);
-
-            $result = $this->mailer->send();
-            $this->logger->log('email', "Contact form submitted to admin from {$contactData['email']}");
-            $this->mailer->clearAddresses();
-            return $result;
-        } catch (Exception $e) {
-            $this->logger->log('email_error', "Failed to send contact form to admin: " . $e->getMessage());
-            return false;
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $order = $stmt->get_result()->fetch_assoc();
+        if (!$order) {
+            return null;
         }
-    }
 
-    /**
-     * Send contact acknowledgment email to user
-     */
-    public function sendContactAcknowledgmentEmail(string $email, string $name): bool {
-        try {
-            $this->mailer->addAddress($email, $name);
-            $this->mailer->Subject = 'We Received Your Message - UX Pacific Shop';
-            $this->mailer->Body = $this->getContactAcknowledgmentTemplate($name);
-            $this->mailer->AltBody = strip_tags($this->mailer->Body);
-
-            $result = $this->mailer->send();
-            $this->logger->log('email', "Contact acknowledgment email sent to {$email}");
-            $this->mailer->clearAddresses();
-            return $result;
-        } catch (Exception $e) {
-            $this->logger->log('email_error', "Failed to send contact acknowledgment to {$email}: " . $e->getMessage());
-            return false;
+        $iStmt = $conn->prepare("
+            SELECT COALESCE(product_name, 'Item') AS name, quantity, price, size,
+                   item_type, selected_format
+            FROM order_items WHERE order_id = ?
+        ");
+        if ($iStmt === false) {
+            return null;
         }
-    }
+        $iStmt->bind_param('i', $orderId);
+        $iStmt->execute();
+        $items = $iStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-    /**
-     * Email template: Welcome
-     */
-    private function getWelcomeEmailTemplate(string $name): string {
-        return <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #667eea; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
-        .btn { display: inline-block; padding: 10px 20px; background-color: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Welcome to UX Pacific Shop!</h1>
-        </div>
-        <div class="content">
-            <p>Hi {$name},</p>
-            <p>Thank you for creating an account with us! We're excited to have you join the UX Pacific community.</p>
-            <p>With your account, you can:</p>
-            <ul>
-                <li>Browse and purchase premium design products</li>
-                <li>Save your favorite items</li>
-                <li>Track your orders in real-time</li>
-                <li>Get exclusive updates and new launches</li>
-            </ul>
-            <p>Ready to explore? Start shopping now!</p>
-            <a href="https://uxpacific.com/shopAll.php" class="btn">Shop Now</a>
-            <p>If you have any questions or need assistance, feel free to contact our support team.</p>
-            <p>Best regards,<br>The UX Pacific Team</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 UX Pacific. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
-    }
-
-    /**
-     * Email template: Order Confirmation
-     */
-    private function getOrderConfirmationTemplate(string $name, array $orderData): string {
-        $items = $orderData['items'] ?? [];
-        $total = $orderData['total'] ?? 0;
-        $orderId = $orderData['order_id'] ?? 'N/A';
-        $orderDate = $orderData['date'] ?? date('Y-m-d');
-
-        $itemsHtml = '';
+        $hasDigital  = false;
+        $hasPhysical = false;
         foreach ($items as $item) {
-            $itemsHtml .= '<tr><td>' . htmlspecialchars($item['name'] ?? '') . '</td><td>&#8377;' . number_format($item['price'] ?? 0, 2) . '</td><td>' . (int) ($item['quantity'] ?? 1) . '</td></tr>';
+            $fmt = strtolower((string) ($item['selected_format'] ?? 'digital'));
+            if ($fmt === 'physical') {
+                $hasPhysical = true;
+            } else {
+                $hasDigital = true;
+            }
         }
 
-        return <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #667eea; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-        .order-details { background: white; padding: 15px; margin: 15px 0; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #667eea; color: white; }
-        .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 15px; }
-        .btn { display: inline-block; padding: 10px 20px; background-color: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Order Confirmation</h1>
-        </div>
-        <div class="content">
-            <p>Hi {$name},</p>
-            <p>Thank you for your order! We're processing it and will ship it soon.</p>
-            
-            <div class="order-details">
-                <h2>Order Details</h2>
-                <p><strong>Order ID:</strong> {$orderId}</p>
-                <p><strong>Order Date:</strong> {$orderDate}</p>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Price</th>
-                            <th>Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {$itemsHtml}
-                    </tbody>
-                </table>
-                
-                <div class="total">Total: &#8377;{$total}</div>
-            </div>
-            
-            <p><a href="https://uxpacific.com/order-confirmation.php?order={$orderId}" class="btn">View Your Order</a></p>
-            
-            <p>If you have any questions about your order, please contact us at support@uxpacific.com</p>
-            <p>Best regards,<br>The UX Pacific Team</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 UX Pacific. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+        return [
+            'order'         => $order,
+            'items'         => $items,
+            'has_digital'   => $hasDigital,
+            'has_physical'  => $hasPhysical,
+        ];
     }
 
-    /**
-     * Email template: Contact Form Submission (for admin)
-     */
-    private function getContactFormTemplate(array $data): string {
-        $name = htmlspecialchars((string) ($data['name'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $email = htmlspecialchars((string) ($data['email'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $phone = htmlspecialchars((string) ($data['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $subject = htmlspecialchars((string) ($data['subject'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $message = nl2br(htmlspecialchars((string) ($data['message'] ?? ''), ENT_QUOTES, 'UTF-8'));
-        $submittedAt = htmlspecialchars((string) ($data['timestamp'] ?? date('Y-m-d H:i:s')), ENT_QUOTES, 'UTF-8');
-
-        return <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #667eea; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-        .detail { margin: 10px 0; padding: 10px; background: white; border-left: 3px solid #667eea; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>New Contact Form Submission</h1>
-        </div>
-        <div class="content">
-            <div class="detail">
-                <strong>Name:</strong><br>
-                {$name}
-            </div>
-            <div class="detail">
-                <strong>Email:</strong><br>
-                {$email}
-            </div>
-            <div class="detail">
-                <strong>Phone:</strong><br>
-                {$phone}
-            </div>
-            <div class="detail">
-                <strong>Subject:</strong><br>
-                {$subject}
-            </div>
-            <div class="detail">
-                <strong>Message:</strong><br>
-                <p>{$message}</p>
-            </div>
-            <div class="detail">
-                <strong>Submitted at:</strong><br>
-                {$submittedAt}
-            </div>
-        </div>
-        <div class="footer">
-            <p>This is an automated email from UX Pacific Contact Form</p>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+    private static function buildOrderItemsTable(array $items): string
+    {
+        $rows = '';
+        foreach ($items as $item) {
+            $name  = htmlspecialchars((string) ($item['name'] ?? 'Item'), ENT_QUOTES, 'UTF-8');
+            $qty   = (int) ($item['quantity'] ?? 1);
+            $price = number_format((float) ($item['price'] ?? 0), 2);
+            $rows .= "<tr><td style='padding:8px;border-bottom:1px solid #e5e7eb;'>{$name}</td>
+<td style='padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;'>{$qty}</td>
+<td style='padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;'>₹{$price}</td></tr>";
+        }
+        return "<table style='width:100%;border-collapse:collapse;margin:16px 0;'>
+<thead><tr style='background:#f9fafb;'><th style='padding:8px;text-align:left;'>Item</th>
+<th style='padding:8px;text-align:center;'>Qty</th><th style='padding:8px;text-align:right;'>Price</th></tr></thead>
+<tbody>{$rows}</tbody></table>";
     }
 
-    /**
-     * Email template: Contact Acknowledgment (for user)
-     */
-    private function getContactAcknowledgmentTemplate(string $name): string {
-        return <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #667eea; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>We Received Your Message</h1>
-        </div>
-        <div class="content">
-            <p>Hi {$name},</p>
-            <p>Thank you for reaching out to UX Pacific! We have received your message and will get back to you as soon as possible.</p>
-            <p>Our support team typically responds within 24-48 hours during business days.</p>
-            <p>In the meantime, if you have any urgent questions, you can always:</p>
-            <ul>
-                <li>Visit our <a href="https://uxpacific.com">website</a></li>
-                <li>Check our FAQ section</li>
-                <li>Follow us on social media for updates</li>
-            </ul>
-            <p>Best regards,<br>The UX Pacific Team</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 UX Pacific. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+    private static function buildShippingInfo(array $order): string
+    {
+        $addr = json_decode((string) ($order['shipping_address'] ?? '{}'), true);
+        if (!is_array($addr) || $addr === []) {
+            return '';
+        }
+        $lines = array_filter([
+            trim(($addr['firstName'] ?? '') . ' ' . ($addr['lastName'] ?? '')),
+            $addr['address'] ?? '',
+            trim(($addr['city'] ?? '') . ', ' . ($addr['state'] ?? '') . ' ' . ($addr['zip'] ?? '')),
+            $addr['country'] ?? '',
+            isset($addr['phone']) ? 'Phone: ' . $addr['phone'] : '',
+        ]);
+        if ($lines === []) {
+            return '';
+        }
+        $html = '<div style="background:#f9fafb;border-radius:8px;padding:14px;margin:16px 0;"><strong>Shipping address</strong><br>';
+        foreach ($lines as $line) {
+            $html .= htmlspecialchars((string) $line, ENT_QUOTES, 'UTF-8') . '<br>';
+        }
+        return $html . '</div>';
+    }
+
+    private static function customerName(array $order): string
+    {
+        return trim(((string) ($order['first_name'] ?? '')) . ' ' . ((string) ($order['last_name'] ?? '')));
+    }
+
+    // ── Public email methods ───────────────────────────────────────────────────
+
+    public static function sendWelcome(array $user): bool
+    {
+        $email = (string) ($user['email'] ?? '');
+        $name  = htmlspecialchars(trim((string) ($user['first_name'] ?? $user['name'] ?? 'there')), ENT_QUOTES, 'UTF-8');
+        $html  = "<p>Welcome to UX Pacific, {$name}!</p>
+<p>Your account is ready. Browse premium UI templates, mockups, UI kits, and design resources.</p>"
+            . self::btn('Browse the Shop', self::appUrl() . '/shopAll.php')
+            . '<p>Need help? Contact us at ' . htmlspecialchars(self::supportEmail(), ENT_QUOTES, 'UTF-8') . '</p>';
+
+        return self::send($email, 'Welcome to UX Pacific!', $html);
+    }
+
+    public static function sendPasswordReset(array $user, string $resetToken): bool
+    {
+        $email    = (string) ($user['email'] ?? '');
+        $name     = htmlspecialchars(trim((string) ($user['first_name'] ?? 'there')), ENT_QUOTES, 'UTF-8');
+        $resetUrl = self::appUrl() . '/reset-password.php?token=' . urlencode($resetToken);
+        if (!empty($user['email'])) {
+            $resetUrl .= '&email=' . urlencode((string) $user['email']);
+        }
+
+        $html = "<p>Hi {$name}, we received a request to reset your password.</p>
+<p style='color:#6b7280;font-size:13px;'>This link expires in 1 hour. If you did not request a reset, ignore this email.</p>"
+            . self::btn('Reset Password', $resetUrl);
+
+        return self::send($email, 'Reset your password — UX Pacific', $html);
+    }
+
+    public static function sendOrderConfirmation(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        if (!empty($order['confirmation_email_sent_at'])) {
+            return true;
+        }
+
+        $email       = (string) $order['user_email'];
+        $name        = htmlspecialchars(self::customerName($order) ?: 'Customer', ENT_QUOTES, 'UTF-8');
+        $orderNum    = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $total       = number_format((float) $order['total'], 2);
+        $itemsTable  = self::buildOrderItemsTable($ctx['items']);
+        $ordersUrl   = self::appUrl() . '/orders.php';
+        $pm          = strtolower((string) ($order['payment_method'] ?? ''));
+        $isFree      = $pm === 'free' || (float) $order['total'] <= 0;
+        $isCod       = $pm === 'cod';
+        $hasDigital  = $ctx['has_digital'];
+        $hasPhysical = $ctx['has_physical'];
+
+        if ($isFree && $hasDigital) {
+            $subject = "Your free download is ready! (#{$orderNum})";
+            $body    = "<p>Hi {$name}, thank you for downloading from UX Pacific!</p>
+{$itemsTable}<p><strong>Total: ₹{$total}</strong></p>
+<p>Your free resources are ready in My Orders.</p>"
+                . self::btn('Access Your Downloads', $ordersUrl)
+                . self::btn('Browse Premium Resources', self::appUrl() . '/shopAll.php');
+        } elseif ($isCod && $hasPhysical && !$hasDigital) {
+            $subject = "Order placed — Payment due on delivery (#{$orderNum})";
+            $body    = "<p>Hi {$name}, your order has been placed.</p>
+<p><strong>Payment will be collected on delivery.</strong> Please keep ₹{$total} ready for the delivery person.</p>
+{$itemsTable}" . self::buildShippingInfo($order)
+                . self::btn('Track Your Order', $ordersUrl);
+        } elseif ($hasDigital && !$hasPhysical) {
+            $subject = "Order confirmed — Your downloads are ready! (#{$orderNum})";
+            $body    = "<p>Hi {$name}, thank you for your purchase!</p>
+<p>Your digital products are ready to download.</p>
+{$itemsTable}<p><strong>Total paid: ₹{$total}</strong></p>
+<p style='color:#6b7280;font-size:13px;'>Access files from My Orders — we never email direct download links.</p>"
+                . self::btn('Access Your Downloads', $ordersUrl);
+        } elseif ($hasPhysical && !$hasDigital) {
+            $subject = "Order confirmed (#{$orderNum})";
+            $body    = "<p>Hi {$name}, thank you for your order. We are preparing your items for shipping.</p>
+{$itemsTable}<p><strong>Total: ₹{$total}</strong></p>"
+                . self::buildShippingInfo($order)
+                . self::btn('Track Your Order', $ordersUrl);
+        } else {
+            $subject = "Order confirmed (#{$orderNum})";
+            $body    = "<p>Hi {$name}, thank you! Digital downloads are ready and physical items are being prepared.</p>
+{$itemsTable}<p><strong>Total: ₹{$total}</strong></p>"
+                . self::buildShippingInfo($order)
+                . self::btn('View Order &amp; Downloads', $ordersUrl);
+        }
+
+        $sent = self::send($email, $subject, $body);
+        if ($sent) {
+            $mark = $conn->prepare('UPDATE orders SET confirmation_email_sent_at = NOW() WHERE id = ? AND confirmation_email_sent_at IS NULL');
+            if ($mark) {
+                $mark->bind_param('i', $orderId);
+                $mark->execute();
+            }
+        }
+        return $sent;
+    }
+
+    public static function sendInvoice(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        if (!empty($order['invoice_email_sent_at'])) {
+            return true;
+        }
+
+        $email     = (string) $order['user_email'];
+        $orderNum  = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $subtotal  = number_format((float) ($order['subtotal'] ?? $order['total']), 2);
+        $tax       = number_format((float) ($order['tax'] ?? 0), 2);
+        $shipping  = number_format((float) ($order['shipping'] ?? 0), 2);
+        $total     = number_format((float) $order['total'], 2);
+        $pm        = htmlspecialchars(ucfirst((string) ($order['payment_method'] ?? 'Online')), ENT_QUOTES, 'UTF-8');
+        $txn       = htmlspecialchars((string) ($order['payment_id'] ?? $order['razorpay_order_id'] ?? '—'), ENT_QUOTES, 'UTF-8');
+        $date      = date('d M Y', strtotime((string) ($order['created_at'] ?? 'now')));
+
+        $itemRows = '';
+        foreach ($ctx['items'] as $item) {
+            $n = htmlspecialchars((string) ($item['name'] ?? 'Item'), ENT_QUOTES, 'UTF-8');
+            $q = (int) ($item['quantity'] ?? 1);
+            $p = number_format((float) ($item['price'] ?? 0), 2);
+            $lt = number_format((float) ($item['price'] ?? 0) * $q, 2);
+            $itemRows .= "<tr><td style='padding:8px;border-bottom:1px solid #e5e7eb;'>{$n}</td>
+<td style='padding:8px;text-align:center;border-bottom:1px solid #e5e7eb;'>{$q}</td>
+<td style='padding:8px;text-align:right;border-bottom:1px solid #e5e7eb;'>₹{$p}</td>
+<td style='padding:8px;text-align:right;border-bottom:1px solid #e5e7eb;'>₹{$lt}</td></tr>";
+        }
+
+        $html = "<p style='color:#6b7280;margin:0 0 8px;'>Invoice INV-{$orderId} · {$date}</p>
+<table style='width:100%;border-collapse:collapse;'><thead><tr style='background:#f9fafb;'>
+<th style='padding:8px;text-align:left;'>Item</th><th>Qty</th><th style='text-align:right;'>Unit</th><th style='text-align:right;'>Total</th>
+</tr></thead><tbody>{$itemRows}</tbody></table>
+<table style='width:100%;max-width:280px;margin-left:auto;margin-top:12px;'>
+<tr><td style='padding:4px;color:#6b7280;'>Subtotal</td><td style='text-align:right;padding:4px;'>₹{$subtotal}</td></tr>
+<tr><td style='padding:4px;color:#6b7280;'>Tax</td><td style='text-align:right;padding:4px;'>₹{$tax}</td></tr>
+<tr><td style='padding:4px;color:#6b7280;'>Shipping</td><td style='text-align:right;padding:4px;'>₹{$shipping}</td></tr>
+<tr style='font-weight:bold;border-top:2px solid #111;'><td style='padding:8px;'>Total</td><td style='text-align:right;padding:8px;'>₹{$total}</td></tr>
+</table>
+<p style='margin-top:16px;color:#6b7280;font-size:13px;'>Payment: {$pm}<br>Transaction ID: {$txn}</p>
+<p style='font-size:12px;color:#9ca3af;'>System-generated invoice. Queries: " . htmlspecialchars(self::supportEmail(), ENT_QUOTES, 'UTF-8') . '</p>';
+
+        $sent = self::send($email, "Invoice for Order #{$orderNum} — UX Pacific", $html);
+        if ($sent) {
+            $mark = $conn->prepare('UPDATE orders SET invoice_email_sent_at = NOW() WHERE id = ? AND invoice_email_sent_at IS NULL');
+            if ($mark) {
+                $mark->bind_param('i', $orderId);
+                $mark->execute();
+            }
+        }
+        return $sent;
+    }
+
+    public static function sendPaymentFailed(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        if (!empty($order['payment_failed_email_sent_at'])) {
+            return true;
+        }
+
+        $email    = (string) $order['user_email'];
+        $orderNum = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $html     = "<p>Your payment for order <strong>#{$orderNum}</strong> was unsuccessful.</p>
+<p>You can retry payment from My Orders — your order has been saved.</p>"
+            . self::btn('Try Again', self::appUrl() . '/orders.php');
+
+        $sent = self::send($email, "Payment unsuccessful — Order #{$orderNum}", $html);
+        if ($sent) {
+            $mark = $conn->prepare('UPDATE orders SET payment_failed_email_sent_at = NOW() WHERE id = ?');
+            if ($mark) {
+                $mark->bind_param('i', $orderId);
+                $mark->execute();
+            }
+        }
+        return $sent;
+    }
+
+    public static function sendOrderShipped(int $orderId, mysqli $conn, string $trackingInfo = ''): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        if (!empty($order['shipped_email_sent_at'])) {
+            return true;
+        }
+
+        $email    = (string) $order['user_email'];
+        $orderNum = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $track    = $trackingInfo !== '' ? '<p><strong>Tracking:</strong> ' . htmlspecialchars($trackingInfo, ENT_QUOTES, 'UTF-8') . '</p>' : '';
+        $html     = "<p>Great news! Order <strong>#{$orderNum}</strong> is on its way.</p>{$track}"
+            . self::buildShippingInfo($order)
+            . self::btn('Track Your Order', self::appUrl() . '/orders.php');
+
+        $sent = self::send($email, "Your order has shipped! (#{$orderNum})", $html);
+        if ($sent) {
+            $mark = $conn->prepare('UPDATE orders SET shipped_email_sent_at = NOW() WHERE id = ?');
+            if ($mark) {
+                $mark->bind_param('i', $orderId);
+                $mark->execute();
+            }
+        }
+        return $sent;
+    }
+
+    public static function sendOrderDelivered(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        if (!empty($order['delivered_email_sent_at'])) {
+            return true;
+        }
+
+        $email    = (string) $order['user_email'];
+        $orderNum = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $html     = "<p>Your order <strong>#{$orderNum}</strong> has been delivered.</p>
+<p>We hope you love your purchase. Share your experience with a review!</p>"
+            . self::btn('Leave a Review', self::appUrl() . '/orders.php');
+
+        $sent = self::send($email, "Your order has been delivered (#{$orderNum})", $html);
+        if ($sent) {
+            $mark = $conn->prepare('UPDATE orders SET delivered_email_sent_at = NOW() WHERE id = ?');
+            if ($mark) {
+                $mark->bind_param('i', $orderId);
+                $mark->execute();
+            }
+        }
+        return $sent;
+    }
+
+    public static function sendOrderCancelled(int $orderId, mysqli $conn, string $reason = ''): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order    = $ctx['order'];
+        $email    = (string) $order['user_email'];
+        $orderNum = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $reasonHtml = $reason !== '' ? '<p>Reason: ' . htmlspecialchars($reason, ENT_QUOTES, 'UTF-8') . '</p>' : '';
+        $html     = "<p>Your order <strong>#{$orderNum}</strong> has been cancelled.</p>{$reasonHtml}"
+            . self::btn('Browse the Shop', self::appUrl() . '/shopAll.php');
+
+        return self::send($email, "Order cancelled (#{$orderNum})", $html);
+    }
+
+    public static function notifyAdminNewOrder(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        $name  = htmlspecialchars(self::customerName($order), ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars((string) $order['user_email'], ENT_QUOTES, 'UTF-8');
+        $num   = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $total = number_format((float) $order['total'], 2);
+        $flags = ($ctx['has_digital'] ? 'Digital ' : '') . ($ctx['has_physical'] ? 'Physical' : '');
+
+        $html = "<p><strong>New paid order</strong> #{$num}</p>
+<p>Customer: {$name} ({$email})<br>Total: ₹{$total}<br>Type: {$flags}<br>Payment: " . htmlspecialchars((string) $order['payment_method'], ENT_QUOTES, 'UTF-8') . '</p>'
+            . self::buildOrderItemsTable($ctx['items']);
+
+        return self::send(self::adminNotifyEmail(), "[New Order] #{$num} — ₹{$total}", $html);
+    }
+
+    public static function notifyAdminPaymentFailed(int $orderId, mysqli $conn): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order = $ctx['order'];
+        $num   = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars((string) $order['user_email'], ENT_QUOTES, 'UTF-8');
+
+        return self::send(self::adminNotifyEmail(), "[Payment Failed] #{$num} — {$email}",
+            "<p>Payment failed for order <strong>#{$num}</strong> ({$email}).</p>");
+    }
+
+    public static function sendContactFormNotification(string $name, string $email, string $subject, string $message, string $phone = ''): bool
+    {
+        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+        $safeSubj = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $safeMsg  = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+        $safePhone = htmlspecialchars($phone, ENT_QUOTES, 'UTF-8');
+
+        $html = "<p><strong>New contact form message</strong></p>
+<p>Name: {$safeName}<br>Email: {$safeEmail}<br>Phone: {$safePhone}<br>Subject: {$safeSubj}</p>
+<p>{$safeMsg}</p>";
+
+        return self::send(self::adminNotifyEmail(), "[Contact Form] Message from {$safeName}", $html);
+    }
+
+    public static function sendRefundConfirmation(int $orderId, mysqli $conn, float $refundAmount, string $reason = ''): bool
+    {
+        $ctx = self::fetchOrderContext($orderId, $conn);
+        if ($ctx === null) {
+            return false;
+        }
+        $order    = $ctx['order'];
+        $email    = (string) $order['user_email'];
+        $orderNum = htmlspecialchars((string) $order['order_number'], ENT_QUOTES, 'UTF-8');
+        $amount   = number_format($refundAmount, 2);
+        $reasonHtml = $reason !== '' ? '<p>Reason: ' . htmlspecialchars($reason, ENT_QUOTES, 'UTF-8') . '</p>' : '';
+        $html     = "<p>Your refund of <strong>₹{$amount}</strong> for order <strong>#{$orderNum}</strong> has been processed.</p>
+{$reasonHtml}
+<p style='color:#6b7280;font-size:13px;'>Refunds typically take 5–7 business days to appear on your original payment method.</p>";
+
+        return self::send($email, "Refund processed — ₹{$amount} (#{$orderNum})", $html);
+    }
+
+    public static function sendEmailVerification(array $user, string $token): bool
+    {
+        $email = (string) ($user['email'] ?? '');
+        $name  = htmlspecialchars(trim((string) ($user['first_name'] ?? 'there')), ENT_QUOTES, 'UTF-8');
+        $url   = self::appUrl() . '/verify-email.php?token=' . urlencode($token);
+        $html  = "<p>Hi {$name}, please verify your email address.</p>
+<p style='color:#6b7280;font-size:13px;'>This link expires in 24 hours. If you did not create an account, ignore this email.</p>"
+            . self::btn('Verify Email', $url);
+
+        return self::send($email, 'Verify your email — UX Pacific', $html);
+    }
+
+    public static function sendContactConfirmation(string $name, string $email): bool
+    {
+        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $html     = "<p>Hi {$safeName}, thank you for reaching out to UX Pacific.</p>
+<p>We received your message and will get back to you within 24 hours on business days.</p>";
+
+        return self::send($email, 'We received your message — UX Pacific', $html);
+    }
+
+    /** Run post-payment emails (confirmation + invoice + admin). */
+    public static function sendPaidOrderEmails(int $orderId, mysqli $conn): void
+    {
+        try {
+            self::sendOrderConfirmation($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('EmailService::sendOrderConfirmation: ' . $e->getMessage());
+        }
+        try {
+            self::sendInvoice($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('EmailService::sendInvoice: ' . $e->getMessage());
+        }
+        try {
+            self::notifyAdminNewOrder($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('EmailService::notifyAdminNewOrder: ' . $e->getMessage());
+        }
     }
 }

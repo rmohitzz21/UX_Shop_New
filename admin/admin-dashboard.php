@@ -521,7 +521,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
               <div class="form-grid">
                 <div class="form-group form-col-full">
                   <label class="form-label">What's Included <span class="req">*</span> <span class="form-help">one item per line — displayed in popup &amp; cards</span></label>
-                  <textarea class="form-textarea" name="whats_included" rows="6" placeholder="15+ UI Screens&#10;UX Workbook&#10;Interview Prep Guide&#10;Portfolio Templates&#10;Resume &amp; Cover Letter Kit&#10;LinkedIn Banner Set"></textarea>
+                  <textarea class="form-textarea" name="whats_included" rows="6" required placeholder="15+ UI Screens&#10;UX Workbook&#10;Interview Prep Guide&#10;Portfolio Templates&#10;Resume &amp; Cover Letter Kit&#10;LinkedIn Banner Set"></textarea>
                 </div>
                 <div class="form-group form-col-full">
                   <label class="form-label">File Specifications <span class="form-help">one per line — e.g. file types, resolution, format</span></label>
@@ -547,6 +547,14 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                   <div id="bundle-gallery-pending" class="product-media-pending"></div>
                 </div>
               </div>
+
+              <!-- Digital Resources -->
+              <div class="form-section-label" style="margin-top:20px;">Digital Resources</div>
+              <p class="form-hint" style="margin:0 0 12px;color:#94a3b8;font-size:0.875rem;">
+                Upload PDF/ZIP to private storage. Canva/Figma links must be HTTPS. Users receive download tokens after purchase.
+              </p>
+              <div id="bundle-resources-list"><p class="form-hint">Save the bundle first, then add digital resources.</p></div>
+              <button type="button" class="btn-ghost small" id="bundle-resource-add-btn">+ Add resource</button>
 
               <div class="form-actions">
                 <div class="form-actions-left">
@@ -1128,6 +1136,16 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
               <input class="form-input" id="edit-product-tags" name="tags" placeholder="ux, design, sticker" />
             </div>
           </div>
+        </div>
+
+        <!-- Digital Resources (digital / both products) -->
+        <div class="form-section" id="product-digital-resources-section" style="display:none;">
+          <div class="form-section-title">Digital Resources</div>
+          <p class="form-hint" style="margin:0 0 12px;color:#94a3b8;font-size:0.875rem;">
+            Upload PDF/ZIP to private storage. Canva/Figma links must be HTTPS. Users can reshare external template links after purchase.
+          </p>
+          <div id="product-resources-list"></div>
+          <button type="button" class="btn-ghost small" id="product-resource-add-btn">+ Add resource</button>
         </div>
 
         <!-- Pricing -->
