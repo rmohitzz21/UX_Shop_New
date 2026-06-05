@@ -1,58 +1,183 @@
-/* Unified primary CTA style (matches Sign In CTA) */
-@keyframes uxpPrimaryCtaGlow {
-  0%, 100% { box-shadow: 0 8px 24px rgba(109, 61, 255, 0.25); }
-  50% { box-shadow: 0 12px 30px rgba(109, 61, 255, 0.38); }
+/* ===================================================================
+   UNIFIED BUTTON SYSTEM
+   Primary:   solid #6147bd fill · shine sweep on hover · pulse glow
+   Secondary: transparent · white border · same shine · border lifts
+   Applies site-wide via !important; each page keeps its own sizing.
+   =================================================================== */
+
+@keyframes uxpBtnGlow {
+  0%, 100% { box-shadow: 0 4px 18px rgba(97,71,189,0.20); }
+  50%       { box-shadow: 0 8px 28px rgba(97,71,189,0.42); }
 }
 
-.btn-primary,
-.uxp-card-btn-primary,
+/* ── Shared structural base ── */
+.btn-primary, .btn.btn-primary,
+.btn-secondary, .btn.btn-secondary,
+.btn-ghost, .btn.btn-ghost,
+.btn-outline, .btn.btn-outline,
+.uxp-card-btn-primary, .uxp-card-btn-secondary,
+.mp-btn-buy, .mp-btn-cart,
 .bundle-btn.primary,
-.figma-btn-primary,
-.figma-cta-btn.figma-btn-primary {
-  background: #6d3dff !important;
-  border-color: #6d3dff !important;
+.figma-cta-btn,
+.oc-btn-primary, .oc-btn-ghost, .oc-btn-outline,
+.header-signin-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: background 0.25s ease, box-shadow 0.25s ease,
+              transform 0.18s ease, border-color 0.25s ease !important;
+}
+
+/* ── Shine sweep via ::before (keeps ::after free for loading spinners) ── */
+.btn-primary::before, .btn.btn-primary::before,
+.btn-secondary::before, .btn.btn-secondary::before,
+.btn-ghost::before, .btn.btn-ghost::before,
+.btn-outline::before,
+.uxp-card-btn-primary::before, .uxp-card-btn-secondary::before,
+.mp-btn-buy::before, .mp-btn-cart::before,
+.bundle-btn.primary::before,
+.figma-cta-btn::before,
+.oc-btn-primary::before, .oc-btn-ghost::before, .oc-btn-outline::before,
+.header-signin-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -115%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover:not(:disabled)::before, .btn.btn-primary:hover:not(:disabled)::before,
+.btn-secondary:hover:not(:disabled)::before, .btn.btn-secondary:hover:not(:disabled)::before,
+.btn-ghost:hover:not(:disabled)::before, .btn.btn-ghost:hover:not(:disabled)::before,
+.btn-outline:hover:not(:disabled)::before,
+.uxp-card-btn-primary:hover:not(:disabled)::before,
+.uxp-card-btn-secondary:hover:not(:disabled)::before,
+.mp-btn-buy:hover:not(:disabled)::before, .mp-btn-cart:hover:not(:disabled)::before,
+.bundle-btn.primary:hover:not(:disabled)::before,
+.figma-cta-btn:hover:not(:disabled)::before,
+.oc-btn-primary:hover:not(:disabled)::before,
+.oc-btn-ghost:hover:not(:disabled)::before,
+.oc-btn-outline:hover:not(:disabled)::before,
+.header-signin-cta:hover::before {
+  left: 130%;
+}
+
+/* ── PRIMARY — purple fill ── */
+.btn-primary, .btn.btn-primary,
+.uxp-card-btn-primary,
+.mp-btn-buy,
+.bundle-btn.primary,
+.figma-cta-btn.figma-btn-primary,
+.oc-btn-primary,
+.header-signin-cta {
+  background: #6147bd !important;
+  border: none !important;
   color: #ffffff !important;
-  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease !important;
-  animation: uxpPrimaryCtaGlow 2.6s ease-in-out infinite;
+  animation: uxpBtnGlow 2.8s ease-in-out infinite !important;
 }
 
-.btn-primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled), .btn.btn-primary:hover:not(:disabled),
 .uxp-card-btn-primary:hover:not(:disabled),
+.mp-btn-buy:hover:not(:disabled),
 .bundle-btn.primary:hover:not(:disabled),
-.figma-btn-primary:hover:not(:disabled),
-.figma-cta-btn.figma-btn-primary:hover:not(:disabled) {
-  background: #5b2ee6 !important;
-  border-color: #5b2ee6 !important;
-  box-shadow: 0 8px 24px rgba(109, 61, 255, 0.35) !important;
-  transform: translateY(-1px);
+.figma-cta-btn.figma-btn-primary:hover:not(:disabled),
+.oc-btn-primary:hover:not(:disabled),
+.header-signin-cta:hover {
+  background: #5136a8 !important;
+  box-shadow: 0 8px 28px rgba(97,71,189,0.50) !important;
+  transform: translateY(-2px) !important;
+  animation: none !important;
 }
 
-.btn-primary:focus-visible,
-.uxp-card-btn-primary:focus-visible,
-.bundle-btn.primary:focus-visible,
-.figma-btn-primary:focus-visible,
-.figma-cta-btn.figma-btn-primary:focus-visible {
-  outline: 0;
-  box-shadow: 0 0 0 3px rgba(109, 61, 255, 0.22), 0 8px 24px rgba(109, 61, 255, 0.35) !important;
-}
-
-.btn-primary:active:not(:disabled),
+.btn-primary:active:not(:disabled), .btn.btn-primary:active:not(:disabled),
 .uxp-card-btn-primary:active:not(:disabled),
+.mp-btn-buy:active:not(:disabled),
 .bundle-btn.primary:active:not(:disabled),
-.figma-btn-primary:active:not(:disabled),
-.figma-cta-btn.figma-btn-primary:active:not(:disabled) {
-  transform: translateY(1px);
+.oc-btn-primary:active:not(:disabled),
+.header-signin-cta:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 10px rgba(97,71,189,0.30) !important;
 }
 
-.btn-primary:disabled,
-.uxp-card-btn-primary:disabled,
-.bundle-btn.primary:disabled,
-.figma-btn-primary:disabled,
-.figma-cta-btn.figma-btn-primary:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  animation: none;
+.btn-primary:focus-visible, .btn.btn-primary:focus-visible,
+.uxp-card-btn-primary:focus-visible,
+.mp-btn-buy:focus-visible,
+.header-signin-cta:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(97,71,189,0.35), 0 6px 20px rgba(97,71,189,0.40) !important;
 }
+
+.btn-primary:disabled, .btn.btn-primary:disabled,
+.uxp-card-btn-primary:disabled,
+.mp-btn-buy:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+/* ── SECONDARY / GHOST / OUTLINE — transparent with border ── */
+.btn-secondary, .btn.btn-secondary,
+.btn-ghost, .btn.btn-ghost,
+.btn-outline, .btn.btn-outline,
+.uxp-card-btn-secondary,
+.mp-btn-cart,
+.figma-cta-btn.figma-btn-outline,
+.oc-btn-ghost,
+.oc-btn-outline {
+  background: transparent !important;
+  border: 1.5px solid rgba(255,255,255,0.18) !important;
+  color: #ffffff !important;
+  animation: none !important;
+}
+
+.btn-secondary:hover:not(:disabled), .btn.btn-secondary:hover:not(:disabled),
+.btn-ghost:hover:not(:disabled), .btn.btn-ghost:hover:not(:disabled),
+.btn-outline:hover:not(:disabled),
+.uxp-card-btn-secondary:hover:not(:disabled),
+.mp-btn-cart:hover:not(:disabled),
+.figma-cta-btn.figma-btn-outline:hover:not(:disabled),
+.oc-btn-ghost:hover:not(:disabled),
+.oc-btn-outline:hover:not(:disabled) {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.38) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.22) !important;
+}
+
+.btn-secondary:active:not(:disabled), .btn.btn-secondary:active:not(:disabled),
+.btn-ghost:active:not(:disabled), .btn.btn-ghost:active:not(:disabled),
+.btn-outline:active:not(:disabled),
+.uxp-card-btn-secondary:active:not(:disabled),
+.mp-btn-cart:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.btn-secondary:disabled, .btn.btn-secondary:disabled,
+.btn-ghost:disabled, .btn.btn-ghost:disabled,
+.uxp-card-btn-secondary:disabled,
+.mp-btn-cart:disabled {
+  opacity: 0.50 !important;
+  cursor: not-allowed !important;
+}
+
+/* Server-rendered hidden state — 2-class specificity (0,2,0) beats unified base (0,1,0) */
+.header-signin-cta.uxp-sr-hide {
+  display: none !important;
+}
+
 /* ===================================================================
    UX PACIFIC SHOP - MAIN STYLESHEET
    ===================================================================
@@ -7794,22 +7919,7 @@ body {
   /* box-shadow: 0 10px 25px rgba(123, 97, 255, 0.6); */
 }
 
-/* Shine Effect on Hover */
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transform: skewX(-20deg);
-  transition: 0.5s;
-}
-
-.btn-primary:hover::after {
-  left: 100%;
-}
+/* Shine now handled by unified ::before block at top of file */
 
 .btn-secondary{
   display: inline-flex;
@@ -7962,6 +8072,27 @@ body {
     color: #fff;
     background: linear-gradient(135deg, #7c3aed, #a855f7);
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+
+.uxp-product-media .uxp-product-free-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.38);
+}
+
+.mp-price-row--free {
+    align-items: center;
+    gap: 10px;
 }
 
 .uxp-top-products-empty {
@@ -8761,10 +8892,8 @@ body {
     display: none !important;
 }
 
-.btn-primary,
 .filter-btn.active,
-.filter-btn:hover,
-.btn[style*="background"] {
+.filter-btn:hover {
     background: #6147bd !important;
     border-color: #6147bd !important;
 }
@@ -8785,11 +8914,8 @@ body {
     background: #6147bd !important;
 }
 
-.btn-secondary,
-.btn-outline,
-.cta-secondary,
-.btn[style*="background: transparent"] {
-    border-color: #6147bd !important;
+.cta-secondary {
+    border-color: rgba(255,255,255,0.18) !important;
 }
 
 .social-icon,
@@ -11108,22 +11234,39 @@ html.auth-preloaded .user-menu.profile-menu {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  /* Hidden state — opacity/visibility allows CSS transitions */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0s linear 0.28s;
 }
 .marketplace-modal.is-open {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0s linear 0s;
+}
+.marketplace-modal.is-closing {
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in,
+              visibility 0s linear 0.2s;
 }
 
-/* Backdrop with blur */
+/* Backdrop with blur — inherits parent opacity, no extra animation needed */
 .marketplace-modal-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(4, 4, 15, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 /* Modal Panel */
@@ -11143,30 +11286,22 @@ html.auth-preloaded .user-menu.profile-menu {
     0 0 0 1px rgba(255, 255, 255, 0.05) inset,
     0 50px 100px -20px rgba(0, 0, 0, 0.7),
     0 30px 60px -30px rgba(97, 71, 189, 0.25);
-  animation: modalSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
   overflow: hidden;
+  /* Default resting state (for transitions) */
+  transform: translateY(28px) scale(0.95);
+  opacity: 0;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.marketplace-modal.is-open .marketplace-modal-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
 }
-
 .marketplace-modal.is-closing .marketplace-modal-panel {
-  animation: modalSlideOut 0.2s ease-in both;
-}
-
-@keyframes modalSlideOut {
-  to {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
+  transform: translateY(10px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.2s ease-in,
+              opacity 0.18s ease-in;
 }
 
 /* Close Button - Premium Round Style */
@@ -11315,27 +11450,29 @@ html.auth-preloaded .user-menu.profile-menu {
   transition: transform 0.3s ease;
 }
 
-/* Image Counter Badge */
+/* Image Counter Badge — top-left, zoom button owns top-right */
 .mp-gallery-counter {
   position: absolute;
   top: 12px;
-  right: 12px;
+  left: 12px;
   z-index: 3;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,.85);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: .03em;
+  pointer-events: none;
 }
 
-/* Gallery Navigation Arrows */
+/* Gallery Navigation Arrows — hidden until stage is hovered */
 .mp-gallery-nav {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) scale(0.9);
   z-index: 3;
   width: 44px;
   height: 44px;
@@ -11349,15 +11486,22 @@ html.auth-preloaded .user-menu.profile-menu {
   color: #fff;
   font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0.8;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.mp-gallery-stage:hover .mp-gallery-nav {
+  opacity: 0.85;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
 }
 
 .mp-gallery-nav:hover {
-  background: rgba(97, 71, 189, 0.5);
-  border-color: rgba(97, 71, 189, 0.6);
+  background: rgba(97, 71, 189, 0.6);
+  border-color: rgba(97, 71, 189, 0.7);
   opacity: 1;
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%) scale(1.06);
 }
 
 .mp-gallery-prev { left: 12px; }
@@ -11757,8 +11901,11 @@ html.auth-preloaded .user-menu.profile-menu {
 .mp-btn-buy.is-loading::after {
   content: '';
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 20px;
   height: 20px;
+  margin: -10px 0 0 -10px;
   border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff;
   border-radius: 50%;
@@ -13393,4 +13540,267 @@ body.modal-open { overflow: hidden; }
     flex: 1 1 calc(50% - 6px);
     min-width: 0;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRODUCT PREVIEW ENHANCEMENTS  2026-06
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Quick-view hover overlay on every product card image ─────────── */
+.uxp-product-media,
+.uxp-bundle-image,
+.bs-card-media { position: relative; overflow: hidden; }
+
+.uxp-qv-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,20,.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .22s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+.uxp-product-card:hover .uxp-qv-overlay,
+.uxp-bundle-card:hover .uxp-qv-overlay,
+.bs-card:hover .uxp-qv-overlay { opacity: 1; pointer-events: auto; }
+
+.uxp-qv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.96);
+  color: #0f0e1a;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: background .15s, transform .15s;
+  white-space: nowrap;
+}
+.uxp-qv-btn:hover { background: #fff; transform: scale(1.06); }
+.uxp-qv-btn svg { flex-shrink: 0; }
+
+/* ── Type badge on cards ───────────────────────────────────────────── */
+.uxp-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 5px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.uxp-type-badge--digital  { background: rgba(97,71,189,.18); color: #a78bfa; border: 1px solid rgba(97,71,189,.35); }
+.uxp-type-badge--physical { background: rgba(251,191,36,.13); color: #fbbf24; border: 1px solid rgba(251,191,36,.3); }
+.uxp-type-badge--bundle   { background: rgba(16,185,129,.14); color: #34d399; border: 1px solid rgba(16,185,129,.3); }
+.uxp-type-badge--freebie  { background: rgba(59,130,246,.14); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
+
+/* ── Format chips in modal ─────────────────────────────────────────── */
+.mp-format-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+.mp-format-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  line-height: 1;
+}
+.mp-format-chip--figma  { color: #ff7262; border-color: rgba(255,114,98,.35); background: rgba(255,114,98,.08); }
+.mp-format-chip--canva  { color: #00c4cc; border-color: rgba(0,196,204,.35); background: rgba(0,196,204,.08); }
+.mp-format-chip--zip    { color: #fbbf24; border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+.mp-format-chip--pdf    { color: #f87171; border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.08); }
+.mp-format-chip--png    { color: #a78bfa; border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.08); }
+.mp-format-chip--xd     { color: #ff61f6; border-color: rgba(255,97,246,.35); background: rgba(255,97,246,.08); }
+.mp-format-chip--sketch { color: #f6a623; border-color: rgba(246,166,35,.35); background: rgba(246,166,35,.08); }
+.mp-format-chip--psd    { color: #31a8ff; border-color: rgba(49,168,255,.35); background: rgba(49,168,255,.08); }
+
+/* ── Delivery badge in modal ───────────────────────────────────────── */
+.mp-delivery-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #34d399;
+  background: rgba(16,185,129,.1);
+  border: 1px solid rgba(16,185,129,.25);
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin: 12px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mp-delivery-badge svg { flex-shrink: 0; opacity: .9; }
+.mp-delivery-badge--physical { color: #fbbf24; background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.25); }
+
+/* ── Trust strip in modal ──────────────────────────────────────────── */
+.mp-trust-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 4px;
+}
+.mp-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .72rem;
+  color: #a1a1aa;
+  white-space: nowrap;
+}
+.mp-trust-item svg { flex-shrink: 0; color: #6147BD; }
+
+/* ── Gallery fullscreen/zoom button ───────────────────────────────── */
+.mp-gallery-zoom-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, opacity .15s;
+  opacity: .65;
+}
+.mp-gallery-zoom-btn:hover { opacity: 1; background: rgba(97,71,189,.8); }
+
+/* ── Lightbox overlay ─────────────────────────────────────────────── */
+#mp-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,.92);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+#mp-lightbox.is-open { display: flex; }
+#mp-lightbox img {
+  max-width: min(92vw, 1200px);
+  max-height: 82vh;
+  border-radius: 10px;
+  object-fit: contain;
+}
+#mp-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: .7;
+}
+#mp-lightbox-close:hover { opacity: 1; }
+
+/* ── Product-page format badges section ───────────────────────────── */
+.pp-format-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 6px;
+}
+.pp-format-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+.pp-format-badge--figma  { color: #ff7262; border-color: rgba(255,114,98,.4); background: rgba(255,114,98,.1); }
+.pp-format-badge--canva  { color: #00c4cc; border-color: rgba(0,196,204,.4); background: rgba(0,196,204,.1); }
+.pp-format-badge--zip    { color: #fbbf24; border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.1); }
+.pp-format-badge--pdf    { color: #f87171; border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.1); }
+.pp-format-badge--png    { color: #a78bfa; border-color: rgba(167,139,250,.4); background: rgba(167,139,250,.1); }
+.pp-format-badge--instructions { color: #34d399; border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); }
+
+/* ── FAQ accordion on product page ───────────────────────────────── */
+.pp-faq {
+  margin: 40px 0 20px;
+}
+.pp-faq-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f5f5f7;
+  margin-bottom: 14px;
+}
+.pp-faq-item {
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.pp-faq-item:first-of-type { border-top: 1px solid rgba(255,255,255,.08); }
+.pp-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 2px;
+  background: none;
+  border: none;
+  color: #d4d4d8;
+  font-size: .92rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  gap: 12px;
+  transition: color .15s;
+}
+.pp-faq-question:hover { color: #a78bfa; }
+.pp-faq-icon {
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  color: #6147BD;
+  font-style: normal;
+  transition: transform .2s;
+  line-height: 1;
+}
+.pp-faq-item.is-open .pp-faq-icon { transform: rotate(45deg); }
+.pp-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .28s ease, padding .28s ease;
+  font-size: .88rem;
+  color: #a1a1aa;
+  line-height: 1.65;
+  padding: 0 2px;
+}
+.pp-faq-item.is-open .pp-faq-answer {
+  max-height: 500px;
+  padding: 0 2px 14px;
 }

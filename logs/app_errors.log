@@ -1215,3 +1215,1348 @@ Stack trace:
 [03-Jun-2026 13:21:08 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
 [03-Jun-2026 13:21:09 Europe/Berlin] SMTP << 550 No Such User Here
 [03-Jun-2026 13:21:09 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:25:24 +0530
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 07:55:27 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:28 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 07:55:28 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:28 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 07:55:28 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 07:55:29 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 07:55:29 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 07:55:30 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 07:55:30 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 07:55:31 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 07:55:31 Europe/Berlin] SMTP << 250 OK id=1wV13C-000000032DG-0y1E
+[04-Jun-2026 07:55:31 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 07:55:31 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-A49BC6)" to rmohittt21@gmail.com
+[04-Jun-2026 07:55:34 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:25:33 +0530
+[04-Jun-2026 07:55:34 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 07:55:34 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 07:55:34 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 07:55:35 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:36 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 07:55:36 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 07:55:36 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 07:55:36 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 07:55:37 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 07:55:37 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 07:55:37 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 07:55:38 Europe/Berlin] SMTP << 250 OK id=1wV13J-000000032SD-1drW
+[04-Jun-2026 07:55:38 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 07:55:38 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-A49BC6 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:25:40 +0530
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 07:55:41 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 07:55:42 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 07:55:43 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 07:55:43 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 07:55:43 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 07:55:43 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:25:44 +0530
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 07:55:46 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 07:55:47 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 07:55:48 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 07:55:48 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:04:22 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:34:22 +0530
+[04-Jun-2026 08:04:22 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:04:22 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:04:22 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:04:23 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:24 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:04:24 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:27 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:04:27 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:04:27 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:04:27 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:04:28 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:04:28 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:04:28 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:04:28 Europe/Berlin] SMTP << 250 OK id=1wV1Bs-00000003Bd4-0XbE
+[04-Jun-2026 08:04:28 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:04:28 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-FA0D95)" to rmohittt21@gmail.com
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:34:29 +0530
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:04:30 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:04:31 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:04:31 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:31 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:04:31 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:32 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:04:32 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:04:32 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:04:32 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:04:33 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:04:33 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:04:33 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:04:34 Europe/Berlin] SMTP << 250 OK id=1wV1Bx-00000003Bic-1iP5
+[04-Jun-2026 08:04:34 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:04:34 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-FA0D95 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:34:35 +0530
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:04:36 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:04:37 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:04:39 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:04:39 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:04:39 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:04:39 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:04:41 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:34:41 +0530
+[04-Jun-2026 08:04:41 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:04:41 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:04:41 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:04:42 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:04:43 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:04:44 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:04:44 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:05:06 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:35:06 +0530
+[04-Jun-2026 08:05:06 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:05:06 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:05:06 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:05:07 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:08 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:05:08 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:08 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:05:08 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:05:09 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:05:09 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:05:09 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:05:09 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:05:09 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:05:10 Europe/Berlin] SMTP << 250 OK id=1wV1CX-00000003CE7-2WY7
+[04-Jun-2026 08:05:10 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:05:10 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-429B26)" to rmohittt21@gmail.com
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:35:11 +0530
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:05:12 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:05:15 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:05:16 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:05:16 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:05:16 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:05:16 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:05:17 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:05:17 Europe/Berlin] SMTP << 250 OK id=1wV1Ce-00000003CIr-3KAq
+[04-Jun-2026 08:05:17 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:05:17 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-429B26 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:35:18 +0530
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:05:19 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:05:20 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:05:21 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:05:21 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 11:35:22 +0530
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:05:23 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:24 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:05:24 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:05:25 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:05:25 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:05:26 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:05:26 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:05:26 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:05:26 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:11:12 +0530
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:41:13 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:41:14 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:41:14 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:14 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:41:14 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:15 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:41:15 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:41:16 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:41:16 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:41:17 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:41:17 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:41:18 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:41:19 Europe/Berlin] SMTP << 250 OK id=1wV1lV-00000003oyD-3VaM
+[04-Jun-2026 08:41:19 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:41:19 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-D57A28)" to rmohittt21@gmail.com
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:11:20 +0530
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:41:21 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:41:22 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:41:22 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:22 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:41:22 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:23 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:41:23 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:41:23 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:41:23 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:41:24 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:41:24 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:41:24 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:41:24 Europe/Berlin] SMTP << 250 OK id=1wV1lc-00000003pLv-0vba
+[04-Jun-2026 08:41:24 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:41:24 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-D57A28 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:11:25 +0530
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:41:26 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:41:27 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:41:28 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:41:28 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:41:29 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:41:29 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:41:30 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:11:30 +0530
+[04-Jun-2026 08:41:30 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:41:30 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:41:30 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:41:31 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:41:32 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:41:32 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:41:32 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:41:32 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:41:32 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:41:32 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:18:54 +0530
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:48:55 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:48:56 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:48:56 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:00 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:49:00 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:00 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:49:00 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:49:01 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:49:01 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:49:01 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:49:01 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:49:02 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:49:02 Europe/Berlin] SMTP << 250 OK id=1wV1sz-00000003ylG-30IQ
+[04-Jun-2026 08:49:02 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:49:02 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-D0B33F)" to rmohittt21@gmail.com
+[04-Jun-2026 08:49:03 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:19:03 +0530
+[04-Jun-2026 08:49:03 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:49:03 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:49:03 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:49:04 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:05 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:49:05 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:49:05 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:49:05 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:49:06 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:49:06 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:49:06 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:49:06 Europe/Berlin] SMTP << 250 OK id=1wV1t4-00000003zLK-0Q5D
+[04-Jun-2026 08:49:06 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:49:06 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-D0B33F — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 08:49:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:19:07 +0530
+[04-Jun-2026 08:49:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:49:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:49:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:49:08 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:49:10 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:49:10 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:10 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:49:10 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:11 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:49:11 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:49:11 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:49:11 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:49:11 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:49:11 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:19:12 +0530
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:49:13 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:14 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:49:14 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:49:15 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:49:15 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:49:15 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:49:15 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:49:16 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:49:16 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:26:07 +0530
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:56:09 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:56:10 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:56:10 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:14 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:56:14 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:14 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:56:14 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:56:15 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:56:15 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:56:15 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:56:15 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:56:16 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:56:17 Europe/Berlin] SMTP << 250 OK id=1wV1zz-000000047Op-49Aa
+[04-Jun-2026 08:56:17 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:56:17 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-CC4293)" to rmohittt21@gmail.com
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:26:20 +0530
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:56:22 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:56:23 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 08:56:25 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 08:56:25 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 08:56:25 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 08:56:27 Europe/Berlin] SMTP << 250 OK id=1wV209-000000047WE-0Mft
+[04-Jun-2026 08:56:27 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 08:56:27 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-CC4293 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:26:27 +0530
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:56:28 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:56:30 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:56:32 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:56:32 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:56:33 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:56:33 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 08:56:34 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 12:26:34 +0530
+[04-Jun-2026 08:56:34 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 08:56:34 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 08:56:34 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 08:56:35 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 08:56:36 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 08:56:36 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 08:56:36 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 08:56:36 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 08:56:36 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 08:56:36 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:04:57 +0530
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:34:58 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:34:59 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:34:59 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:34:59 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:34:59 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:00 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:35:00 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:35:00 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:35:00 Europe/Berlin] SMTP >> RCPT TO:<qa.purchase.1780562084600@example.com>
+[04-Jun-2026 10:35:01 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:01 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:02 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:05:02 +0530
+[04-Jun-2026 10:35:02 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:35:02 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:35:02 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:35:03 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:35:04 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:35:04 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:35:04 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:04 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:35:04 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:05 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:35:05 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:35:05 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:35:05 Europe/Berlin] SMTP >> RCPT TO:<qa.purchase.1780562084600@example.com>
+[04-Jun-2026 10:35:05 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:05 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:05:07 +0530
+[04-Jun-2026 10:35:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:35:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:35:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:35:08 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:09 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:35:09 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:35:10 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:35:10 Europe/Berlin] SMTP >> RCPT TO:<qa.purchase.1780562084600@example.com>
+[04-Jun-2026 10:35:10 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:10 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 10:35:14 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:05:14 +0530
+[04-Jun-2026 10:35:14 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:35:14 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:35:14 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:35:15 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:16 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:35:16 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:35:16 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:35:16 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 10:35:16 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 10:35:16 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:05:17 +0530
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:35:18 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:35:19 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:35:19 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:19 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:35:19 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:35:21 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:35:21 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:35:22 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:35:22 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 10:35:22 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 10:35:22 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 10:41:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:11:07 +0530
+[04-Jun-2026 10:41:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:41:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:41:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:41:09 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:10 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:41:10 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:41:10 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:41:10 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 10:41:11 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 10:41:11 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 10:41:11 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 10:41:11 Europe/Berlin] SMTP << 250 OK id=1wV3dX-00000001dky-0oZv
+[04-Jun-2026 10:41:11 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 10:41:11 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260604-EEDB07)" to rmohittt21@gmail.com
+[04-Jun-2026 10:41:14 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:11:13 +0530
+[04-Jun-2026 10:41:14 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:41:14 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:41:14 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:41:15 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:41:16 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:41:16 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:16 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:41:16 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:17 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:41:17 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:41:17 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:41:17 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 10:41:18 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 10:41:18 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 10:41:19 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 10:41:19 Europe/Berlin] SMTP << 250 OK id=1wV3de-00000001doh-3GQI
+[04-Jun-2026 10:41:19 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 10:41:19 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-EEDB07 — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 10:41:21 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:11:21 +0530
+[04-Jun-2026 10:41:21 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:41:21 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:41:21 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:41:22 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:41:23 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 10:41:24 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 10:41:24 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 14:11:24 +0530
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 10:41:25 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 10:41:26 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 10:41:27 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 10:41:27 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 15:07:26 +0530
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 11:37:28 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 11:37:29 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 11:37:29 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:30 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 11:37:30 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:31 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 11:37:31 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 11:37:31 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 11:37:31 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 11:37:32 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 11:37:32 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 11:37:33 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 11:37:35 Europe/Berlin] SMTP << 250 OK id=1wV4W4-00000002caO-04Gl
+[04-Jun-2026 11:37:35 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 11:37:35 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260604-A5B6FE)" to rmohittt21@gmail.com
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 15:07:36 +0530
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 11:37:37 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 11:37:38 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 11:37:38 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 11:37:39 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[04-Jun-2026 11:37:40 Europe/Berlin] SMTP << 250 Accepted
+[04-Jun-2026 11:37:40 Europe/Berlin] SMTP >> DATA
+[04-Jun-2026 11:37:40 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[04-Jun-2026 11:37:41 Europe/Berlin] SMTP << 250 OK id=1wV4WC-00000002chS-1gxd
+[04-Jun-2026 11:37:41 Europe/Berlin] SMTP >> QUIT
+[04-Jun-2026 11:37:41 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260604-A5B6FE — UX Pacific" to rmohittt21@gmail.com
+[04-Jun-2026 11:37:42 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 15:07:41 +0530
+[04-Jun-2026 11:37:42 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 11:37:42 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 11:37:42 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 11:37:43 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:44 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 11:37:44 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 11:37:44 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 11:37:44 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 11:37:44 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 11:37:44 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 15:07:46 +0530
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 11:37:47 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 11:37:48 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 11:37:49 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 11:37:49 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 11:37:50 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 11:37:50 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 17:30:27 +0530
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:00:28 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:00:29 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:00:29 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:31 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:00:31 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:34 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:00:34 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:00:34 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:00:34 Europe/Berlin] SMTP >> RCPT TO:<qa.demo.purchase.1780574425558@example.com>
+[04-Jun-2026 14:00:34 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:34 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:38 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 17:30:38 +0530
+[04-Jun-2026 14:00:38 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:00:38 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:00:38 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:00:39 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:41 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:00:41 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:00:47 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:00:47 Europe/Berlin] SMTP >> RCPT TO:<qa.demo.purchase.1780574425558@example.com>
+[04-Jun-2026 14:00:47 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:47 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:48 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 17:30:48 +0530
+[04-Jun-2026 14:00:48 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:00:48 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:00:48 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:00:49 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:50 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:00:50 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:00:50 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:00:50 Europe/Berlin] SMTP >> RCPT TO:<qa.demo.purchase.1780574425558@example.com>
+[04-Jun-2026 14:00:50 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:50 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 17:30:53 +0530
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:00:54 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:00:55 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:00:55 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:55 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:00:55 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:00:56 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:00:56 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:00:56 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:00:56 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 14:00:56 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 14:00:56 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 14:01:00 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 17:31:00 +0530
+[04-Jun-2026 14:01:00 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:01:00 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:01:00 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:01:01 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:01:06 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:01:06 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:01:06 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:01:06 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 14:01:07 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 14:01:07 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 18:11:02 +0530
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:41:03 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:41:05 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:41:05 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:41:05 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:41:05 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:41:06 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:41:06 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:41:06 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:41:06 Europe/Berlin] SMTP >> RCPT TO:<smoke.phasee.1780576800@example.com>
+[04-Jun-2026 14:41:08 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:41:08 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 18:14:49 +0530
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:44:52 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:44:53 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:44:53 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:44:53 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:44:53 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:44:54 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:44:54 Europe/Berlin] SMTP >> RCPT TO:<smoke.phasee.1780576800@example.com>
+[04-Jun-2026 14:44:54 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:44:54 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 18:14:55 +0530
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:44:56 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:44:57 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:44:57 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:44:58 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:44:58 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:44:58 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:44:58 Europe/Berlin] SMTP >> RCPT TO:<smoke.phasee.1780576800@example.com>
+[04-Jun-2026 14:44:59 Europe/Berlin] SMTP << 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:44:59 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 "Sorry, you are sending to/from an address that has been blacklisted"
+[04-Jun-2026 14:45:01 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 18:15:01 +0530
+[04-Jun-2026 14:45:01 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:45:01 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:45:01 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:45:02 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:45:03 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:45:03 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:45:03 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:45:03 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 14:45:04 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 14:45:04 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[04-Jun-2026 14:45:06 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Thu, 04 Jun 2026 18:15:05 +0530
+[04-Jun-2026 14:45:06 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[04-Jun-2026 14:45:06 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[04-Jun-2026 14:45:06 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[04-Jun-2026 14:45:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[04-Jun-2026 14:45:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250-8BITMIME
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250-PIPELINING
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250-PIPECONNECT
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP << 250 HELP
+[04-Jun-2026 14:45:08 Europe/Berlin] SMTP >> AUTH LOGIN
+[04-Jun-2026 14:45:09 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[04-Jun-2026 14:45:09 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:45:09 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[04-Jun-2026 14:45:09 Europe/Berlin] SMTP >> [base64-redacted]
+[04-Jun-2026 14:45:10 Europe/Berlin] SMTP << 235 Authentication succeeded
+[04-Jun-2026 14:45:10 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[04-Jun-2026 14:45:10 Europe/Berlin] SMTP << 250 OK
+[04-Jun-2026 14:45:10 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[04-Jun-2026 14:45:11 Europe/Berlin] SMTP << 550 No Such User Here
+[04-Jun-2026 14:45:11 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 10:44:12 +0530
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 07:14:10 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 07:14:11 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 07:14:11 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:11 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 07:14:11 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:12 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 07:14:12 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 07:14:13 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 07:14:13 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 07:14:14 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 07:14:14 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 07:14:14 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 07:14:15 Europe/Berlin] SMTP << 250 OK id=1wVMsr-00000001JcF-09Xn
+[05-Jun-2026 07:14:15 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 07:14:15 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-3BC355)" to rmohittt21@gmail.com
+[05-Jun-2026 07:14:17 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 10:44:19 +0530
+[05-Jun-2026 07:14:17 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 07:14:17 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 07:14:17 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 07:14:18 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:19 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 07:14:19 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:20 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 07:14:20 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 07:14:20 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 07:14:20 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 07:14:21 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 07:14:21 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 07:14:21 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 07:14:21 Europe/Berlin] SMTP << 250 OK id=1wVMsx-00000001Jhl-3DCs
+[05-Jun-2026 07:14:21 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 07:14:21 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-3BC355 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 10:44:25 +0530
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 07:14:23 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 07:14:24 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 07:14:24 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:24 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 07:14:24 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:25 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 07:14:25 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 07:14:25 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 07:14:25 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 07:14:25 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 07:14:25 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 10:44:29 +0530
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 07:14:27 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 07:14:28 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 07:14:28 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:28 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 07:14:28 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 07:14:29 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 07:14:29 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 07:14:30 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 07:14:30 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 07:14:30 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 07:14:30 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 11:38:06 +0530
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 08:08:07 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:08 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 08:08:08 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:09 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 08:08:09 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 08:08:09 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 08:08:09 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 08:08:10 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 08:08:10 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 08:08:10 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 08:08:10 Europe/Berlin] SMTP << 250 OK id=1wVNj0-00000002LKl-15m7
+[05-Jun-2026 08:08:10 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 08:08:10 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-80BA21)" to rmohittt21@gmail.com
+[05-Jun-2026 08:08:12 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 11:38:12 +0530
+[05-Jun-2026 08:08:12 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 08:08:12 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 08:08:12 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 08:08:13 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 08:08:14 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 08:08:15 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 08:08:15 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 08:08:16 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 08:08:16 Europe/Berlin] SMTP << 250 OK id=1wVNj5-00000002LSe-3cg9
+[05-Jun-2026 08:08:16 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 08:08:16 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-80BA21 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 11:38:17 +0530
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 08:08:18 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 08:08:19 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 08:08:19 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:19 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 08:08:19 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:20 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 08:08:20 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 08:08:20 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 08:08:20 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 08:08:20 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 08:08:20 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 11:38:21 +0530
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 08:08:22 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 08:08:23 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 08:08:24 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 08:08:24 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here

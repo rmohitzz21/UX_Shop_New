@@ -41,17 +41,45 @@ function apiProductImage(?string $image): string {
 }
 
 function apiProductPayload(array $row): array {
+    $isFree = !empty($row['is_free']) || (float) ($row['price'] ?? 0) <= 0;
     return [
         'id' => (string) $row['id'],
         'name' => $row['name'],
         'description' => $row['description'] ?? '',
         'category' => $row['category'] ?? '',
-        'price' => (float) $row['price'],
+        'is_free' => $isFree,
+        'price' => $isFree ? 0.0 : (float) $row['price'],
         'old_price' => isset($row['old_price']) ? (float) $row['old_price'] : null,
         'image' => apiProductImage($row['image'] ?? ''),
         'stock' => isset($row['stock']) ? (int) $row['stock'] : 0,
         'rating' => isset($row['rating']) ? (float) $row['rating'] : 0,
         'available_type' => $row['available_type'] ?? 'physical',
+    ];
+}
+
+function apiNormalizeCartItemType(string $raw): string
+{
+    $raw = strtolower(trim($raw));
+    return in_array($raw, ['product', 'bundle', 'freebie'], true) ? $raw : 'product';
+}
+
+function apiFreebiePayload(array $row): array
+{
+    return [
+        'id' => (string) $row['id'],
+        'name' => $row['name'],
+        'description' => $row['description'] ?? '',
+        'category' => $row['category'] ?? 'General',
+        'price' => 0.0,
+        'old_price' => null,
+        'image' => apiProductImage($row['image'] ?? ''),
+        'stock' => 999,
+        'rating' => 4.5,
+        'available_type' => 'digital',
+        'type' => 'freebie',
+        'file_url' => $row['file_url'] ?? '',
+        'download_count' => (int) ($row['download_count'] ?? 0),
+        'is_featured' => !empty($row['is_featured']),
     ];
 }
 

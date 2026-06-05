@@ -11,9 +11,21 @@ class DigitalStorageService
     {
         $configured = trim((string) (getenv('DIGITAL_STORAGE_LOCAL_DIR') ?: ''));
         if ($configured !== '') {
-            return rtrim($configured, '/\\');
+            $configured = rtrim($configured, '/\\');
+            if (self::isAbsolutePath($configured)) {
+                return $configured;
+            }
+
+            return dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $configured);
         }
         return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'private';
+    }
+
+    private static function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\')
+            || preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1;
     }
 
     public static function getDriver(): string

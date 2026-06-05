@@ -38,16 +38,24 @@ try {
     $hasDigital  = false;
 
     foreach ($items as $cartItem) {
-        $type = ($cartItem['item_type'] ?? $cartItem['type'] ?? 'product') === 'bundle' ? 'bundle' : 'product';
-        $id   = $type === 'bundle'
-            ? (int) ($cartItem['bundle_id'] ?? $cartItem['id'] ?? $cartItem['product_id'] ?? 0)
-            : (int) ($cartItem['product_id'] ?? $cartItem['id'] ?? 0);
-        $qty  = max(1, min(10, (int) ($cartItem['quantity'] ?? 1)));
+        $type = apiNormalizeCartItemType((string) ($cartItem['item_type'] ?? $cartItem['type'] ?? 'product'));
+        if ($type === 'bundle') {
+            $id = (int) ($cartItem['bundle_id'] ?? $cartItem['id'] ?? $cartItem['product_id'] ?? 0);
+        } else {
+            $id = (int) ($cartItem['product_id'] ?? $cartItem['id'] ?? 0);
+        }
+        $qty = max(1, min(10, (int) ($cartItem['quantity'] ?? 1)));
         if ($id <= 0) {
             throw new InvalidArgumentException('Invalid cart item.');
         }
 
-        if ($type === 'bundle') {
+        if ($type === 'freebie') {
+            $table = 'freebies';
+            $stmt = $conn->prepare(
+                'SELECT id, name, 0 AS price, image, 999 AS stock, "digital" AS available_type, file_url
+                 FROM freebies WHERE id = ? AND is_active = 1 LIMIT 1 FOR UPDATE'
+            );
+        } elseif ($type === 'bundle') {
             $table = 'bundles';
             $stmt = $conn->prepare(
                 'SELECT id, name, price, image, stock, "digital" AS available_type FROM bundles WHERE id = ? AND is_active = 1 LIMIT 1 FOR UPDATE'
@@ -66,7 +74,7 @@ try {
         }
 
         $catalogType = (string) ($row['available_type'] ?? 'digital');
-        if ($type === 'bundle') {
+        if ($type === 'freebie' || $type === 'bundle') {
             $selectedFormat = 'digital';
         } elseif ($catalogType === 'digital') {
             $selectedFormat = 'digital';
@@ -83,11 +91,15 @@ try {
             $hasPhysical = true;
         }
 
-        if ($selectedFormat !== 'digital' && (int) $row['stock'] < $qty) {
+        if ($type !== 'freebie' && $selectedFormat !== 'digital' && (int) $row['stock'] < $qty) {
             throw new InvalidArgumentException($row['name'] . ' has insufficient stock.');
         }
 
-        if ($selectedFormat !== 'digital') {
+        if ($type === 'freebie') {
+            $update = $conn->prepare('UPDATE freebies SET download_count = download_count + ? WHERE id = ?');
+            $update->bind_param('ii', $qty, $id);
+            $update->execute();
+        } elseif ($selectedFormat !== 'digital') {
             $update = $conn->prepare("UPDATE `{$table}` SET stock = stock - ?, sales_count = sales_count + ? WHERE id = ?");
             $update->bind_param('iii', $qty, $qty, $id);
             $update->execute();
@@ -97,7 +109,7 @@ try {
             $update->execute();
         }
 
-        $price     = (float) $row['price'];
+        $price = $type === 'freebie' ? 0.0 : (float) $row['price'];
         $subtotal += $price * $qty;
         $orderItems[] = [
             'type'            => $type,
@@ -108,11 +120,13 @@ try {
             'name'            => $row['name'],
             'image'           => $row['image'] ?? '',
             'selected_format' => $selectedFormat,
+            'file_url'        => $type === 'freebie' ? (string) ($row['file_url'] ?? '') : '',
         ];
     }
 
-    if ($hasDigital && $paymentMethod === 'cod') {
-        throw new InvalidArgumentException('Cash on Delivery is not available for orders containing digital products. Please use online payment.');
+    // COD completely disabled for digital-only launch
+    if ($paymentMethod === 'cod') {
+        throw new InvalidArgumentException('Cash on Delivery is currently unavailable. Please use online payment.');
     }
 
     $shippingCost = $hasPhysical ? 50.00 : 0.00;
@@ -168,8 +182,8 @@ try {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     foreach ($orderItems as $item) {
-        $productId = $item['type'] === 'product' ? $item['id'] : null;
-        $bundleId  = $item['type'] === 'bundle'  ? $item['id'] : null;
+        $productId = in_array($item['type'], ['product', 'freebie'], true) ? $item['id'] : null;
+        $bundleId  = $item['type'] === 'bundle' ? $item['id'] : null;
         $format    = $item['selected_format'];
         $itemStmt->bind_param(
             'iiiidsssss',
@@ -204,6 +218,10 @@ try {
         if ($isFreeOrder || !in_array($paymentMethod, ['razorpay', 'test'], true)) {
             if ($item['type'] === 'product') {
                 $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND item_type = "product" AND product_id = ?');
+                $del->bind_param('ii', $user['id'], $item['id']);
+                $del->execute();
+            } elseif ($item['type'] === 'freebie') {
+                $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND item_type = "freebie" AND product_id = ?');
                 $del->bind_param('ii', $user['id'], $item['id']);
                 $del->execute();
             } elseif ($item['type'] === 'bundle') {

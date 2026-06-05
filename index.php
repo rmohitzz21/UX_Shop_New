@@ -344,7 +344,7 @@ HTML;
             <strong>₹{$bPrice} {$oldHtml}</strong>
 
             <div>
-              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$bId}" data-item-type="bundle">Buy Now</button>
+              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$bId}" data-item-type="bundle">Buy Now</button>
               <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart({$bId}, null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}, item_type: 'bundle'}, 'digital')">Add to Cart</button>
             </div>
           </div>
@@ -404,7 +404,7 @@ HTML;
             <p>Explore the complete UXPacific Shop collection and discover high-quality merch, mockups, UI templates, workbooks, badge packs, and creative digital assets designed especially for modern creators.</p>
             <div class="explore-actions">
                 <a href="shopAll.php" class="btn btn-primary" style="width: 200px; text-align:center;">Shop All Products</a>
-                <a href="#" class="btn btn-secondary" style="width: 200px; text-align:center;">Join Our Community</a>
+                <a href="https://www.instagram.com/official_uxpacific/" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 200px; text-align:center;">Follow Us</a>
             </div>
         </div>
     </section>
@@ -415,9 +415,9 @@ HTML;
                 <img src="img/1.png" alt="UX PACIFIC" class="logo" style="height:36px; margin: 0 auto; margin-bottom: 20px; display:block;" onerror="this.outerHTML='<span style=\'font-weight:700; font-size: 1.5rem; letter-spacing: -0.5px; display:flex; justify-content:center; gap:8px;\'><i class=\'ph ph-squares-four\'></i>UX PACIFIC</span>'" />
             </div>
             <nav class="footer-nav">
-                <a href="#">Academy</a> &bull;
-                <a href="#">Community</a> &bull;
-                <a href="shopAll.php">Shop</a>
+                <a href="shopAll.php">Shop</a> &bull;
+                <a href="bundles.php">Bundles</a> &bull;
+                <a href="freebies.php">Freebies</a>
             </nav>
             <div class="social-links">
                 <a href="https://www.linkedin.com/company/uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/in1.png" alt="LinkedIn" /></a>
@@ -425,13 +425,13 @@ HTML;
                 <a href="https://www.behance.net/ux_pacific" class="social-icon" target="_blank" rel="noopener"><img src="img/be.webp" alt="Behance" /></a>
                 <a href="https://in.pinterest.com/uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/p.webp" alt="Pinterest" /></a>
                 <a href="https://dribbble.com/social-ux-pacific" class="social-icon" target="_blank" rel="noopener"><img src="img/bl.webp" alt="Dribbble" /></a>
-                <a href="#" class="social-icon"><img src="img/medium.png" alt="Medium" /></a>
+                <a href="https://medium.com/@uxpacific" class="social-icon" target="_blank" rel="noopener"><img src="img/medium.png" alt="Medium" /></a>
             </div>
-            <p class="contact-info">+91 9274061063 <span style="margin: 0 10px;">|</span> social@uxpacific.com</p>
+            <p class="contact-info">+91 9274061063 <span style="margin: 0 10px;">|</span> <?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></p>
             <p class="address">512, Majestic Building, Near Law Garden BRTS Stand, Ahmedabad</p>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 UX Pacific Community. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> UX Pacific. All rights reserved.</p>
             <div class="legal-links">
                 <a href="policies.php">Privacy Policy</a> |
                 <a href="policies.php">Cookie Policy</a> |

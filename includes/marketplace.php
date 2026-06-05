@@ -77,6 +77,7 @@ function marketplaceEnsureSchema(mysqli $conn): void {
     addColumnIfMissing($conn, 'products', 'tags', "`tags` VARCHAR(500) NULL AFTER `category`");
     addColumnIfMissing($conn, 'products', 'is_active', "`is_active` TINYINT(1) NOT NULL DEFAULT 1 AFTER `available_type`");
     addColumnIfMissing($conn, 'products', 'is_featured', "`is_featured` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_active`");
+    addColumnIfMissing($conn, 'products', 'is_free', "`is_free` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_featured`");
     addColumnIfMissing($conn, 'products', 'sales_count', "`sales_count` INT NOT NULL DEFAULT 0 AFTER `is_featured`");
     addColumnIfMissing($conn, 'products', 'view_count', "`view_count` INT NOT NULL DEFAULT 0 AFTER `sales_count`");
     addColumnIfMissing($conn, 'products', 'commercial_price', "`commercial_price` DECIMAL(10,2) NULL AFTER `old_price`");
@@ -424,6 +425,22 @@ function marketplaceImage(?string $image): string {
     return $image !== '' ? $image : 'img/poster.webp';
 }
 
+function marketplaceIsGalleryImagePath(string $path): bool
+{
+    $path = trim($path);
+    if ($path === '') {
+        return false;
+    }
+    if (preg_match('/\.(php|html?|js|css|zip|rar|7z|pdf|fig|xd|sketch)$/i', $path)) {
+        return false;
+    }
+    if (preg_match('#(^|/)(storage/private|digital_resources|api/)#i', $path)) {
+        return false;
+    }
+    $ext = strtolower(pathinfo(parse_url($path, PHP_URL_PATH) ?: $path, PATHINFO_EXTENSION));
+    return in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg'], true);
+}
+
 function marketplaceParseAdditionalImages(?string $json): array {
     if ($json === null || $json === '') {
         return [];
@@ -434,7 +451,14 @@ function marketplaceParseAdditionalImages(?string $json): array {
     }
     $images = [];
     foreach ($decoded as $img) {
-        $img = marketplaceImage(is_string($img) ? $img : '');
+        if (!is_string($img)) {
+            continue;
+        }
+        $img = trim($img);
+        if ($img === '' || !marketplaceIsGalleryImagePath($img)) {
+            continue;
+        }
+        $img = marketplaceImage($img);
         if ($img !== '' && !in_array($img, $images, true)) {
             $images[] = $img;
         }
@@ -493,8 +517,9 @@ function uxpIndexProductCard(array $row): string {
     $categoryFilter = htmlspecialchars(strtolower($categoryRaw), ENT_QUOTES, 'UTF-8');
     $isFeatured = !empty($row['is_featured']);
     $image = htmlspecialchars(marketplaceImage($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
-    $price = number_format((float) $row['price'], 0);
-    $oldPrice = !empty($row['old_price']) ? (float) $row['old_price'] : 0;
+    $isFreeProduct = !empty($row['is_free']);
+    $price = number_format($isFreeProduct ? 0 : (float) $row['price'], 0);
+    $oldPrice = (!$isFreeProduct && !empty($row['old_price'])) ? (float) $row['old_price'] : 0;
     $oldPriceFmt = $oldPrice > 0 ? number_format($oldPrice, 0) : '';
     $discount = ($oldPrice > 0 && (float) $row['price'] < $oldPrice)
         ? max(0, round((1 - ((float) $row['price'] / $oldPrice)) * 100))
@@ -533,12 +558,24 @@ function uxpIndexProductCard(array $row): string {
     $featuredBadge = $isFeatured
         ? '<span class="uxp-product-featured-pill">Featured</span>'
         : '';
+    $freeBadge = $isFreeProduct
+        ? '<span class="uxp-product-free-pill">FREE</span>'
+        : '';
+    $displayPrice = $isFreeProduct ? 0 : (float) $row['price'];
+    $buyLabel = $isFreeProduct ? 'Get Free' : 'Buy Now';
 
     return <<<HTML
-<article class="uxp-product-card" data-product-id="{$id}" data-name="{$name}" data-image="{$image}" data-category="{$category}" data-category-filter="{$categoryFilter}" data-type="{$availableType}" data-price="{$row['price']}" data-old-price="{$row['old_price']}" data-rating="{$rating}">
-  <a href="product.php?id={$id}" class="uxp-product-media js-product-popup" data-product-id="{$id}" aria-label="View {$name}">
+<article class="uxp-product-card" data-product-id="{$id}" data-name="{$name}" data-image="{$image}" data-category="{$category}" data-category-filter="{$categoryFilter}" data-type="{$availableType}" data-is-free="{$isFreeProduct}" data-price="{$displayPrice}" data-old-price="{$row['old_price']}" data-rating="{$rating}">
+  <a href="#" class="uxp-product-media js-product-popup" data-product-id="{$id}" data-item-type="product" aria-label="Quick view {$name}">
     <img src="{$image}" alt="{$name}" loading="lazy" width="480" height="360" onerror="this.src='img/poster.webp'">
     {$featuredBadge}
+    {$freeBadge}
+    <span class="uxp-qv-overlay" aria-hidden="true">
+      <span class="uxp-qv-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Quick View
+      </span>
+    </span>
   </a>
   <div class="uxp-product-body">
     <div class="uxp-product-title-row">
@@ -551,8 +588,8 @@ function uxpIndexProductCard(array $row): string {
       <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
     </div>
     <div class="uxp-product-actions">
-      <a href="product.php?id={$id}" class="uxp-card-btn uxp-card-btn-primary js-product-popup" data-product-id="{$id}">Buy Now</a>
-      <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$row['price']}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}}, '{$availableType}')"{$disabled}>Add to Cart</button>
+      <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$id}" data-item-type="product">{$buyLabel}</button>
+      <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$displayPrice}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}, item_type: 'product'}, '{$availableType}')"{$disabled}>Add to Cart</button>
     </div>
   </div>
 </article>

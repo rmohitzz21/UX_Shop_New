@@ -27,7 +27,14 @@
       "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l api/admin/resources/list.php)",
       "Bash(xargs -I{} \"C:\\\\xampp\\\\php\\\\php.exe\" -l \"{}\")",
       "Bash(curl *)",
-      "Bash('C:\\\\xampp\\\\php\\\\php.exe' -r ' *)"
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' -r ' *)",
+      "Bash(claude *)",
+      "Bash(python3 *)",
+      "Bash(mysql -u root uxmerchandise -e \"DESCRIBE products;\")",
+      "Bash(git -C \".claude/worktrees/agent-a78e356cdb105a900\" status --short)",
+      "Bash(git -C \".claude/worktrees/agent-a78e356cdb105a900\" diff -- style.css)",
+      "Read(//tmp/**)",
+      "Bash(git apply *)"
     ]
   }
 }

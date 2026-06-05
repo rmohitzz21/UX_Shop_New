@@ -214,22 +214,10 @@ if ($headerUserName === '') {
                                         <div class="bs-actions">
                                             <button type="button" class="bs-btn bs-btn--primary js-product-popup" data-product-id="<?php echo (int) $featured['id']; ?>" data-item-type="bundle">View Details</button>
                                             <button
-                                                class="bs-btn bs-btn--outline"
                                                 type="button"
-                                                onclick='addToCart(
-                                                    <?php echo (int) $featured['id']; ?>,
-                                                    null,
-                                                    1,
-                                                    {
-                                                        name: <?php echo json_encode($featured['name']); ?>,
-                                                        price: <?php echo (float) $featured['price']; ?>,
-                                                        image: <?php echo json_encode($featured['image']); ?>,
-                                                        category: "Bundles",
-                                                        description: <?php echo json_encode($featured['description']); ?>,
-                                                        item_type: "bundle"
-                                                    },
-                                                    "digital"
-                                                )'>
+                                                class="bs-btn bs-btn--outline js-buy-now"
+                                                data-product-id="<?php echo (int) $featured['id']; ?>"
+                                                data-item-type="bundle">
                                                 Buy Now
                                             </button>
                                         </div>
@@ -394,7 +382,7 @@ if ($headerUserName === '') {
 
                         <button
                             type="button"
-                            class="uxp-card-btn uxp-card-btn-primary js-product-popup"
+                            class="uxp-card-btn uxp-card-btn-primary js-buy-now"
                             data-product-id="<?php echo $gridBundleId; ?>"
                             data-item-type="bundle">
 

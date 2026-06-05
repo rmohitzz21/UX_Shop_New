@@ -33,7 +33,7 @@
                 <img src="img/ss/hugeicons_shopping-basket-secure-01.png" alt="Cart" />
                 <span id="cart-count" class="nav-count-badge">0</span>
             </a>
-<a href="signin.php" class="btn-primary header-signin-cta" <?php echo $headerUserId ? 'style="display:none;"' : ''; ?>>Sign In</a>
+<a href="signin.php" class="btn-primary header-signin-cta<?php echo $headerUserId ? ' uxp-sr-hide' : ''; ?>">Sign In</a>
             <div class="user-menu profile-menu" <?php echo $headerUserId ? '' : 'style="display:none;"'; ?>>
                 <button type="button" class="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">
                     <img src="img/ss/nav/iconoir_user.png" alt="User" />

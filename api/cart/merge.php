@@ -19,14 +19,25 @@ foreach ($items as $item) {
         continue;
     }
 
-    $rawType  = strtolower((string) ($item['item_type'] ?? $item['type'] ?? 'product'));
-    $itemType = in_array($rawType, ['product', 'bundle'], true) ? $rawType : 'product';
+    $itemType = apiNormalizeCartItemType((string) ($item['item_type'] ?? $item['type'] ?? 'product'));
 
     $quantity = max(1, min(10, (int) ($item['quantity'] ?? 1)));
     $size     = trim((string) ($item['size'] ?? ''));
     $sizeVal  = $size !== '' ? $size : null;
 
-    if ($itemType === 'product') {
+    if ($itemType === 'freebie') {
+        $catalogId = (int) ($item['product_id'] ?? $item['id'] ?? 0);
+        if ($catalogId <= 0) continue;
+
+        $chk = $conn->prepare('SELECT id FROM freebies WHERE id = ? AND is_active = 1 LIMIT 1');
+        $chk->bind_param('i', $catalogId);
+        $chk->execute();
+        if (!$chk->get_result()->fetch_assoc()) continue;
+
+        $catalogAvailType = 'digital';
+        $productId = $catalogId;
+        $bundleId  = null;
+    } elseif ($itemType === 'product') {
         $catalogId = (int) ($item['product_id'] ?? $item['id'] ?? 0);
         if ($catalogId <= 0) continue;
 
@@ -54,7 +65,7 @@ foreach ($items as $item) {
     }
 
     $requestedFormat = trim((string) ($item['selected_format'] ?? $item['available_type'] ?? ''));
-    if ($catalogAvailType === 'digital') {
+    if ($itemType === 'freebie' || $catalogAvailType === 'digital') {
         $selectedFormat = 'digital';
     } elseif ($catalogAvailType === 'physical') {
         $selectedFormat = 'physical';

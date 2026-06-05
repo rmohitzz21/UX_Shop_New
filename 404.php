@@ -92,10 +92,10 @@
               <p>
                 Email :
                 <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@uxpacific.com"
+                  href="mailto:<?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?>"
                   style="text-decoration: none; color: inherit"
                   target="_blank"
-                  >hello@uxpacific.com</a
+                  ><?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></a
                 >
                 &nbsp;&nbsp;&nbsp;&nbsp;
               </p>

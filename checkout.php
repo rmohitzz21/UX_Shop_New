@@ -206,6 +206,16 @@ if (empty($_SESSION['user_id'])) {
                     </div>
                   </div>
 
+                  <!-- Digital Delivery Notice -->
+                  <div id="digital-delivery-notice" style="padding: 12px 16px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 8px; margin-bottom: 16px; font-size: 14px; color: #93c5fd;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:8px;">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Your digital products will be available for download immediately after payment in <strong>My Orders</strong>.
+                  </div>
+
                   <!-- Payment Method -->
                   <div class="checkout-block">
                     <h2 class="block-title">Payment Method</h2>
@@ -229,17 +239,16 @@ if (empty($_SESSION['user_id'])) {
                           <span>UPI</span>
                         </div>
                       </label>
-                      <label class="payment-option" id="cod-option">
-                        <input type="radio" name="paymentMethod" value="cod" id="cod-radio" />
+                      <!-- COD disabled for digital-only launch -->
+                      <label class="payment-option" id="cod-option" style="display:none;" aria-hidden="true">
+                        <input type="radio" name="paymentMethod" value="cod" id="cod-radio" disabled />
                         <div class="payment-option-content">
                           <span class="payment-icon">
                             <img src="img/cash.webp" alt="cash" width="30" height="30" >
                           </span>
                           <span>Cash on Delivery</span>
                         </div>
-                        <span id="cod-disabled-message" class="cod-disabled-message" style="display: none; color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem;">
-                          Cash on Delivery is not available for digital products
-                        </span>
+                        <span id="cod-disabled-message" class="cod-disabled-message" style="display: none;"></span>
                       </label>
                     </div>
 
@@ -371,10 +380,10 @@ if (empty($_SESSION['user_id'])) {
               <p>
                 Email :
                 <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@uxpacific.com"
+                  href="mailto:<?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?>"
                   style="text-decoration: none; color: inherit"
                   target="_blank"
-                  >hello@uxpacific.com</a
+                  ><?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></a
                 >
                 &nbsp;&nbsp;&nbsp;&nbsp;
               </p>

@@ -3438,22 +3438,68 @@ function initSearchModal() {
 }
 
 function formatMoney(value) {
-  return '$' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  return '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+function isCatalogItemFree(item) {
+  if (!item) return false;
+  if (item.type === 'freebie' || item.item_type === 'freebie') return true;
+  return Boolean(item.is_free) || Number(item.price || 0) <= 0;
+}
+
+function isGalleryImageUrl(url) {
+  const path = String(url || '').trim();
+  if (!path) return false;
+  if (/\.(php|html?|js|css|zip|rar|7z|pdf|fig|xd|sketch)$/i.test(path)) return false;
+  if (/(^|\/)(storage\/private|digital_resources|api\/)/i.test(path)) return false;
+  return /\.(jpe?g|png|webp|gif|avif|svg)(\?|$)/i.test(path);
+}
+
+function getMarketplaceGalleryImages(item) {
+  const raw = [item?.image, ...(item?.additional_images || [])].filter(Boolean);
+  const filtered = raw.filter(isGalleryImageUrl);
+  const unique = [...new Set(filtered)];
+  return unique.length ? unique : ['img/poster.webp'];
+}
+
+function renderCatalogPriceRow(item) {
+  const free = isCatalogItemFree(item);
+  if (free) {
+    return `<div class="mp-price-row mp-price-row--free">
+      <strong>${formatMoney(0)}</strong>
+      <span class="mp-tag-pill mp-tag-pill--accent">Free</span>
+    </div>`;
+  }
+  return `<div class="mp-price-row">
+    <strong>${formatMoney(item.price)}</strong>
+    ${item.old_price ? `<span class="mp-old-price">${formatMoney(item.old_price)}</span>` : ''}
+    ${item.discount_percent ? `<em class="mp-discount">${item.discount_percent}% OFF</em>` : ''}
+  </div>`;
 }
 
 const marketplaceDetailCache = new Map();
 const marketplacePrefetching = new Set();
 let marketplaceOpenToken = 0;
 
+function normalizeMarketplaceType(t) {
+  const raw = String(t || 'product').toLowerCase();
+  if (raw === 'bundle') return 'bundle';
+  if (raw === 'freebie') return 'freebie';
+  return 'product';
+}
+
 function getCardPreviewData(card) {
   if (!card) return null;
-  const img = card.querySelector('.uxp-product-media img, .prod-img img, img');
+  const img = card.querySelector('.uxp-product-media img, .uxp-bundle-image img, .prod-img img, img');
+  const isFree = card.dataset.isFree === '1' || card.dataset.isFree === 'true'
+    || card.dataset.type === 'freebie' || Number(card.dataset.price || 0) <= 0;
   return {
     id: card.dataset.productId || card.dataset.id,
-    type: card.dataset.type === 'bundle' ? 'bundle' : 'product',
+    type: normalizeMarketplaceType(card.dataset.type),
     name: card.dataset.name || card.querySelector('h3')?.textContent?.trim() || 'Product',
     image: card.dataset.image || img?.getAttribute('src') || 'img/poster.webp',
-    price: Number(card.dataset.price || 0),
+    price: isFree ? 0 : Number(card.dataset.price || 0),
+    is_free: isFree,
     old_price: card.dataset.oldPrice ? Number(card.dataset.oldPrice) : null,
     category: card.dataset.category || '',
     rating: card.dataset.rating || '4.5',
@@ -3542,7 +3588,7 @@ function renderInstantModalShell(preview, type) {
           <span class="mp-rating-text">★ ${esc(preview.rating || '4.5')}</span>
         </div>
         <div class="mp-price-row">
-          <strong>${formatMoney(preview.price)}</strong>
+          <strong>${formatMoney(isCatalogItemFree(preview) ? 0 : preview.price)}</strong>
         </div>
         <div class="mp-shimmer-block">
           <div class="mp-shimmer-line"></div>
@@ -3605,12 +3651,17 @@ function renderMpGalleryCol(uniqueGallery, itemName) {
     : '';
   const counter = hasMany ? `<span class="mp-gallery-counter" data-mp-counter>1/${images.length}</span>` : '';
 
+  const zoomBtn = `<button type="button" class="mp-gallery-zoom-btn" data-mp-zoom title="View full size" aria-label="View full size">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+  </button>`;
+
   return `
     <div class="mp-gallery-col mp-scroll-col" data-mp-gallery data-images="${imageData}" data-mp-gallery-scroll>
       <div class="mp-gallery-inner">
         <div class="mp-gallery-stage">
           ${counter}
           ${nav}
+          ${zoomBtn}
           <div class="mp-gallery-frame">
             <img id="mp-main-image" src="${esc(images[0])}" alt="${esc(itemName)}" decoding="async" onerror="this.src='img/poster.webp'">
           </div>
@@ -3726,8 +3777,7 @@ function renderProductInfoPanels(item, itemType, skipMainInfo = false) {
 }
 
 function renderBundleDetailModal(item, related) {
-  const gallery = [item.image, ...(item.additional_images || [])].filter(Boolean);
-  const uniqueGallery = [...new Set(gallery)];
+  const uniqueGallery = getMarketplaceGalleryImages(item);
 
   const price = parseFloat(item.price) || 0;
   const oldPrice = parseFloat(item.old_price) || 0;
@@ -3839,6 +3889,23 @@ function renderBundleDetailModal(item, related) {
           ${savings > 0 ? `<span class="mp-bundle-savings">Save ${formatMoney(savings)}</span>` : ''}
         </div>
 
+        ${(() => {
+          const chips = detectFormatChips(item);
+          const defaultBundleChips = [
+            { cls: 'figma', label: 'Figma' },
+            { cls: 'canva', label: 'Canva' },
+            { cls: 'zip',   label: 'ZIP' },
+            { cls: 'pdf',   label: 'PDF' },
+          ];
+          const showChips = chips.length ? chips : defaultBundleChips;
+          return `<div class="mp-format-chips">${showChips.map(c => `<span class="mp-format-chip mp-format-chip--${c.cls}">${c.label}</span>`).join('')}</div>`;
+        })()}
+
+        <div class="mp-delivery-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Instant digital delivery — all files after payment
+        </div>
+
         ${includedBoxHtml}
 
         <div class="mp-field">
@@ -3884,10 +3951,75 @@ function renderBundleDetailModal(item, related) {
     </div>`;
 }
 
+function detectFormatChips(item) {
+  const name = String(item.name || '').toLowerCase();
+  const specs = String(item.file_specification || '').toLowerCase();
+  const files = String(item.files_included || '').toLowerCase();
+  const software = String(item.compatible_software || '').toLowerCase();
+  const all = name + ' ' + specs + ' ' + files + ' ' + software;
+
+  const chips = [];
+  if (/figma/.test(all))  chips.push({ cls: 'figma',  label: 'Figma' });
+  if (/canva/.test(all))  chips.push({ cls: 'canva',  label: 'Canva' });
+  if (/\.zip|zip file|zip pack/.test(all)) chips.push({ cls: 'zip', label: 'ZIP' });
+  if (/\.pdf|pdf guide|pdf file/.test(all)) chips.push({ cls: 'pdf', label: 'PDF' });
+  if (/photoshop|\.psd/.test(all)) chips.push({ cls: 'psd', label: 'Photoshop' });
+  if (/adobe xd|\.xd/.test(all))  chips.push({ cls: 'xd',  label: 'Adobe XD' });
+  if (/sketch/.test(all)) chips.push({ cls: 'sketch', label: 'Sketch' });
+  if (/\.png|png file|high.res/.test(all)) chips.push({ cls: 'png', label: 'PNG/JPG' });
+  if (/instruction|guide|tutorial/.test(all)) chips.push({ cls: 'pdf', label: 'Instructions' });
+
+  // Default for digital products
+  if (!chips.length && (item.available_type === 'digital' || !item.available_type)) {
+    chips.push({ cls: 'zip', label: 'Digital Files' });
+  }
+  return chips;
+}
+
+function renderFreebieDetailModal(item, related) {
+  const uniqueGallery = getMarketplaceGalleryImages(item);
+  const categoryLabel = esc(item.category || 'Freebie');
+  const downloads = Number(item.download_count || item.sales_count || 0);
+  const relatedHtml = related.length
+    ? `<section class="mp-related mp-related--compact">
+        <div class="mp-related-head"><h3>More free resources</h3></div>
+        <div class="mp-related-track" data-related-track>
+          ${related.slice(0, 8).map((rel) => `<button type="button" class="mp-related-item" onclick="openMarketplaceModal('freebie', '${esc(rel.id)}')">
+            <div class="mp-related-item-media"><img src="${esc(rel.image)}" alt="" loading="lazy" onerror="this.src='img/poster.webp'"></div>
+            <div class="mp-related-item-body"><span class="mp-related-item-name">${esc(rel.name)}</span><strong>₹0</strong></div>
+          </button>`).join('')}
+        </div>
+      </section>`
+    : '';
+
+  return `
+    ${renderMpGalleryCol(uniqueGallery, item.name)}
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="freebies.php">
+      <div class="mp-details">
+        <div class="mp-tags">
+          <span class="mp-tag-pill">${categoryLabel}</span>
+          <span class="mp-tag-pill mp-tag-pill--accent">Free</span>
+        </div>
+        <h2 id="marketplace-modal-title">${esc(item.name)}</h2>
+        ${renderCatalogPriceRow(item)}
+        <p class="mp-desc-lead">${esc(item.description || 'Free design resource from UX Pacific.')}</p>
+        <div class="mp-delivery-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Instant access after free checkout (${downloads.toLocaleString()} downloads)
+        </div>
+        <div class="mp-action-stack">
+          <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('freebie', '${esc(item.id)}')">Add to Cart</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('freebie', '${esc(item.id)}')">Get Free</button>
+        </div>
+        ${relatedHtml}
+      </div>
+    </div>`;
+}
+
 function renderProductDetailModal(item, type, related, tagTokens) {
   const itemType = item.type || type;
-  const gallery = [item.image, ...(item.additional_images || [])].filter(Boolean);
-  const uniqueGallery = [...new Set(gallery)];
+  const uniqueGallery = getMarketplaceGalleryImages(item);
+  const isFree = isCatalogItemFree(item);
   const detailUrl = itemType === 'bundle'
     ? 'bundles.php'
     : `product.php?id=${encodeURIComponent(item.id)}`;
@@ -3943,11 +4075,34 @@ function renderProductDetailModal(item, type, related, tagTokens) {
         <h2 id="marketplace-modal-title">${esc(item.name)}</h2>
         ${ratingHtml}
 
-        <div class="mp-price-row">
-          <strong>${formatMoney(item.price)}</strong>
-          ${item.old_price ? `<span class="mp-old-price">${formatMoney(item.old_price)}</span>` : ''}
-          ${item.discount_percent ? `<em class="mp-discount">${item.discount_percent}% OFF</em>` : ''}
-        </div>
+        ${renderCatalogPriceRow(item)}
+
+        ${isFree ? '' : (() => {
+          const chips = detectFormatChips(item);
+          if (!chips.length) return '';
+          return `<div class="mp-format-chips">${chips.map(c => `<span class="mp-format-chip mp-format-chip--${c.cls}">${c.label}</span>`).join('')}</div>`;
+        })()}
+
+        ${(() => {
+          const isPhysical = item.available_type === 'physical';
+          const isDigital = !isPhysical;
+          if (isFree && isDigital) {
+            return `<div class="mp-delivery-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Instant digital delivery — free checkout at ₹0
+            </div>`;
+          }
+          if (isDigital) {
+            return `<div class="mp-delivery-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Instant digital delivery after payment
+            </div>`;
+          }
+          return `<div class="mp-delivery-badge mp-delivery-badge--physical">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              Physical product — ships to your address
+            </div>`;
+        })()}
 
         ${sizeHtml}
 
@@ -3963,7 +4118,7 @@ function renderProductDetailModal(item, type, related, tagTokens) {
 
         <div class="mp-action-stack">
           <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('${esc(itemType)}', '${esc(item.id)}')">Add to Cart</button>
-          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}')">Buy Now</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}')">${isFree ? 'Get Free' : 'Buy Now'}</button>
         </div>
 
         <button type="button" class="mp-details-link" data-mp-toggle-details>View description &amp; full details →</button>
@@ -3998,8 +4153,17 @@ function initMarketplaceGallery() {
   const setIndex = (next) => {
     index = (next + images.length) % images.length;
     if (main) {
-      main.src = images[index];
-      main.onerror = () => { main.src = 'img/poster.webp'; };
+      main.style.transition = 'opacity 0.15s ease, transform 0.18s ease';
+      main.style.opacity = '0';
+      main.style.transform = 'scale(0.97)';
+      setTimeout(() => {
+        main.src = images[index];
+        main.onerror = () => { main.src = 'img/poster.webp'; };
+        requestAnimationFrame(() => {
+          main.style.opacity = '1';
+          main.style.transform = 'scale(1)';
+        });
+      }, 150);
     }
     if (counter) counter.textContent = `${index + 1}/${images.length}`;
     dots.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
@@ -4011,6 +4175,25 @@ function initMarketplaceGallery() {
   thumbs.forEach((thumb, i) => {
     thumb.addEventListener('click', () => setIndex(i));
   });
+
+  // Lightbox / zoom
+  const zoomBtn = gallery.querySelector('[data-mp-zoom]');
+  if (zoomBtn && main) {
+    zoomBtn.addEventListener('click', () => {
+      let lb = document.getElementById('mp-lightbox');
+      if (!lb) {
+        lb = document.createElement('div');
+        lb.id = 'mp-lightbox';
+        lb.innerHTML = `<button id="mp-lightbox-close" aria-label="Close preview">×</button><img src="" alt="Product preview">`;
+        document.body.appendChild(lb);
+        lb.querySelector('#mp-lightbox-close').addEventListener('click', () => lb.classList.remove('is-open'));
+        lb.addEventListener('click', (e) => { if (e.target === lb) lb.classList.remove('is-open'); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lb.classList.remove('is-open'); });
+      }
+      lb.querySelector('img').src = main.src;
+      lb.classList.add('is-open');
+    });
+  }
 }
 
 function initMpModalControls() {
@@ -4071,11 +4254,11 @@ async function mpModalBuyNow(type, id) {
     
     if (type === 'bundle') {
       await addMarketplaceItemToCart(type, id);
-      setTimeout(() => { window.location.href = 'checkout.php'; }, 500);
+      window.location.href = 'checkout.php';
       return;
     }
-    
-    buyNow(id, size, qty);
+
+    await buyNow(id, size, qty);
   } catch (error) {
     showToast(error.message || 'Could not process request.', 'error');
     if (buyBtn) {
@@ -4115,14 +4298,30 @@ function initProductCardPopups() {
   });
 
   document.addEventListener('click', (event) => {
+    const buyNowBtn = event.target.closest('button.js-buy-now');
+    if (buyNowBtn) {
+      event.stopPropagation();
+      const id = buyNowBtn.dataset.productId;
+      const itemType = normalizeMarketplaceType(buyNowBtn.dataset.itemType || 'product');
+      if (!id) return;
+      const origText = buyNowBtn.textContent.trim();
+      buyNowBtn.disabled = true;
+      buyNowBtn.textContent = '…';
+      buyNow(id, null, 1, itemType).catch(() => {
+        buyNowBtn.disabled = false;
+        buyNowBtn.textContent = origText;
+      });
+      return;
+    }
+
     const popupLink = event.target.closest('a.js-product-popup');
     if (popupLink) {
       event.preventDefault();
       const card = popupLink.closest('[data-product-id], [data-id]');
       const id = popupLink.dataset.productId || card?.dataset.productId || card?.dataset.id;
-      const itemType = popupLink.dataset.itemType || card?.dataset.type || 'product';
+      const itemType = normalizeMarketplaceType(popupLink.dataset.itemType || card?.dataset.type || 'product');
       if (id && typeof openMarketplaceModal === 'function') {
-        openMarketplaceModal(itemType === 'bundle' ? 'bundle' : 'product', id, popupLink);
+        openMarketplaceModal(itemType, id, popupLink);
       }
       return;
     }
@@ -4131,14 +4330,14 @@ function initProductCardPopups() {
     if (popupBtn) {
       event.preventDefault();
       const id = popupBtn.dataset.productId || popupBtn.closest('[data-product-id]')?.dataset.productId;
-      const itemType = popupBtn.dataset.itemType || 'product';
+      const itemType = normalizeMarketplaceType(popupBtn.dataset.itemType || popupBtn.closest('[data-type]')?.dataset.type || 'product');
       if (id && typeof openMarketplaceModal === 'function') {
-        openMarketplaceModal(itemType === 'bundle' ? 'bundle' : 'product', id, popupBtn);
+        openMarketplaceModal(itemType, id, popupBtn);
       }
       return;
     }
 
-    const card = event.target.closest('.uxp-product-card, .shop-product-card, .marketplace-card, .uxp-bundle-card');
+    const card = event.target.closest('.uxp-product-card, .shop-product-card, .marketplace-card, .uxp-bundle-card, .freebie-card');
     if (!card) return;
     if (event.target.closest('button')) return;
     const plainLink = event.target.closest('a');
@@ -4146,7 +4345,7 @@ function initProductCardPopups() {
 
     const id = card.dataset.productId || card.dataset.id;
     if (!id) return;
-    const itemType = card.dataset.type === 'bundle' ? 'bundle' : 'product';
+    const itemType = normalizeMarketplaceType(card.dataset.type || 'product');
     event.preventDefault();
     if (typeof openMarketplaceModal === 'function') {
       openMarketplaceModal(itemType, id, card);
@@ -4200,7 +4399,9 @@ async function openMarketplaceModal(type, id, triggerEl) {
     content.className = 'marketplace-modal-content';
     body.innerHTML = type === 'bundle'
       ? renderBundleDetailModal(item, related)
-      : renderProductDetailModal(item, type, related, tagTokens);
+      : type === 'freebie'
+        ? renderFreebieDetailModal(item, related)
+        : renderProductDetailModal(item, type, related, tagTokens);
     initMarketplaceGallery();
     initMpModalControls();
     initRelatedCarousel();
@@ -4436,29 +4637,25 @@ if (typeof document !== 'undefined') {
   });
 }
 
-// Buy Now function - adds to cart and redirects to checkout
-function buyNow(productId, size, quantity) {
-  // Check if user is signed in
+// Buy Now function - adds to cart then redirects to checkout
+async function buyNow(productId, size, quantity, itemType = 'product') {
   const userSession = getUserSession();
   if (!userSession || !userSession.id) {
-    if (userSession) clearUserSession(); // Clear invalid session
-    // Add to cart first
-    addToCart(productId, size, quantity);
+    if (userSession) clearUserSession();
+    await addToCart(productId, size, quantity, { item_type: itemType }).catch(() => {});
     showToast('Please sign in to complete your purchase', 'error');
-    // Redirect to sign in with redirect to checkout
     setTimeout(() => {
       window.location.href = 'signin.php?redirect=checkout.php';
     }, 1500);
     return;
   }
-  
-  // Add to cart first
-  addToCart(productId, size, quantity);
-  
-  // Redirect to checkout after a short delay
-  setTimeout(() => {
+
+  try {
+    await addToCart(productId, size, quantity, { item_type: itemType });
     window.location.href = 'checkout.php';
-  }, 500);
+  } catch (err) {
+    showToast(typeof err === 'string' ? err : 'Failed to add item to cart.', 'error');
+  }
 }
 
 // Check authentication before proceeding to checkout

@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/config.php';
+require_once __DIR__ . '/includes/marketplace.php';
 
 $explicitId = array_key_exists('id', $_GET);
 $product_id = $explicitId ? (int) $_GET['id'] : 0;
@@ -32,8 +33,10 @@ if (!$product) {
 // Prepare Data
 $name = htmlspecialchars($product['name']);
 $description = htmlspecialchars($product['description']);
-$price = number_format($product['price'], 2);
-$commercial_price_val = !empty($product['commercial_price']) ? $product['commercial_price'] : ($product['price'] * 1.4);
+$isFreeProduct = !empty($product['is_free']);
+$displayPrice = $isFreeProduct ? 0.0 : (float) $product['price'];
+$price = number_format($displayPrice, 2);
+$commercial_price_val = $isFreeProduct ? 0.0 : (!empty($product['commercial_price']) ? $product['commercial_price'] : ($product['price'] * 1.4));
 $commercial_price = number_format($commercial_price_val, 2);
 $old_price = !empty($product['old_price']) ? number_format($product['old_price'], 2) : '';
 $rating = $product['rating'] ?: '0.0';
@@ -59,26 +62,17 @@ $fit_class = $fit_is_cover ? 'fit-cover' : 'fit-contain';
 // Handle Images
 $images = [];
 
-// 1. Main Image from 'image' column (Priority 1)
-if (!empty($product['image'])) {
+// 1. Main Image from 'image' column (Priority 1) — must be a real image file
+if (!empty($product['image']) && marketplaceIsGalleryImagePath((string) $product['image'])) {
     $images[] = $product['image'];
 }
 
-// 2. Additional Images from 'additional_images' column
-if (!empty($product['additional_images'])) {
-    $add_imgs = json_decode($product['additional_images'], true);
-    
-    // Validate JSON decode
-    if (json_last_error() === JSON_ERROR_NONE && is_array($add_imgs)) {
-        foreach ($add_imgs as $img) {
-            // Avoid duplicates of the main image or within additional images
-            if (!in_array($img, $images)) {
-                $images[] = $img;
-            }
-        }
+// 2. Additional gallery images (image files only — not ZIP/PDF/resource paths)
+foreach (marketplaceParseAdditionalImages($product['additional_images'] ?? null) as $img) {
+    if (!in_array($img, $images, true)) {
+        $images[] = $img;
     }
 }
-
 // 3. Fallback if no images found at all
 if (empty($images)) {
     $images[] = 'img/sticker.webp';
@@ -387,6 +381,89 @@ $related_html = getRelatedProducts($conn, $product);
       </div>
     </section>
 
+    <!-- FORMAT BADGES -->
+    <?php
+    $formatSources = strtolower(
+        ($row['name'] ?? '') . ' ' .
+        ($row['file_specification'] ?? '') . ' ' .
+        ($row['files_included'] ?? '') . ' ' .
+        ($row['compatible_software'] ?? '')
+    );
+    $fmtBadges = [];
+    if (str_contains($formatSources, 'figma'))           $fmtBadges[] = ['figma', 'Figma'];
+    if (str_contains($formatSources, 'canva'))           $fmtBadges[] = ['canva', 'Canva'];
+    if (str_contains($formatSources, '.zip') || str_contains($formatSources, 'zip file') || str_contains($formatSources, 'zip pack')) $fmtBadges[] = ['zip', 'ZIP Package'];
+    if (str_contains($formatSources, '.pdf') || str_contains($formatSources, 'pdf'))   $fmtBadges[] = ['pdf', 'PDF Guide'];
+    if (str_contains($formatSources, 'photoshop') || str_contains($formatSources, '.psd')) $fmtBadges[] = ['png', 'Photoshop'];
+    if (str_contains($formatSources, 'instruction') || str_contains($formatSources, 'guide')) $fmtBadges[] = ['instructions', 'Instructions'];
+    if (str_contains($formatSources, '.png') || str_contains($formatSources, 'high res')) $fmtBadges[] = ['png', 'PNG/JPG'];
+    if (empty($fmtBadges) && ($available_type ?? '') !== 'physical') $fmtBadges[] = ['zip', 'Digital Files'];
+    ?>
+    <?php if (!empty($fmtBadges)): ?>
+    <section style="margin: 0 0 8px;">
+      <div class="pp-format-badges">
+        <?php foreach ($fmtBadges as [$cls, $label]): ?>
+          <span class="pp-format-badge pp-format-badge--<?php echo $cls; ?>"><?php echo htmlspecialchars($label); ?></span>
+        <?php endforeach; ?>
+      </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- FAQ -->
+    <section class="pp-faq">
+      <h2 class="pp-faq-title">Frequently Asked Questions</h2>
+
+      <div class="pp-faq-item">
+        <button class="pp-faq-question" type="button" aria-expanded="false">
+          How do I access my files after purchase?
+          <i class="pp-faq-icon" aria-hidden="true">+</i>
+        </button>
+        <div class="pp-faq-answer">
+          After completing payment, your files are instantly available on the <em>Order Confirmation</em> page and in <em>My Orders</em>. You'll also receive a download link by email.
+        </div>
+      </div>
+
+      <div class="pp-faq-item">
+        <button class="pp-faq-question" type="button" aria-expanded="false">
+          What formats are included?
+          <i class="pp-faq-icon" aria-hidden="true">+</i>
+        </button>
+        <div class="pp-faq-answer">
+          Files included vary per product and are listed in the <em>File Specification</em> tab above. Most digital products include Figma source files, Canva templates, high-resolution exports, and a PDF guide.
+        </div>
+      </div>
+
+      <div class="pp-faq-item">
+        <button class="pp-faq-question" type="button" aria-expanded="false">
+          Can I use this commercially?
+          <i class="pp-faq-icon" aria-hidden="true">+</i>
+        </button>
+        <div class="pp-faq-answer">
+          Our standard license covers personal and client work. For commercial redistribution or resale, please select the <em>Commercial License</em> at checkout if available, or contact us.
+        </div>
+      </div>
+
+      <div class="pp-faq-item">
+        <button class="pp-faq-question" type="button" aria-expanded="false">
+          What if I need help or have a problem?
+          <i class="pp-faq-icon" aria-hidden="true">+</i>
+        </button>
+        <div class="pp-faq-answer">
+          Email us at <a href="mailto:support@uxpacific.com" style="color:#a78bfa;">support@uxpacific.com</a> or use the Contact page. We respond within 24 hours on business days.
+        </div>
+      </div>
+
+      <div class="pp-faq-item">
+        <button class="pp-faq-question" type="button" aria-expanded="false">
+          Is this a one-time purchase?
+          <i class="pp-faq-icon" aria-hidden="true">+</i>
+        </button>
+        <div class="pp-faq-answer">
+          Yes — one-time payment, lifetime access. No subscriptions. Future updates to the file (if any) are included at no extra cost.
+        </div>
+      </div>
+    </section>
+
     <!-- RELATED PRODUCTS -->
     <?php if ($related_html): ?>
     <section class="related-section">
@@ -603,6 +680,23 @@ $related_html = getRelatedProducts($conn, $product);
               window.location.href = 'index.php';
             });
       }
+
+      // FAQ accordion
+      document.querySelectorAll('.pp-faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var item = this.closest('.pp-faq-item');
+          var isOpen = item.classList.contains('is-open');
+          document.querySelectorAll('.pp-faq-item.is-open').forEach(function(el) {
+            el.classList.remove('is-open');
+            var q = el.querySelector('.pp-faq-question');
+            if (q) q.setAttribute('aria-expanded', 'false');
+          });
+          if (!isOpen) {
+            item.classList.add('is-open');
+            this.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
     </script>
   </body>
 </html>

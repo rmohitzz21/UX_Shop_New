@@ -237,14 +237,20 @@ function catSlug(string $name): string {
                   data-old-price="<?= $row['old_price'] ?>"
                   data-rating="<?= $rating ?>">
 
-                  <a href="product.php?id=<?= $id ?>"
+                  <a href="#"
                      class="uxp-product-media js-product-popup"
-                     aria-label="View <?= $name ?>"
-                     data-product-id="<?= $id ?>">
-
+                     aria-label="Quick view <?= $name ?>"
+                     data-product-id="<?= $id ?>"
+                     data-item-type="product">
                     <img src="<?= $imgSrc ?>" alt="<?= $name ?>"
                          loading="lazy" width="480" height="360"
                          onerror="this.src='img/sticker.webp'" />
+                    <span class="uxp-qv-overlay" aria-hidden="true">
+                      <span class="uxp-qv-btn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        Quick View
+                      </span>
+                    </span>
                   </a>
 
                   <div class="uxp-product-body">

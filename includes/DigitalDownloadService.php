@@ -22,14 +22,15 @@ class DigitalDownloadService
 
         $iStmt = $conn->prepare("
             SELECT oi.id AS order_item_id, oi.item_type, oi.product_id, oi.bundle_id, oi.selected_format,
-                   COALESCE(oi.product_name, p.name, b.name, 'Item') AS item_name,
-                   COALESCE(p.digital_file_path, b.digital_file_path, '') AS legacy_file_path,
+                   COALESCE(oi.product_name, p.name, b.name, f.name, 'Item') AS item_name,
+                   COALESCE(p.digital_file_path, b.digital_file_path, f.file_url, '') AS legacy_file_path,
                    COALESCE(p.download_limit, b.download_limit, 5) AS dl_limit,
                    COALESCE(p.download_expiry_days, b.download_expiry_days, 30) AS expiry_days,
                    COALESCE(p.available_type, 'digital') AS available_type
             FROM order_items oi
             LEFT JOIN products p ON p.id = oi.product_id AND oi.item_type = 'product'
             LEFT JOIN bundles  b ON b.id = oi.bundle_id  AND oi.item_type = 'bundle'
+            LEFT JOIN freebies f ON f.id = oi.product_id AND oi.item_type = 'freebie'
             WHERE oi.order_id = ?
         ");
         if ($iStmt === false) {
@@ -63,8 +64,9 @@ class DigitalDownloadService
             }
 
             $orderItemId = (int) $item['order_item_id'];
-            $productId   = $item['item_type'] === 'product' ? (int) $item['product_id'] : null;
-            $bundleId    = $item['item_type'] === 'bundle'  ? (int) $item['bundle_id']  : null;
+            $productId   = in_array($item['item_type'], ['product', 'freebie'], true)
+                ? (int) $item['product_id'] : null;
+            $bundleId    = $item['item_type'] === 'bundle' ? (int) $item['bundle_id'] : null;
             $itemName    = (string) $item['item_name'];
             $resources   = [];
 
@@ -264,8 +266,13 @@ class DigitalDownloadService
             self::jsonError(503, 'File not yet available. Please contact support.');
         }
 
-        $filePath = (string) $row['file_path'];
-        $absPath  = self::resolveFilePath($filePath);
+        $filePath = trim((string) $row['file_path']);
+        if ($filePath !== '' && preg_match('/^https?:\/\//i', $filePath)) {
+            header('Location: ' . $filePath);
+            exit;
+        }
+
+        $absPath = self::resolveFilePath($filePath);
         if ($filePath === '' || !is_file($absPath)) {
             self::jsonError(503, 'File not yet available. Please contact support.');
         }

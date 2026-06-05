@@ -1185,6 +1185,15 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                 <option value="1">Yes</option>
               </select>
             </div>
+            <div class="form-group form-col-full">
+              <label class="form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <input type="checkbox" id="edit-product-is-free" name="is_free" value="1" style="accent-color:var(--accent);width:16px;height:16px;" />
+                Free product — show on Freebies page
+              </label>
+              <p class="form-hint" style="margin:4px 0 0;color:#94a3b8;font-size:0.875rem;">
+                Sets price to ₹0 and lists this item on <code>freebies.php</code>. Use normal digital files/resources; checkout uses the same product cart flow.
+              </p>
+            </div>
           </div>
         </div>
 

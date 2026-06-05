@@ -25,6 +25,15 @@ $availableType = trim((string) ($input['available_type'] ?? 'digital'));
 if (!in_array($availableType, ['physical', 'digital', 'both'], true)) $availableType = 'digital';
 $active = adminBool($input['is_active'] ?? 1, 1);
 $featured = adminBool($input['is_featured'] ?? 0, 0);
+$isFree = adminBool($input['is_free'] ?? 0, 0);
+if ($isFree) {
+    $price = 0.0;
+    $oldPrice = null;
+    $commercialPrice = null;
+    if ($availableType === 'physical') {
+        $availableType = 'digital';
+    }
+}
 $slug = slugify($input['slug'] ?? $name);
 
 $imageUploads = adminUploadImages('image');
@@ -72,15 +81,15 @@ if ($id > 0) {
         }
     }
 
-    $stmt = $conn->prepare('UPDATE products SET name=?, slug=?, sku=?, description=?, whats_included=?, file_specification=?, category=?, tags=?, price=?, old_price=?, commercial_price=?, image=?, additional_images=?, stock=?, rating=?, available_type=?, is_active=?, is_featured=? WHERE id=?');
-    $stmt->bind_param('ssssssssdddssidsiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $id);
+    $stmt = $conn->prepare('UPDATE products SET name=?, slug=?, sku=?, description=?, whats_included=?, file_specification=?, category=?, tags=?, price=?, old_price=?, commercial_price=?, image=?, additional_images=?, stock=?, rating=?, available_type=?, is_active=?, is_featured=?, is_free=? WHERE id=?');
+    $stmt->bind_param('ssssssssdddssidsiiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree, $id);
     if (!$stmt->execute()) sendResponse('error', 'Could not update product: ' . $stmt->error, null, 500);
     adminRecordInventory($conn, 'product', $id, (int) $before['stock'], $stock, 'Admin product update');
     sendResponse('success', 'Product updated.', ['id' => $id, 'image' => $mainImage]);
 }
 
-$stmt = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-$stmt->bind_param('ssssssssdddssidsii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured);
+$stmt = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured, is_free) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+$stmt->bind_param('ssssssssdddssidsiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree);
 if (!$stmt->execute()) sendResponse('error', 'Could not create product: ' . $stmt->error, null, 500);
 $newId = (int) $conn->insert_id;
 adminRecordInventory($conn, 'product', $newId, 0, $stock, 'Admin product create');

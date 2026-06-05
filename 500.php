@@ -44,7 +44,7 @@
               <div class="error-help">
                 <p>If the problem persists, please contact our support team:</p>
                 <p>
-                  <a href="mailto:hello@uxpacific.com">hello@uxpacific.com</a> | 
+                  <a href="mailto:<?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?>"><?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></a> | 
                   <a href="tel:+919274061063">+91 9274061063</a>
                 </p>
               </div>
@@ -107,10 +107,10 @@
               <p>
                 Email :
                 <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@uxpacific.com"
+                  href="mailto:<?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?>"
                   style="text-decoration: none; color: inherit"
                   target="_blank"
-                  >hello@uxpacific.com</a
+                  ><?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></a
                 >
                 &nbsp;&nbsp;&nbsp;&nbsp;
               </p>

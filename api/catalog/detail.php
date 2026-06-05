@@ -1,20 +1,70 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 
-$type = ($_GET['type'] ?? 'product') === 'bundle' ? 'bundle' : 'product';
+$rawType = strtolower((string) ($_GET['type'] ?? 'product'));
+$type = apiNormalizeCartItemType($rawType);
 $id = max(0, (int) ($_GET['id'] ?? 0));
-if ($id <= 0) sendResponse('error', 'Missing item id.', null, 400);
+if ($id <= 0) {
+    sendResponse('error', 'Missing item id.', null, 400);
+}
+
+if ($type === 'freebie') {
+    $stmt = $conn->prepare('SELECT * FROM freebies WHERE id = ? AND is_active = 1 LIMIT 1');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    if (!$row) {
+        sendResponse('error', 'Item not found.', null, 404);
+    }
+
+    $item = apiFreebiePayload($row);
+    $item['tags'] = '';
+    $item['whats_included'] = '';
+    $item['file_specification'] = '';
+    $item['included_items_parsed'] = [];
+    $item['view_count'] = 0;
+    $item['sales_count'] = (int) ($row['download_count'] ?? 0);
+    $item['slug'] = $row['slug'] ?? '';
+    $item['review_count'] = 0;
+    $item['discount_percent'] = 0;
+    $item['additional_images'] = [];
+
+    $related = [];
+    $category = $row['category'] ?? '';
+    $relSql = 'SELECT * FROM freebies WHERE id <> ? AND is_active = 1';
+    $params = [$id];
+    $types = 'i';
+    if ($category !== '') {
+        $relSql .= ' AND category = ?';
+        $params[] = $category;
+        $types .= 's';
+    }
+    $relSql .= ' ORDER BY is_featured DESC, download_count DESC, sort_order ASC LIMIT 4';
+    $relStmt = $conn->prepare($relSql);
+    $relStmt->bind_param($types, ...$params);
+    $relStmt->execute();
+    $relRes = $relStmt->get_result();
+    while ($rel = $relRes->fetch_assoc()) {
+        $related[] = apiFreebiePayload($rel);
+    }
+
+    sendResponse('success', 'Item loaded.', ['item' => $item, 'related' => $related, 'tag_tokens' => []]);
+}
 
 $table = $type === 'bundle' ? 'bundles' : 'products';
 $stmt = $conn->prepare("SELECT * FROM `$table` WHERE id = ? AND is_active = 1 LIMIT 1");
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
-if (!$row) sendResponse('error', 'Item not found.', null, 404);
+if (!$row) {
+    sendResponse('error', 'Item not found.', null, 404);
+}
 
 $item = apiProductPayload($row);
 $item['type'] = $type;
-if ($type === 'bundle') $item['available_type'] = 'digital';
+if ($type === 'bundle') {
+    $item['available_type'] = 'digital';
+}
 $item['tags'] = $row['tags'] ?? '';
 $item['whats_included'] = $row['whats_included'] ?? '';
 $item['file_specification'] = $row['file_specification'] ?? '';
@@ -66,7 +116,7 @@ if ($category !== '') {
     $params[] = $category;
     $types .= 's';
 }
-$sql = "SELECT * FROM `$relatedTable` WHERE " . implode(' AND ', $where) . " ORDER BY is_featured DESC, sales_count DESC, rating DESC LIMIT 4";
+$sql = "SELECT * FROM `$relatedTable` WHERE " . implode(' AND ', $where) . ' ORDER BY is_featured DESC, sales_count DESC, rating DESC LIMIT 4';
 $relStmt = $conn->prepare($sql);
 $relStmt->bind_param($types, ...$params);
 $relStmt->execute();
@@ -74,7 +124,9 @@ $relRes = $relStmt->get_result();
 while ($rel = $relRes->fetch_assoc()) {
     $payload = apiProductPayload($rel);
     $payload['type'] = $type;
-    if ($type === 'bundle') $payload['available_type'] = 'digital';
+    if ($type === 'bundle') {
+        $payload['available_type'] = 'digital';
+    }
     $related[] = $payload;
 }
 

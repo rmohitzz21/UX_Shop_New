@@ -215,6 +215,7 @@ body.freebies-page .shop-all-subtitle {
 }
 
 /* ── Freebie card ── */
+.freebie-card.uxp-product-card,
 .freebie-card.prod-card {
   background: rgba(13, 11, 26, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -228,6 +229,7 @@ body.freebies-page .shop-all-subtitle {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
+.freebie-card.uxp-product-card:hover,
 .freebie-card.prod-card:hover {
   transform: translateY(-6px) !important;
   border-color: rgba(124, 92, 255, 0.35) !important;
@@ -236,15 +238,20 @@ body.freebies-page .shop-all-subtitle {
 }
 
 /* Image area */
+.freebie-card .uxp-product-media,
 .freebie-card .prod-img {
   position: relative;
+}
+
+.freebie-card .uxp-product-media {
+  display: block;
   border-radius: 0;
   overflow: hidden;
   height: 196px;
   background: #0e0b1e;
-  flex-shrink: 0;
 }
 
+.freebie-card .uxp-product-media img,
 .freebie-card .prod-img img {
   width: 100%;
   height: 100%;
@@ -254,11 +261,13 @@ body.freebies-page .shop-all-subtitle {
   transition: transform 0.65s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+.freebie-card.uxp-product-card:hover .uxp-product-media img,
 .freebie-card.prod-card:hover .prod-img img {
   transform: scale(1.06);
 }
 
 /* Gradient overlay on image bottom */
+.freebie-card .uxp-product-media::after,
 .freebie-card .prod-img::after {
   content: '';
   position: absolute;
@@ -331,6 +340,7 @@ body.freebies-page .shop-all-subtitle {
 }
 
 /* Card body */
+.freebie-card .uxp-product-body,
 .freebie-card .prod-info {
   padding: 18px 20px 20px;
   display: flex;

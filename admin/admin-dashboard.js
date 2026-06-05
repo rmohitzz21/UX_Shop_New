@@ -350,7 +350,7 @@ function renderProducts(products) {
           </div>
         </td>
         <td><span class="badge badge-info">${escapeHtml(p.category || 'Uncategorized')}</span></td>
-        <td>${money(p.price)}</td>
+        <td>${money(p.price)}${p.is_free == 1 ? ' <span class="badge badge-success" style="margin-left:4px;">Free</span>' : ''}</td>
         <td>${Number(p.stock || 0).toLocaleString()}</td>
         <td>${escapeHtml(p.rating || '0.0')}</td>
         <td>${p.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
@@ -464,7 +464,10 @@ function clearProductForm() {
   document.getElementById('edit-product-stock').value = '0';
   document.getElementById('edit-product-active').value = '1';
   document.getElementById('edit-product-featured').value = '0';
+  const freeCb = document.getElementById('edit-product-is-free');
+  if (freeCb) freeCb.checked = false;
   document.getElementById('edit-product-available').value = 'digital';
+  syncProductIsFreePriceField();
   const galleryInput = document.getElementById('edit-product-gallery');
   if (galleryInput) galleryInput.value = '';
   renderProductMediaPreviews();
@@ -657,6 +660,27 @@ function onBundleGalleryFilesSelected(event) {
   renderBundleMediaPreviews();
 }
 
+function syncProductIsFreePriceField() {
+  const freeCb = document.getElementById('edit-product-is-free');
+  const priceEl = document.getElementById('edit-product-price');
+  if (!freeCb || !priceEl) return;
+  if (freeCb.checked) {
+    priceEl.value = '0';
+    priceEl.readOnly = true;
+    priceEl.classList.add('is-readonly');
+  } else {
+    priceEl.readOnly = false;
+    priceEl.classList.remove('is-readonly');
+  }
+}
+
+function initProductIsFreeToggle() {
+  const freeCb = document.getElementById('edit-product-is-free');
+  if (!freeCb || freeCb.dataset.bound === '1') return;
+  freeCb.dataset.bound = '1';
+  freeCb.addEventListener('change', syncProductIsFreePriceField);
+}
+
 async function openCreateProductModal() {
   if (!state.categories.length) {
     await getCategories();
@@ -694,6 +718,9 @@ async function editProduct(productId) {
   set('edit-product-stock', p.stock);
   set('edit-product-active', String(p.is_active ?? 1));
   set('edit-product-featured', String(p.is_featured ?? 0));
+  const freeCb = document.getElementById('edit-product-is-free');
+  if (freeCb) freeCb.checked = Number(p.is_free) === 1;
+  syncProductIsFreePriceField();
   loadProductMediaFromRow(p);
   toggleProductResourcesSection();
   loadProductResources(p.id);
@@ -2085,6 +2112,7 @@ const exported = {
 
 Object.assign(window, exported);
 document.addEventListener('DOMContentLoaded', () => {
+  initProductIsFreeToggle();
   window.setTimeout(() => {
     Object.assign(window, exported);
     bindDashboard();
