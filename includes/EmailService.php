@@ -40,14 +40,37 @@ class EmailService
 
     private static function send(string $to, string $subject, string $bodyHtml, string $plainText = ''): bool
     {
+        return self::sendWithReplyTo($to, $subject, $bodyHtml, '', $plainText);
+    }
+
+    private static function sendWithReplyTo(
+        string $to,
+        string $subject,
+        string $bodyHtml,
+        string $replyTo = '',
+        string $plainText = ''
+    ): bool {
         if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
         try {
+            $mailer = new Mailer();
+            $reply  = trim($replyTo);
+            if ($reply !== '' && filter_var($reply, FILTER_VALIDATE_EMAIL)) {
+                $mailer->setReplyTo($reply);
+            } else {
+                $fallback = trim(self::supportEmail());
+                if ($fallback !== '' && filter_var($fallback, FILTER_VALIDATE_EMAIL)) {
+                    $mailer->setReplyTo($fallback);
+                }
+            }
+
             $html = self::wrapInTemplate($subject, $bodyHtml);
-            $ok   = self::mailer()->send($to, $subject, $html, $plainText);
+            $ok   = $mailer->send($to, $subject, $html, $plainText);
             if ($ok) {
                 error_log('EmailService: sent "' . $subject . '" to ' . $to);
+            } else {
+                error_log('EmailService: failed to send "' . $subject . '" to ' . $to);
             }
             return $ok;
         } catch (Throwable $e) {
@@ -474,17 +497,30 @@ class EmailService
 
     public static function sendContactFormNotification(string $name, string $email, string $subject, string $message, string $phone = ''): bool
     {
-        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $safeName  = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
-        $safeSubj = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
-        $safeMsg  = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
-        $safePhone = htmlspecialchars($phone, ENT_QUOTES, 'UTF-8');
+        $safeSubj  = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $safeMsg   = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+        $safePhone = htmlspecialchars($phone !== '' ? $phone : '—', ENT_QUOTES, 'UTF-8');
 
-        $html = "<p><strong>New contact form message</strong></p>
-<p>Name: {$safeName}<br>Email: {$safeEmail}<br>Phone: {$safePhone}<br>Subject: {$safeSubj}</p>
-<p>{$safeMsg}</p>";
+        $html = "<p>You have received a new inquiry from the UX Pacific contact form.</p>
+<div style='background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;'>
+  <p style='margin:0 0 8px;'><strong>Name:</strong> {$safeName}</p>
+  <p style='margin:0 0 8px;'><strong>Email:</strong> <a href='mailto:{$safeEmail}'>{$safeEmail}</a></p>
+  <p style='margin:0 0 8px;'><strong>Phone:</strong> {$safePhone}</p>
+  <p style='margin:0;'><strong>Subject:</strong> {$safeSubj}</p>
+</div>
+<p><strong>Message:</strong></p>
+<p>{$safeMsg}</p>
+<p style='color:#6b7280;font-size:13px;'>Reply directly to this email to respond to the customer.</p>";
 
-        return self::send(self::adminNotifyEmail(), "[Contact Form] Message from {$safeName}", $html);
+        $adminTo = self::adminNotifyEmail();
+        return self::sendWithReplyTo(
+            $adminTo,
+            '[Contact Form] New inquiry from ' . $name,
+            $html,
+            $email
+        );
     }
 
     public static function sendRefundConfirmation(int $orderId, mysqli $conn, float $refundAmount, string $reason = ''): bool
@@ -519,11 +555,38 @@ class EmailService
 
     public static function sendContactConfirmation(string $name, string $email): bool
     {
-        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
-        $html     = "<p>Hi {$safeName}, thank you for reaching out to UX Pacific.</p>
-<p>We received your message and will get back to you within 24 hours on business days.</p>";
+        $safeName    = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $support     = htmlspecialchars(self::supportEmail(), ENT_QUOTES, 'UTF-8');
+        $html        = "<p>Hi {$safeName},</p>
+<p><strong>Thank you for contacting UX Pacific.</strong></p>
+<p>We have received your message and our team will get back to you within 24 hours on business days.</p>
+<p style='color:#6b7280;font-size:13px;'>If your enquiry is urgent, email us at <a href='mailto:{$support}'>{$support}</a>.</p>";
 
-        return self::send($email, 'We received your message — UX Pacific', $html);
+        return self::send($email, 'Thank you for contacting UX Pacific', $html);
+    }
+
+    /**
+     * Send admin inquiry + user thank-you emails after a contact form submission.
+     *
+     * @return array{admin: bool, user: bool}
+     */
+    public static function sendContactEmails(string $name, string $email, string $subject, string $message, string $phone = ''): array
+    {
+        $result = ['admin' => false, 'user' => false];
+
+        try {
+            $result['admin'] = self::sendContactFormNotification($name, $email, $subject, $message, $phone);
+        } catch (Throwable $e) {
+            error_log('EmailService::sendContactFormNotification: ' . $e->getMessage());
+        }
+
+        try {
+            $result['user'] = self::sendContactConfirmation($name, $email);
+        } catch (Throwable $e) {
+            error_log('EmailService::sendContactConfirmation: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     /** Run post-payment emails (confirmation + invoice + admin). */

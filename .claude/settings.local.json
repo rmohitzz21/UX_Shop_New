@@ -34,7 +34,8 @@
       "Bash(git -C \".claude/worktrees/agent-a78e356cdb105a900\" status --short)",
       "Bash(git -C \".claude/worktrees/agent-a78e356cdb105a900\" diff -- style.css)",
       "Read(//tmp/**)",
-      "Bash(git apply *)"
+      "Bash(git apply *)",
+      "Bash(\"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root uxmerchandise)"
     ]
   }
 }

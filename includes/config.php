@@ -40,6 +40,13 @@ if (!headers_sent()) {
 
 // ── 3. Session configuration ──────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
+    $sessionDir = dirname(__DIR__) . '/storage/sessions';
+    if (!is_dir($sessionDir)) {
+        @mkdir($sessionDir, 0755, true);
+    }
+    if (is_dir($sessionDir) && is_writable($sessionDir)) {
+        session_save_path($sessionDir);
+    }
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
                || (($_SERVER['SERVER_PORT'] ?? 80) == 443);
@@ -88,6 +95,7 @@ if (empty($_SESSION['csrf_token'])) {
 // ── 6. Global helpers ─────────────────────────────────────────────────────────
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/marketplace.php';
+require_once __DIR__ . '/ShopSettings.php';
 require_once __DIR__ . '/reviews.php';
 // Runtime DDL only before migration 004 marker; production uses migrations/*.sql.
 $appEnv = getenv('APP_ENV') ?: 'local';

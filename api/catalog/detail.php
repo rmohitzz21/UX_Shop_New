@@ -80,14 +80,17 @@ if ($type === 'product') {
     $item = array_merge($item, marketplaceProductSpecs($row));
 } else {
     $updatedAt = $row['updated_at'] ?? $row['created_at'] ?? null;
-    $item['last_update'] = $updatedAt ? date('M j, Y', strtotime((string) $updatedAt)) : date('M j, Y');
-    $item['high_resolution'] = 'Yes';
-    $item['compatible_software'] = 'All UX Pacific resources';
-    $item['software_version'] = 'Latest';
-    $item['files_included'] = 'Bundle download';
-    $item['grid_columns'] = '—';
-    $item['layout_type'] = 'Curated pack';
-    $item['license_type'] = 'Premium';
+    $bundleSpecs = [
+        'last_update' => $updatedAt ? date('M j, Y', strtotime((string) $updatedAt)) : date('M j, Y'),
+        'high_resolution' => 'Yes',
+        'compatible_software' => 'All UX Pacific resources',
+        'software_version' => 'Latest',
+        'files_included' => 'Bundle download',
+        'grid_columns' => '—',
+        'layout_type' => 'Curated pack',
+        'license_type' => 'Premium',
+    ];
+    $item = array_merge($item, shopSettingsApplyProductInfo($bundleSpecs, $conn));
 }
 $item['discount_percent'] = (!empty($row['old_price']) && (float) $row['old_price'] > 0)
     ? max(0, round((1 - ((float) $row['price'] / (float) $row['old_price'])) * 100))

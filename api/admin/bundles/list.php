@@ -25,8 +25,9 @@ if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
 $sql .= ' GROUP BY b.id ORDER BY b.updated_at DESC, b.id DESC';
 
 $stmt = $conn->prepare($sql);
+if (!$stmt) sendResponse('error', 'Could not load bundles: ' . $conn->error, null, 500);
 if ($params) $stmt->bind_param($types, ...$params);
-$stmt->execute();
+if (!$stmt->execute()) sendResponse('error', 'Could not load bundles: ' . $stmt->error, null, 500);
 $rows = [];
 $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) {

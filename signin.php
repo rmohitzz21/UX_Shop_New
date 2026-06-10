@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -12,7 +12,7 @@ if (empty($_SESSION['csrf_token'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
+  <link rel="icon" type="image/png" href="img/fav.png" />
   <link rel="stylesheet" href="css/auth-premium.css" />
 </head>
 <body class="auth-premium-page">
@@ -92,7 +92,7 @@ if (empty($_SESSION['csrf_token'])) {
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
   <?php include 'includes/auth-premium-scripts.php'; ?>
 </body>
 </html>

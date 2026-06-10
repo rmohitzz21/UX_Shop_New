@@ -21,8 +21,8 @@ if ($category === '') {
     $category = 'General';
 }
 $fileUrl = trim((string) ($input['file_url'] ?? ''));
-if (!adminValidateFreebieFileUrl($fileUrl)) {
-    sendResponse('error', 'A valid resource link (https://…) is required.', null, 422);
+if ($fileUrl !== '' && !adminValidateFreebieFileUrl($fileUrl)) {
+    sendResponse('error', 'Legacy resource link must be a valid http(s) URL, or leave blank and use Digital Resources.', null, 422);
 }
 
 $active    = adminBool($input['is_active'] ?? 1, 1);

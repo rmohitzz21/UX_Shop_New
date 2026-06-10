@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/DigitalDownloadService.php';
 
@@ -54,6 +54,44 @@ if ($paymentStatus === 'paid') {
     $ocDownloads = DigitalDownloadService::getDownloadsForOrder($ocOrderId, $ocUserId, $conn);
 }
 
+$ocPaymentLabels = [
+    'razorpay' => 'Online Payment',
+    'cod'      => 'Cash on Delivery',
+    'test'     => 'Test Payment',
+    'card'     => 'Credit/Debit Card',
+    'upi'      => 'UPI',
+    'free'     => 'Free',
+    'stripe'   => 'Card Payment',
+];
+$ocPaymentKey   = strtolower((string) ($ocOrder['payment_method'] ?? ''));
+$ocPaymentLabel = $ocPaymentLabels[$ocPaymentKey] ?? ($ocOrder['payment_method'] ?: '—');
+$ocDateFormatted = date('F j, Y', strtotime((string) $ocOrder['created_at']));
+$ocTotalFormatted = '₹' . number_format((float) $ocOrder['total'], 2);
+$ocEmail = trim((string) ($ocShipping['email'] ?? ($_SESSION['user_email'] ?? '')));
+$ocIsPaid = $paymentStatus === 'paid' || in_array($orderStatus, ['paid', 'processing', 'shipped', 'delivered'], true);
+$ocStatusLabels = [
+    'pending'          => 'Confirmed',
+    'awaiting_payment' => 'Awaiting Payment',
+    'paid'             => 'Paid',
+    'processing'       => 'Processing',
+    'shipped'          => 'Shipped',
+    'delivered'        => 'Delivered',
+    'failed'           => 'Failed',
+    'cancelled'        => 'Cancelled',
+];
+$ocStatusLabel = $ocStatusLabels[$orderStatus] ?? 'Confirmed';
+if ($ocIsPaid && (float) $ocOrder['total'] === 0.0) {
+    $ocSubText = 'Order confirmed. Your free downloads are ready.';
+} elseif ($ocIsPaid) {
+    $ocSubText = 'Payment confirmed. Your downloads are ready.';
+} elseif ($orderStatus === 'awaiting_payment') {
+    $ocSubText = 'Payment not completed for order #' . $ocOrder['order_number'] . '.';
+} elseif ($ocPaymentKey === 'cod' && !$ocIsPaid) {
+    $ocSubText = 'Order #' . $ocOrder['order_number'] . ' placed. Payment due on delivery.';
+} else {
+    $ocSubText = 'Order #' . $ocOrder['order_number'] . ' confirmed.';
+}
+
 $ocPayload = [
     'orderId'        => (int) $ocOrder['id'],
     'orderNumber'    => $ocOrder['order_number'],
@@ -86,8 +124,9 @@ $ocPayload = [
   <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
   <title>Order Confirmed — UX Pacific Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Gabarito:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
   <link rel="stylesheet" href="assets/css/order-confirmation.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="oc-page">
 <div class="page">
@@ -108,8 +147,8 @@ $ocPayload = [
       <!-- ── Heading ── -->
       <div class="oc-eyebrow">Purchase Successful</div>
       <h1 class="oc-heading">You're all set!</h1>
-      <p class="oc-sub" id="oc-sub-text">Your digital files are on their way to your inbox.</p>
-      <span class="oc-status-badge" id="oc-status-badge">Confirmed</span>
+      <p class="oc-sub" id="oc-sub-text"><?php echo htmlspecialchars($ocSubText); ?></p>
+      <span class="oc-status-badge" id="oc-status-badge" data-status="<?php echo htmlspecialchars($orderStatus); ?>"><?php echo htmlspecialchars($ocStatusLabel); ?></span>
 
       <!-- ── Email confirmation banner ── -->
       <div class="oc-email-banner">
@@ -121,7 +160,7 @@ $ocPayload = [
         </div>
         <div class="oc-email-banner-body">
           <strong>Download link sent to your email</strong>
-          <span id="oc-email-address">Check your inbox for order confirmation and download instructions.</span>
+          <span id="oc-email-address"><?php echo $ocEmail !== '' ? 'Sent to ' . htmlspecialchars($ocEmail) : 'Check your inbox for order confirmation and download instructions.'; ?></span>
         </div>
         <div class="oc-email-banner-check">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -135,19 +174,19 @@ $ocPayload = [
       <div class="oc-meta-row">
         <div class="oc-meta-card">
           <span class="oc-meta-label">Order</span>
-          <span class="oc-meta-value" id="order-number">—</span>
+          <span class="oc-meta-value" id="order-number"><?php echo htmlspecialchars((string) $ocOrder['order_number']); ?></span>
         </div>
         <div class="oc-meta-card">
           <span class="oc-meta-label">Date</span>
-          <span class="oc-meta-value" id="order-date">—</span>
+          <span class="oc-meta-value" id="order-date"><?php echo htmlspecialchars($ocDateFormatted); ?></span>
         </div>
         <div class="oc-meta-card">
           <span class="oc-meta-label">Total</span>
-          <span class="oc-meta-value" id="order-total">—</span>
+          <span class="oc-meta-value" id="order-total"><?php echo htmlspecialchars($ocTotalFormatted); ?></span>
         </div>
         <div class="oc-meta-card">
           <span class="oc-meta-label">Payment</span>
-          <span class="oc-meta-value" id="payment-method">—</span>
+          <span class="oc-meta-value" id="payment-method"><?php echo htmlspecialchars($ocPaymentLabel); ?></span>
         </div>
       </div>
 
@@ -215,10 +254,24 @@ $ocPayload = [
           </div>
           <h2 class="oc-card-title">Order Summary</h2>
         </div>
-        <div id="confirmation-items-list"></div>
+        <div id="confirmation-items-list">
+          <?php foreach ($ocItems as $ocItem): ?>
+          <div class="oc-order-item">
+            <img src="<?php echo htmlspecialchars((string) $ocItem['image']); ?>" alt="<?php echo htmlspecialchars((string) $ocItem['name']); ?>" onerror="this.src='img/sticker.webp'" width="52" height="52" loading="lazy">
+            <div class="oc-order-item-details">
+              <span class="oc-order-item-name"><?php echo htmlspecialchars((string) $ocItem['name']); ?></span>
+              <?php if (!empty($ocItem['size'])): ?>
+              <span class="oc-order-item-meta">Size: <?php echo htmlspecialchars((string) $ocItem['size']); ?></span>
+              <?php endif; ?>
+              <span class="oc-order-item-meta">Qty: <?php echo (int) $ocItem['quantity']; ?></span>
+            </div>
+            <span class="oc-order-item-price">₹<?php echo number_format((float) $ocItem['price'] * (int) $ocItem['quantity'], 2); ?></span>
+          </div>
+          <?php endforeach; ?>
+        </div>
         <div class="oc-order-total-row">
           <span>Order Total</span>
-          <strong id="oc-total-display">—</strong>
+          <strong id="oc-total-display"><?php echo htmlspecialchars($ocTotalFormatted); ?></strong>
         </div>
       </div>
 
@@ -282,7 +335,7 @@ $ocPayload = [
   <?php include 'includes/footer.php'; ?>
 </div>
 
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 <script>
 (function () {
   function escOc(s) {
@@ -323,13 +376,13 @@ $ocPayload = [
       badge.dataset.status = statusRaw;
     }
 
-    document.getElementById('order-number')?.textContent && (document.getElementById('order-number').textContent = num || '—');
-    if (num) document.getElementById('order-number').textContent = num;
+    const numEl = document.getElementById('order-number');
+    if (numEl && num) numEl.textContent = num;
 
     const dateRaw = order.date || order.created_at || '';
     if (dateRaw) {
       const d = new Date(dateRaw);
-      const formatted = isNaN(d) ? dateRaw : d.toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+      const formatted = isNaN(d) ? dateRaw : d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
       const el = document.getElementById('order-date');
       if (el) el.textContent = formatted;
     }
@@ -339,7 +392,7 @@ $ocPayload = [
 
     const pmEl = document.getElementById('payment-method');
     if (pmEl) {
-      const pmMap = { razorpay:'Online Payment', cod:'Cash on Delivery', test:'Test Payment', card:'Card', upi:'UPI' };
+      const pmMap = { razorpay:'Online Payment', cod:'Cash on Delivery', test:'Test Payment', card:'Credit/Debit Card', upi:'UPI', free:'Free', stripe:'Card Payment' };
       const pm = order.paymentMethod || order.payment_method || '';
       pmEl.textContent = pmMap[pm] || pm || '—';
     }
@@ -381,7 +434,7 @@ $ocPayload = [
     if (itemsList && Array.isArray(order.items) && order.items.length > 0) {
       itemsList.innerHTML = order.items.map(item => `
         <div class="oc-order-item">
-          <img src="${escOc(item.image || 'img/sticker.webp')}" alt="${escOc(item.name || '')}" onerror="this.src='img/sticker.webp'" width="48" height="48" style="border-radius:6px;object-fit:cover;">
+          <img src="${escOc(item.image || 'img/sticker.webp')}" alt="${escOc(item.name || '')}" onerror="this.src='img/sticker.webp'" width="52" height="52" loading="lazy">
           <div class="oc-order-item-details">
             <span class="oc-order-item-name">${escOc(item.name || 'Item')}</span>
             ${item.size ? `<span class="oc-order-item-meta">Size: ${escOc(item.size)}</span>` : ''}
@@ -412,7 +465,7 @@ $ocPayload = [
       let action;
       if (dl.is_available && dl.has_file) {
         const label = dl.action_label || (dl.delivery_mode === 'open_link' ? 'Open' : (dl.delivery_mode === 'instructions' ? 'View instructions' : 'Download'));
-        action = `<a class="oc-btn oc-btn-primary oc-dl-btn" href="api/download/file.php?token=${encodeURIComponent(dl.token)}">
+        action = `<a class="oc-btn oc-btn-primary oc-dl-btn" href="${escOc(dl.download_url || ('api/download/file.php?token=' + encodeURIComponent(dl.token)))}">
           <svg viewBox="0 0 20 20" fill="none" width="14" height="14" aria-hidden="true">
             <path d="M10 2v10M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

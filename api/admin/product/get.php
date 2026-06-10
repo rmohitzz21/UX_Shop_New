@@ -10,4 +10,5 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 if (!$row) sendResponse('error', 'Product not found.', null, 404);
 $row['additional_images_list'] = json_decode((string) ($row['additional_images'] ?? '[]'), true) ?: [];
+$row['custom_fields_parsed'] = json_decode((string) ($row['custom_fields'] ?? '[]'), true) ?: [];
 sendResponse('success', 'Product loaded.', $row);

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . '/../../includes/DigitalStorageService.php';
 require_once __DIR__ . '/../../includes/DigitalDownloadService.php';
 
 // Auth required
@@ -18,4 +19,22 @@ if ($token === '' || !preg_match('/^[a-f0-9]{64}$/', $token)) {
     exit;
 }
 
-DigitalDownloadService::validateAndServe($token, (int) $_SESSION['user_id'], $conn);
+$userId = (int) $_SESSION['user_id'];
+$exp    = (int) ($_GET['exp'] ?? 0);
+$sig    = trim((string) ($_GET['sig'] ?? ''));
+
+if ($exp > 0 || $sig !== '') {
+    if (!DigitalDownloadService::validateDownloadAccess($token, $userId, $exp, $sig)) {
+        http_response_code(410);
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Download link expired. Open your order and click Download again.']);
+        exit;
+    }
+} elseif (DigitalStorageService::getDriver() === 'local') {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => 'Signed download link required. Open your order and click Download again.']);
+    exit;
+}
+
+DigitalDownloadService::validateAndServe($token, $userId, $conn);

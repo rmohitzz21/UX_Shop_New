@@ -1,6 +1,22 @@
 <?php
 declare(strict_types=1);
 
+function drEnsureFreebieResourcesColumn(mysqli $conn): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    $conn->query(
+        "ALTER TABLE digital_resources
+         ADD COLUMN IF NOT EXISTS freebie_id INT(11) DEFAULT NULL COMMENT 'Set for freebie resources' AFTER bundle_id"
+    );
+    $conn->query(
+        'ALTER TABLE digital_resources ADD INDEX IF NOT EXISTS idx_digital_resources_freebie (freebie_id)'
+    );
+}
+
 function drAllowedResourceTypes(): array
 {
     return ['file', 'zip', 'pdf', 'canva', 'figma', 'external_link', 'instructions'];

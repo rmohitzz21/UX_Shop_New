@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 
 // Read token and email from query string — they will be validated client-side before form is shown
@@ -17,8 +17,8 @@ $email = isset($_GET['email']) ? trim(strtolower($_GET['email'])) : '';
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-      <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
-    <link rel="stylesheet" href="style.css" />
+      <link rel="icon" type="image/png" href="img/fav.png" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
 
@@ -108,7 +108,7 @@ $email = isset($_GET['email']) ? trim(strtolower($_GET['email'])) : '';
       <!-- FOOTER -->
       <footer class="site-footer">
         <div class="footer-bottom">
-          <p>©2026 UXPacific. All rights reserved.</p>
+          <p>&copy; <?php echo date('Y'); ?> UX Pacific. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -207,6 +207,6 @@ $email = isset($_GET['email']) ? trim(strtolower($_GET['email'])) : '';
         btnLoader.style.display = 'none';
       }
     </script>
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
   </body>
 </html>

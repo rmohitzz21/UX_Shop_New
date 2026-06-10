@@ -1,4 +1,4 @@
-<?php require_once 'includes/config.php'; ?>
+﻿<?php require_once 'includes/config.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,9 +13,10 @@
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,600;1,9..40,200&family=Gabarito:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <link rel="stylesheet" href="assets/css/bundles.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body class="bundles-page figma-bundles">
@@ -242,6 +243,11 @@ if ($headerUserName === '') {
     <?php endif; ?>
 
     <!-- BUNDLE GRID (excludes bundles already in Best Seller slider) -->
+    <div class="uxp-top-products-heading">
+        <h2>All Bundles</h2>
+        <p>Browse our complete collection of curated design bundles — packed with templates, guides, and career-ready assets.</p>
+    </div>
+
     <section class="figma-card-grid" aria-label="Career bundles">
 
         <?php
@@ -471,7 +477,7 @@ if ($headerUserName === '') {
 <?php include 'includes/footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {

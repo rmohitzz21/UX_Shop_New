@@ -1251,42 +1251,91 @@ function syncCheckoutRequiredFields(options = {}) {
   }
 }
 
-// Toast notification with improved accessibility
+// Toast notifications — glassmorphic stack (success | error | info | warning)
+const UXP_TOAST_ICONS = {
+  success: 'ph-check-circle',
+  error: 'ph-warning-circle',
+  info: 'ph-info',
+  warning: 'ph-warning',
+};
+const UXP_TOAST_DURATION = { success: 4000, error: 5000, info: 4000, warning: 4500 };
+const UXP_TOAST_MAX = 4;
+
+function getToastHost() {
+  let host = document.getElementById('uxp-toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'uxp-toast-host';
+    host.setAttribute('aria-live', 'polite');
+    host.setAttribute('aria-relevant', 'additions');
+    document.body.appendChild(host);
+  }
+  return host;
+}
+
+function dismissToast(toast) {
+  if (!toast || toast.classList.contains('uxp-toast-out')) return;
+  toast.classList.add('uxp-toast-out');
+  const remove = () => toast.remove();
+  toast.addEventListener('animationend', remove, { once: true });
+  setTimeout(remove, 400);
+}
+
 function showToast(message, type = 'success') {
-  // Remove existing toasts to prevent stacking
-  const existingToasts = document.querySelectorAll('.toast');
-  existingToasts.forEach(t => t.remove());
-  
+  const normalized = ['success', 'error', 'info', 'warning'].includes(type) ? type : 'info';
+  const host = getToastHost();
+  const duration = UXP_TOAST_DURATION[normalized] || 4000;
+
+  while (host.children.length >= UXP_TOAST_MAX) {
+    dismissToast(host.firstElementChild);
+  }
+
   const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'polite');
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'success' ? '#4caf50' : '#ff4444'};
-    color: white;
-    padding: 16px 24px;
-    border-radius: 12px;
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    max-width: 90vw;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  `;
-  
-  document.body.appendChild(toast);
-  
-  // Focus management for screen readers
-  toast.focus();
-  
-  setTimeout(() => {
-    toast.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-  }, 3000);
+  toast.className = `uxp-toast uxp-toast--${normalized}`;
+  toast.setAttribute('role', normalized === 'error' ? 'alert' : 'status');
+  toast.innerHTML = `
+    <span class="uxp-toast-icon-wrap" aria-hidden="true"><i class="ph ${UXP_TOAST_ICONS[normalized]}"></i></span>
+    <div class="uxp-toast-body">
+      <div class="uxp-toast-title">${esc(message)}</div>
+    </div>
+    <button type="button" class="uxp-toast-close" aria-label="Dismiss notification">
+      <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+    <span class="uxp-toast-progress" aria-hidden="true"></span>`;
+
+  host.appendChild(toast);
+
+  const closeBtn = toast.querySelector('.uxp-toast-close');
+  closeBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dismissToast(toast);
+  });
+
+  toast.addEventListener('click', () => dismissToast(toast));
+
+  let remaining = duration;
+  let dismissAt = Date.now() + duration;
+  let timerId = null;
+  const progressBar = toast.querySelector('.uxp-toast-progress');
+
+  function scheduleDismiss() {
+    clearTimeout(timerId);
+    timerId = setTimeout(() => dismissToast(toast), remaining);
+  }
+
+  scheduleDismiss();
+
+  toast.addEventListener('mouseenter', () => {
+    clearTimeout(timerId);
+    remaining = Math.max(0, dismissAt - Date.now());
+    if (progressBar) progressBar.style.animationPlayState = 'paused';
+  });
+
+  toast.addEventListener('mouseleave', () => {
+    dismissAt = Date.now() + remaining;
+    if (progressBar) progressBar.style.animationPlayState = 'running';
+    scheduleDismiss();
+  });
 }
 
 // Initialize cart on page load
@@ -1343,10 +1392,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Load order confirmation page
-  if (window.location.pathname.includes('order-confirmation.php')) {
-    loadOrderConfirmationPage();
-  }
 });
 
 // ==================== FORM HANDLERS ====================
@@ -1363,6 +1408,11 @@ function setUserSession(userData) {
 
 function clearUserSession() {
   localStorage.removeItem('userSession');
+  // Strip the server-rendered hidden class so updateUserMenu sees logged-out DOM state
+  document.querySelectorAll('.nav-cta[href="signin.php"], .header-signin-cta').forEach((btn) => {
+    btn.classList.remove('uxp-sr-hide');
+    btn.style.removeProperty('display');
+  });
   updateUserMenu();
 }
 
@@ -1376,24 +1426,46 @@ function getUserFirstName(user) {
   return email ? email.split('@')[0] : 'Profile';
 }
 
+function isSignInCtaHidden(btn) {
+  if (btn.classList.contains('uxp-sr-hide')) return true;
+  if (btn.style.display === 'none') return true;
+  const computed = window.getComputedStyle(btn);
+  return computed && computed.display === 'none';
+}
+
+function setSignInCtaVisible(visible) {
+  document.querySelectorAll('.nav-cta[href="signin.php"], .header-signin-cta').forEach((btn) => {
+    btn.classList.toggle('uxp-sr-hide', !visible);
+    btn.style.removeProperty('display');
+  });
+}
+
+function setProfileMenuVisible(visible) {
+  const isMobileHeader = window.matchMedia('(max-width: 900px)').matches;
+  document.querySelectorAll('.nav-user, .user-menu.profile-menu').forEach((menu) => {
+    menu.style.display = visible && !isMobileHeader ? 'flex' : 'none';
+  });
+}
+
 function updateUserMenu() {
   const userSession = getUserSession();
-  // Support both old (.nav-user) and new (.user-menu.profile-menu) header structures
   const userMenus = document.querySelectorAll('.nav-user, .user-menu.profile-menu');
   const signInButtons = document.querySelectorAll('.nav-cta[href="signin.php"], .header-signin-cta');
-  
-  if (userSession) {
-    // Client-side session found - show user menu, hide sign in button
+  const signInHidden = Array.from(signInButtons).some(isSignInCtaHidden);
+  const serverRenderedAuth = userMenus.length > 0 && signInHidden;
+  const signedIn = !!(userSession && (userSession.id || userSession.email || userSession.name)) || serverRenderedAuth;
+
+  if (signedIn) {
+    setProfileMenuVisible(true);
     userMenus.forEach(menu => {
-      menu.style.display = 'flex';
       const userName = menu.querySelector('.user-name');
       const userAvatar = menu.querySelector('.user-avatar');
-      const displayName = getUserFirstName(userSession);
-      
-      if (userName) {
+      const displayName = userSession ? getUserFirstName(userSession) : (userName ? userName.textContent.trim() : 'Profile');
+
+      if (userName && displayName) {
         userName.textContent = displayName;
       }
-      
+
       if (userAvatar) {
         userAvatar.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -1403,63 +1475,24 @@ function updateUserMenu() {
         `;
       }
     });
-    
-    signInButtons.forEach(btn => {
-      btn.style.display = 'none';
-    });
+
+    if (!userSession && serverRenderedAuth) {
+      const userNameEl = userMenus[0]?.querySelector('.user-name');
+      const userName = userNameEl ? userNameEl.textContent.trim() : '';
+      if (userName && userName !== 'User' && userName !== 'Profile') {
+        localStorage.setItem('userSession', JSON.stringify({
+          name: userName,
+          firstName: userName.split(' ')[0],
+          loginTime: new Date().toISOString(),
+          source: 'server-hydrated'
+        }));
+      }
+    }
+
+    setSignInCtaVisible(false);
   } else {
-    // No client-side session. Check if server rendered the user menu (PHP session is active).
-    // If profile menu has no display:none style and Sign In button HAS display:none, 
-    // it means server rendered auth.
-    let serverRenderedAuth = false;
-    
-    // Check if any sign-in button is hidden
-    const signInHidden = Array.from(signInButtons).some(btn => {
-      if (btn.style.display === 'none') return true;
-      const computed = window.getComputedStyle(btn);
-      return computed && computed.display === 'none';
-    });
-    
-    // Server auth is detected if: user menu exists AND (no sign-in buttons exist OR they're hidden)
-    if (userMenus.length > 0 && signInHidden) {
-        serverRenderedAuth = true;
-    }
-    
-    if (serverRenderedAuth) {
-        // Server auth detected - keep showing user menu (already visible from PHP),
-        // ensure sign-in buttons are hidden, and sync name to localStorage if present
-        userMenus.forEach(menu => {
-            menu.style.display = 'flex';
-            
-            const userNameEl = menu.querySelector('.user-name');
-            const userName = userNameEl ? userNameEl.textContent.trim() : 'User';
-            
-            // Attempt to sync to localStorage if we have a name
-            if (userName && userName !== 'User' && userName !== 'Profile') {
-                 const derivedSession = {
-                     name: userName,
-                     firstName: userName.split(' ')[0], 
-                     loginTime: new Date().toISOString(),
-                     source: 'server-hydrated'
-                 };
-                 localStorage.setItem('userSession', JSON.stringify(derivedSession));
-            }
-        });
-        
-        // Ensure sign-in buttons are hidden
-        signInButtons.forEach(btn => {
-          btn.style.display = 'none';
-        });
-    } else {
-        // Standard case: No auth detected - hide user menus, show sign-in button
-        userMenus.forEach(menu => {
-          menu.style.display = 'none';
-        });
-        
-        signInButtons.forEach(btn => {
-          btn.style.display = 'inline-flex';
-        });
-    }
+    setProfileMenuVisible(false);
+    setSignInCtaVisible(true);
   }
 }
 
@@ -2214,88 +2247,6 @@ function handleCheckout(event) {
       }
       resetOrderBtn();
     });
-}
-
-// Load order confirmation page with order details
-function loadOrderConfirmationPage() {
-  const orderData = JSON.parse(localStorage.getItem('lastOrder'));
-  
-  if (!orderData) {
-    // If no order data, redirect to shop
-    showToast('No order found. Redirecting to shop...', 'error');
-    setTimeout(() => {
-      window.location.href = 'shopAll.php';
-    }, 2000);
-    return;
-  }
-  
-  // Set order number
-  const orderNumberEl = document.getElementById('order-number');
-  if (orderNumberEl) {
-    orderNumberEl.textContent = orderData.orderNumber || '#UXP-2024-001234';
-  }
-  
-  // Set order date
-  const orderDateEl = document.getElementById('order-date');
-  if (orderDateEl) {
-    const orderDate = orderData.date ? new Date(orderData.date) : new Date();
-    orderDateEl.textContent = orderDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  }
-  
-  // Set order total
-  const orderTotalEl = document.getElementById('order-total');
-  if (orderTotalEl) {
-    orderTotalEl.textContent = `₹${Number(orderData.total || 0).toLocaleString('en-IN')}`;
-  }
-  
-  // Set payment method
-  const paymentMethodEl = document.getElementById('payment-method');
-  if (paymentMethodEl) {
-    const paymentMethods = {
-      'card':     'Credit/Debit Card',
-      'upi':      'UPI',
-      'cod':      'Cash on Delivery',
-      'razorpay': 'Online Payment',
-      'test':     'Test Payment',
-    };
-    paymentMethodEl.textContent = paymentMethods[orderData.paymentMethod] || 'Online Payment';
-  }
-  
-  // Load order items from orderData.items (not cart, since cart is cleared)
-  const itemsList = document.getElementById('confirmation-items-list');
-  if (itemsList && orderData.items && orderData.items.length > 0) {
-    itemsList.innerHTML = orderData.items.map(item => `
-      <div class="confirmation-item">
-        <img src="${esc(item.image)}" alt="${esc(item.name)}" class="item-image" />
-        <div class="item-info">
-          <h4>${esc(item.name)}</h4>
-          <p>${item.size ? `Size: ${esc(item.size)} • ` : ''}Quantity: ${item.quantity}</p>
-        </div>
-        <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
-      </div>
-    `).join('');
-  } else if (itemsList) {
-    itemsList.innerHTML = '<p class="empty-message">No items found in this order.</p>';
-  }
-  
-  // Load shipping address
-  const shippingDiv = document.getElementById('shipping-address');
-  if (shippingDiv && orderData.shipping) {
-    shippingDiv.innerHTML = `
-      <p><strong>${esc(orderData.shipping.firstName || '')} ${esc(orderData.shipping.lastName || '')}</strong></p>
-      <p>${esc(orderData.shipping.address || '')}</p>
-      <p>${esc(orderData.shipping.city || '')}, ${esc(orderData.shipping.state || '')} ${esc(orderData.shipping.zip || '')}</p>
-      <p>${esc(orderData.shipping.country || 'India')}</p>
-      ${orderData.shipping.phone ? `<p>Phone: ${esc(orderData.shipping.phone)}</p>` : ''}
-      ${orderData.shipping.email ? `<p>Email: ${esc(orderData.shipping.email)}</p>` : ''}
-    `;
-  } else if (shippingDiv) {
-    shippingDiv.innerHTML = '<p class="empty-message">Shipping address not available.</p>';
-  }
 }
 
 // Sign up handler with enhanced validation
@@ -3341,6 +3292,8 @@ function initSearchModal() {
     else fetchSearchResults('');
   }
 
+  window.openSiteSearchModal = openSearchModal;
+
   function closeSearchModal() {
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
@@ -3348,27 +3301,86 @@ function initSearchModal() {
     activeIndex = -1;
   }
 
+  function searchTypeLabel(type) {
+    if (type === 'bundle') return 'Bundle';
+    if (type === 'freebie') return 'Freebie';
+    return 'Product';
+  }
+
+  function openSearchResult(itemType, itemId, triggerEl) {
+    const type = itemType === 'bundle' ? 'bundle' : 'product';
+    if (typeof openMarketplaceModal === 'function') {
+      openMarketplaceModal(type, itemId, triggerEl);
+      return;
+    }
+    if (type === 'bundle') {
+      window.location.href = 'bundles.php';
+      return;
+    }
+    window.location.href = `search.php?q=${encodeURIComponent(input.value.trim() || '')}`;
+  }
+
+  function renderSearchLoading() {
+    results.classList.add('is-loading');
+    results.innerHTML = `
+      <div class="search-modal-skeleton" aria-hidden="true">
+        <div class="search-modal-skeleton-line"></div>
+        <div class="search-modal-skeleton-line"></div>
+        <div class="search-modal-skeleton-line"></div>
+      </div>`;
+  }
+
   async function fetchSearchResults(query) {
-    const response = await fetch(`api/product/search.php?q=${encodeURIComponent(query)}&limit=8`);
-    const data = await response.json();
-    const items = data?.data?.items || [];
-    const trends = `
-      <div class="search-modal-trends">
-        ${['UI Kit', 'Mockups', 'Dashboard', 'Icons', 'Landing Page'].map(term => `<button type="button" class="search-trend-pill" data-trend="${term}">${term}</button>`).join('')}
-      </div>
-      <div class="search-result-count">${items.length} result${items.length === 1 ? '' : 's'} found</div>
-    `;
-    results.innerHTML = trends + (items.length ? items.map((item, index) => `
-      <button type="button" class="search-modal-result" data-index="${index}" data-type="${esc(item.type || 'product')}" data-id="${esc(item.id)}">
-        <img src="${esc(item.image)}" alt="" onerror="this.src='img/poster.webp'">
-        <span><strong>${esc(item.name)}</strong><em>${esc(item.type || 'product')} / ${esc(item.category || '')}</em></span>
-        <b>${formatMoney(item.price)}</b>
-      </button>
-    `).join('') : '<div class="search-modal-empty">No matching products or bundles found.</div>');
+    renderSearchLoading();
+    try {
+      const response = await fetch(`api/product/search.php?q=${encodeURIComponent(query)}&limit=8`, {
+        credentials: 'same-origin',
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Search is temporarily unavailable.');
+      }
+      if (!response.ok || data.status === 'error') {
+        throw new Error(data.message || 'Search failed.');
+      }
+      results.classList.remove('is-loading');
+      const items = data?.data?.items || [];
+      const hasQuery = query.trim().length >= 2;
+      const sectionLabel = hasQuery ? 'Results' : 'Trending searches';
+      const trends = `
+        <p class="search-modal-section-label">${sectionLabel}</p>
+        <div class="search-modal-trends">
+          ${['UI Kit', 'Mockups', 'Dashboard', 'Icons', 'Landing Page'].map((term) => `<button type="button" class="search-trend-pill" data-trend="${term}">${term}</button>`).join('')}
+        </div>
+        ${hasQuery ? `<div class="search-result-count">${items.length} result${items.length === 1 ? '' : 's'} found</div>` : ''}
+      `;
+      const listHtml = items.length
+        ? items.map((item, index) => {
+            const itemType = item.type || 'product';
+            const priceLabel = isCatalogItemFree(item) ? 'Free' : formatMoney(item.price);
+            return `
+              <button type="button" class="search-modal-result" data-index="${index}" data-type="${esc(itemType)}" data-id="${esc(item.id)}">
+                <img src="${esc(item.image)}" alt="" loading="lazy" onerror="this.src='img/poster.webp'">
+                <span><strong>${esc(item.name)}</strong><em>${esc(searchTypeLabel(itemType))} · ${esc(item.category || 'General')}</em></span>
+                <b>${priceLabel}</b>
+              </button>`;
+          }).join('')
+        : `<div class="search-modal-empty">${hasQuery ? 'No matching products or bundles found.' : 'Start typing to search the catalog.'}</div>`;
+      const viewAllQuery = query.trim();
+      const viewAllHref = viewAllQuery ? `search.php?q=${encodeURIComponent(viewAllQuery)}` : 'shopAll.php';
+      const viewAllLabel = viewAllQuery ? `View all results for “${esc(viewAllQuery)}” →` : 'Browse all products →';
+      results.innerHTML = `${trends}${listHtml}<button type="button" class="search-modal-view-all" data-search-view-all="${esc(viewAllHref)}">${viewAllLabel}</button>`;
+    } catch (error) {
+      results.classList.remove('is-loading');
+      results.innerHTML = `<div class="search-modal-empty">${esc(error.message || 'Could not load search results.')}</div>`;
+    }
   }
 
   document.addEventListener('keydown', (event) => {
-    if ((event.key === '/' || (event.ctrlKey && event.key === 'k')) && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
+    if ((event.key === '/' || (event.ctrlKey && event.key === 'k')) && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
       event.preventDefault();
       openSearchModal('');
     }
@@ -3378,8 +3390,13 @@ function initSearchModal() {
     clearTimeout(timer);
     activeIndex = -1;
     const query = input.value.trim();
-    if (query.length < 2) {
-      results.innerHTML = '<div class="search-modal-empty">Type at least 2 characters to search.</div>';
+    if (query.length === 0) {
+      fetchSearchResults('');
+      return;
+    }
+    if (query.length === 1) {
+      results.classList.remove('is-loading');
+      results.innerHTML = '<div class="search-modal-empty">Keep typing — search starts at 2 characters.</div>';
       return;
     }
     timer = setTimeout(() => fetchSearchResults(query), 180);
@@ -3406,6 +3423,12 @@ function initSearchModal() {
   });
 
   results.addEventListener('click', (event) => {
+    const viewAll = event.target.closest('[data-search-view-all]');
+    if (viewAll) {
+      closeSearchModal();
+      window.location.href = viewAll.dataset.searchViewAll || 'shopAll.php';
+      return;
+    }
     const trend = event.target.closest('.search-trend-pill');
     if (trend) {
       input.value = trend.dataset.trend || '';
@@ -3415,25 +3438,34 @@ function initSearchModal() {
     const item = event.target.closest('.search-modal-result');
     if (!item) return;
     closeSearchModal();
-    if (item.dataset.type === 'bundle') {
-      window.location.href = `bundles.php?quick=bundle&id=${encodeURIComponent(item.dataset.id)}`;
-      return;
-    }
-    if (typeof openMarketplaceModal === 'function') {
-      openMarketplaceModal('product', item.dataset.id, item);
-    } else {
-      window.location.href = `product.php?id=${encodeURIComponent(item.dataset.id)}`;
-    }
+    openSearchResult(item.dataset.type || 'product', item.dataset.id, item);
   });
 
   submit?.addEventListener('click', () => {
-    const first = results.querySelector('.search-modal-result');
-    if (first) first.click();
-    else if (input.value.trim()) window.location.href = `search.php?q=${encodeURIComponent(input.value.trim())}`;
+    const query = input.value.trim();
+    if (query.length >= 2) {
+      const first = results.querySelector('.search-modal-result');
+      if (first) {
+        first.click();
+        return;
+      }
+      window.location.href = `search.php?q=${encodeURIComponent(query)}`;
+      return;
+    }
+    input.focus();
   });
 
   modal.querySelectorAll('[data-search-close]').forEach((el) => {
     el.addEventListener('click', closeSearchModal);
+  });
+
+  document.querySelectorAll('.mobile-search-trigger').forEach((el) => {
+    el.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.body.classList.remove('mobile-menu-open');
+      document.querySelector('.navbar')?.classList.remove('mobile-open');
+      openSearchModal('');
+    });
   });
 }
 
@@ -3546,9 +3578,6 @@ function ensureMarketplaceModal() {
     <div class="marketplace-modal-backdrop" data-close-marketplace-modal></div>
     <section class="marketplace-modal-panel" role="dialog" aria-modal="true" aria-labelledby="marketplace-modal-title" aria-live="polite">
       <div class="mp-modal-toolbar">
-        <a href="#" id="mp-external-link" class="mp-toolbar-btn" target="_blank" rel="noopener noreferrer" aria-label="Open full product page">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
         <button type="button" class="marketplace-modal-close mp-toolbar-btn" data-close-marketplace-modal aria-label="Close">×</button>
       </div>
       <div class="marketplace-modal-content is-loading">
@@ -3672,20 +3701,60 @@ function renderMpGalleryCol(uniqueGallery, itemName) {
     </div>`;
 }
 
-function renderMpCompactProductInfo(item) {
-  const rows = [
+function getGlobalExtraInfoRows(item) {
+  return Array.isArray(item.global_extra_rows) ? item.global_extra_rows : [];
+}
+
+function buildProductInfoRowPairs(item, options = {}) {
+  const { includeMeta = false, itemType = 'product' } = options;
+  const typeLabels = {
+    physical: 'Physical Product',
+    digital: 'Digital Download',
+    both: 'Digital & Physical',
+  };
+  const stockNum = Number(item.stock || 0);
+  const availability = stockNum > 0 ? `In stock (${stockNum} available)` : 'Out of stock';
+  const productType = typeLabels[item.available_type] || item.available_type || 'Digital Product';
+  const rows = [];
+
+  if (includeMeta) {
+    rows.push(['Category', item.category || (itemType === 'bundle' ? 'Bundle' : '—')]);
+    rows.push(['Product Type', productType]);
+    rows.push(['Availability', availability]);
+  }
+
+  rows.push(
     ['Last Update', item.last_update],
     ['High Resolution', item.high_resolution],
     ['Compatible With', item.compatible_software],
     ['Software Version', item.software_version],
-  ].filter(([, v]) => v != null && String(v).trim() !== '' && String(v) !== '—');
-  if (!rows.length) return '';
+    ['Files Included', item.files_included],
+    ['Column', item.grid_columns],
+    ['Layout', item.layout_type],
+    ['License', item.license_type],
+  );
+
+  getGlobalExtraInfoRows(item).forEach((row) => {
+    if (row?.label && row?.value) rows.push([row.label, row.value]);
+  });
+
+  return rows.filter(([, value]) => value != null && String(value).trim() !== '' && String(value) !== '—');
+}
+
+function renderMpCompactProductInfo(item) {
+  const sectionTitle = item.product_info_section_title || 'Product Information';
+  const rows = buildProductInfoRowPairs(item);
+  if (!rows.length && !item.global_info_note) return '';
+  const noteHtml = item.global_info_note
+    ? `<p class="mp-info-card-note">${esc(item.global_info_note)}</p>`
+    : '';
   return `
     <section class="mp-info-card">
-      <h4 class="mp-info-card-title">Product Information</h4>
+      <h4 class="mp-info-card-title">${esc(sectionTitle)}</h4>
       <dl class="mp-info-card-table">
         ${rows.map(([label, value]) => renderProductInfoRow(label, value)).join('')}
       </dl>
+      ${noteHtml}
     </section>`;
 }
 
@@ -3717,61 +3786,59 @@ function renderProductInfoRow(label, value) {
     </div>`;
 }
 
-function renderProductInfoPanels(item, itemType, skipMainInfo = false) {
-  const typeLabels = {
-    physical: 'Physical Product',
-    digital: 'Digital Download',
-    both: 'Digital & Physical',
-  };
-  const stockNum = Number(item.stock || 0);
-  const availability = stockNum > 0 ? `In stock (${stockNum} available)` : 'Out of stock';
-  const productType = typeLabels[item.available_type] || item.available_type || 'Digital Product';
-
-  const infoRows = [
-    renderProductInfoRow('Category', item.category || (itemType === 'bundle' ? 'Bundle' : '—')),
-    renderProductInfoRow('Product Type', productType),
-    renderProductInfoRow('Availability', availability),
-    renderProductInfoRow('Last Update', item.last_update),
-    renderProductInfoRow('High Resolution', item.high_resolution),
-    renderProductInfoRow('Compatible With', item.compatible_software),
-    renderProductInfoRow('Software Version', item.software_version),
-    renderProductInfoRow('Files Included', item.files_included),
-    renderProductInfoRow('Column', item.grid_columns),
-    renderProductInfoRow('Layout', item.layout_type),
-    renderProductInfoRow('License', item.license_type || 'Premium'),
-  ].filter(Boolean).join('');
+function renderProductInfoPanels(item, itemType, skipMainInfo = false, skipDescription = false) {
+  const sectionTitle = item.product_info_section_title || 'Product Information';
+  const infoRows = buildProductInfoRowPairs(item, { includeMeta: true, itemType })
+    .map(([label, value]) => renderProductInfoRow(label, value))
+    .filter(Boolean)
+    .join('');
+  const infoNoteHtml = item.global_info_note
+    ? `<p class="mp-info-card-note">${esc(item.global_info_note)}</p>`
+    : '';
 
   const whatsIncluded = parseProductTextList(item.whats_included);
   const fileSpecs = parseProductTextList(item.file_specification);
 
+  const checkSvg = `<svg class="mp-bl-icon" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="rgba(97,71,189,0.18)" stroke="rgba(124,107,196,0.5)" stroke-width="1"/><polyline points="3.5 7 6 9.5 10.5 4.5" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const fileSvg = `<svg class="mp-bl-icon" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M8.5 1H3.5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5l-3-4z" fill="rgba(97,71,189,0.15)" stroke="rgba(124,107,196,0.5)" stroke-width="1"/><polyline points="8.5 1 8.5 5 11.5 5" stroke="rgba(124,107,196,0.5)" stroke-width="1"/></svg>`;
+
+  const aboutIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11 2H5a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 11 2z" stroke="currentColor" stroke-width="1.25"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  const infoIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.25"/><path d="M8 5.5v.5M8 8v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const listIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.5 4.5h6M6.5 8h6M6.5 11.5h6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="3.5" cy="4.5" r="1" fill="currentColor"/><circle cx="3.5" cy="8" r="1" fill="currentColor"/><circle cx="3.5" cy="11.5" r="1" fill="currentColor"/></svg>`;
+  const fileIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 4 14.5h8A1.5 1.5 0 0 0 13.5 13V5.5L9.5 1.5z" stroke="currentColor" stroke-width="1.25"/><polyline points="9.5 1.5 9.5 5.5 13.5 5.5" stroke="currentColor" stroke-width="1.25"/><path d="M5.5 8.5h5M5.5 11h3.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+
   const includedHtml = whatsIncluded.length
     ? `<section class="mp-panel">
-        <header class="mp-panel-head"><h3>What&rsquo;s Included</h3></header>
-        <ul class="mp-bullet-list">${whatsIncluded.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+        <header class="mp-panel-head">${listIconSvg}<h3>What&rsquo;s Included</h3></header>
+        <ul class="mp-bullet-list">${whatsIncluded.map((line) => `<li>${checkSvg}<span>${esc(line)}</span></li>`).join('')}</ul>
       </section>`
     : '';
 
   const fileSpecHtml = fileSpecs.length
     ? `<section class="mp-panel">
-        <header class="mp-panel-head"><h3>File Specifications</h3></header>
-        <ul class="mp-bullet-list">${fileSpecs.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+        <header class="mp-panel-head">${fileIconSvg}<h3>File Specifications</h3></header>
+        <ul class="mp-bullet-list">${fileSpecs.map((line) => `<li>${fileSvg}<span>${esc(line)}</span></li>`).join('')}</ul>
       </section>`
     : '';
 
   return `
-    ${item.description ? `
+    ${(!skipDescription && item.description) ? `
     <section class="mp-panel mp-panel--about">
-      <header class="mp-panel-head"><h3>About this product</h3></header>
+      <header class="mp-panel-head">${aboutIconSvg}<h3>About this product</h3></header>
       <p class="mp-about-text">${esc(item.description)}</p>
     </section>` : ''}
-    ${skipMainInfo ? '' : `
+    ${(!skipMainInfo && infoRows) ? `
     <section class="mp-panel mp-panel--info">
       <header class="mp-panel-head">
-        <h3>Product Information</h3>
-        <span class="mp-panel-sub">Technical details &amp; specifications</span>
+        ${infoIconSvg}
+        <div class="mp-panel-head-text">
+          <h3>${esc(sectionTitle)}</h3>
+          <span class="mp-panel-sub">Technical details &amp; specifications</span>
+        </div>
       </header>
       <dl class="mp-info-table">${infoRows}</dl>
-    </section>`}
+      ${infoNoteHtml}
+    </section>` : ''}
     ${includedHtml}
     ${fileSpecHtml}`;
 }
@@ -3826,19 +3893,24 @@ function renderBundleDetailModal(item, related) {
       </div>
     </section>` : '';
 
+  const bundleAboutIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11 2H5a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 11 2z" stroke="currentColor" stroke-width="1.25"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  const bundleInfoIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.25"/><path d="M8 5.5v.5M8 8v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const bundleFileIconSvg = `<svg class="mp-panel-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 4 14.5h8A1.5 1.5 0 0 0 13.5 13V5.5L9.5 1.5z" stroke="currentColor" stroke-width="1.25"/><polyline points="9.5 1.5 9.5 5.5 13.5 5.5" stroke="currentColor" stroke-width="1.25"/></svg>`;
+  const bundleFileSvg = `<svg class="mp-bl-icon" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M8.5 1H3.5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5l-3-4z" fill="rgba(97,71,189,0.15)" stroke="rgba(124,107,196,0.5)" stroke-width="1"/><polyline points="8.5 1 8.5 5 11.5 5" stroke="rgba(124,107,196,0.5)" stroke-width="1"/></svg>`;
+
   const fileSpecs = parseProductTextList(item.file_specification);
   const fileSpecHtml = fileSpecs.length ? `
     <section class="mp-panel">
-      <header class="mp-panel-head"><h3>File Specifications</h3></header>
-      <ul class="mp-bullet-list">${fileSpecs.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+      <header class="mp-panel-head">${bundleFileIconSvg}<h3>File Specifications</h3></header>
+      <ul class="mp-bullet-list">${fileSpecs.map((l) => `<li>${bundleFileSvg}<span>${esc(l)}</span></li>`).join('')}</ul>
     </section>` : '';
 
   const infoRows = [
-    renderProductInfoRow('Category', item.category || 'Bundle'),
-    renderProductInfoRow('License', item.license_type || 'Premium'),
-    renderProductInfoRow('Compatibility', item.compatible_software || 'All UX Pacific resources'),
-    renderProductInfoRow('High Resolution', item.high_resolution || 'Yes'),
-    renderProductInfoRow('Format', item.files_included || 'Digital download'),
+    renderProductInfoRow('Category', item.category),
+    renderProductInfoRow('License', item.license_type),
+    renderProductInfoRow('Compatibility', item.compatible_software),
+    renderProductInfoRow('High Resolution', item.high_resolution),
+    renderProductInfoRow('Format', item.files_included),
     renderProductInfoRow('Last Updated', item.last_update),
   ].filter(Boolean).join('');
 
@@ -3871,7 +3943,7 @@ function renderBundleDetailModal(item, related) {
 
   return `
     ${renderMpGalleryCol(uniqueGallery, item.name)}
-    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="bundles.php">
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll>
       <div class="mp-details">
         <div class="mp-tags">
           <span class="mp-tag-pill">${esc(item.category || 'Bundle')}</span>
@@ -3923,15 +3995,11 @@ function renderBundleDetailModal(item, related) {
           <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('bundle', '${esc(item.id)}')">Buy Now</button>
         </div>
 
-        <div class="mp-secondary-actions">
-          <button type="button" class="mp-btn-ghost" onclick="toggleMarketplaceWishlist('bundle', '${esc(item.id)}')">Save to Wishlist</button>
-          <a href="bundles.php" class="mp-btn-ghost">All Bundles</a>
-        </div>
       </div>
 
       ${item.description ? `
       <section class="mp-panel mp-panel--about">
-        <header class="mp-panel-head"><h3>About this bundle</h3></header>
+        <header class="mp-panel-head">${bundleAboutIconSvg}<h3>About this bundle</h3></header>
         <p class="mp-about-text">${esc(item.description)}</p>
       </section>` : ''}
 
@@ -3940,8 +4008,11 @@ function renderBundleDetailModal(item, related) {
       ${infoRows ? `
       <section class="mp-panel mp-panel--info">
         <header class="mp-panel-head">
-          <h3>Bundle Details</h3>
-          <span class="mp-panel-sub">License &amp; compatibility</span>
+          ${bundleInfoIconSvg}
+          <div class="mp-panel-head-text">
+            <h3>Bundle Details</h3>
+            <span class="mp-panel-sub">License &amp; compatibility</span>
+          </div>
         </header>
         <dl class="mp-info-table">${infoRows}</dl>
       </section>` : ''}
@@ -3994,7 +4065,7 @@ function renderFreebieDetailModal(item, related) {
 
   return `
     ${renderMpGalleryCol(uniqueGallery, item.name)}
-    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="freebies.php">
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll>
       <div class="mp-details">
         <div class="mp-tags">
           <span class="mp-tag-pill">${categoryLabel}</span>
@@ -4020,16 +4091,18 @@ function renderProductDetailModal(item, type, related, tagTokens) {
   const itemType = item.type || type;
   const uniqueGallery = getMarketplaceGalleryImages(item);
   const isFree = isCatalogItemFree(item);
-  const detailUrl = itemType === 'bundle'
-    ? 'bundles.php'
-    : `product.php?id=${encodeURIComponent(item.id)}`;
   const categoryLabel = esc(item.category || (itemType === 'bundle' ? 'Bundle' : 'Product'));
   const typePill = esc(mpProductTypeLabel(item, itemType));
   const reviewCount = Number(item.review_count || 0);
   const ratingHtml = renderMpStarRating(item.rating || '4.5', reviewCount);
   const sizeHtml = renderMpSizeSelector(item);
-  const compactInfo = renderMpCompactProductInfo(item);
-  const fullDetailsHtml = renderProductInfoPanels(item, itemType, true);
+  const lowerPanelsHtml = renderProductInfoPanels(item, itemType, false, true);
+  const detailPageUrl = itemType === 'bundle'
+    ? `bundles.php?id=${encodeURIComponent(item.id)}`
+    : `product.php?id=${encodeURIComponent(item.id)}`;
+  const descHtml = item.description
+    ? `<div class="mp-desc-inline"><p class="mp-about-text">${esc(item.description)}</p></div>`
+    : '';
 
   const relatedHtml = related.length
     ? `<section class="mp-related mp-related--compact">
@@ -4065,7 +4138,7 @@ function renderProductDetailModal(item, type, related, tagTokens) {
 
   return `
     ${renderMpGalleryCol(uniqueGallery, item.name)}
-    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll data-mp-detail-url="${esc(detailUrl)}">
+    <div class="mp-details-scroll mp-scroll-col" data-mp-scroll>
       <div class="mp-details">
         <div class="mp-tags">
           <span class="mp-tag-pill">${categoryLabel}</span>
@@ -4076,6 +4149,8 @@ function renderProductDetailModal(item, type, related, tagTokens) {
         ${ratingHtml}
 
         ${renderCatalogPriceRow(item)}
+
+        ${descHtml}
 
         ${isFree ? '' : (() => {
           const chips = detectFormatChips(item);
@@ -4121,17 +4196,14 @@ function renderProductDetailModal(item, type, related, tagTokens) {
           <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}')">${isFree ? 'Get Free' : 'Buy Now'}</button>
         </div>
 
-        <button type="button" class="mp-details-link" data-mp-toggle-details>View description &amp; full details →</button>
-
-        <div class="mp-full-details" data-mp-full-details hidden>
-          ${fullDetailsHtml}
-          <div class="mp-secondary-actions">
-            <button type="button" class="mp-btn-ghost" onclick="toggleMarketplaceWishlist('${esc(itemType)}', '${esc(item.id)}')">Save to Wishlist</button>
-            <a href="${detailUrl}" class="mp-btn-ghost">Open full product page</a>
-          </div>
+        <div class="mp-lower-panels">
+          ${lowerPanelsHtml}
+          <a href="${detailPageUrl}" class="mp-view-full-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View full product page
+          </a>
         </div>
 
-        ${compactInfo}
         ${relatedHtml}
       </div>
     </div>`;
@@ -4217,25 +4289,6 @@ function initMpModalControls() {
       btn.classList.add('is-active');
     });
   });
-
-  document.querySelector('[data-mp-toggle-details]')?.addEventListener('click', () => {
-    const panel = document.querySelector('[data-mp-full-details]');
-    const link = document.querySelector('[data-mp-toggle-details]');
-    const scrollEl = document.querySelector('.mp-details-scroll');
-    if (!panel) return;
-    const open = panel.hasAttribute('hidden');
-    if (open) {
-      panel.removeAttribute('hidden');
-      if (link) link.textContent = 'Hide full details ↑';
-      requestAnimationFrame(() => {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
-      });
-    } else {
-      panel.setAttribute('hidden', '');
-      if (link) link.textContent = 'View description & full details →';
-    }
-  });
 }
 
 async function mpModalBuyNow(type, id) {
@@ -4298,16 +4351,20 @@ function initProductCardPopups() {
   });
 
   document.addEventListener('click', (event) => {
-    const buyNowBtn = event.target.closest('button.js-buy-now');
+    const buyNowBtn = event.target.closest('.js-buy-now');
     if (buyNowBtn) {
       event.stopPropagation();
+      event.preventDefault();
+      if (buyNowBtn.disabled) return;
       const id = buyNowBtn.dataset.productId;
       const itemType = normalizeMarketplaceType(buyNowBtn.dataset.itemType || 'product');
       if (!id) return;
+      const card = buyNowBtn.closest('.uxp-product-card, .shop-product-card, .marketplace-card, [data-product-id]');
+      const format = buyNowBtn.dataset.availableType || card?.dataset.type || null;
       const origText = buyNowBtn.textContent.trim();
       buyNowBtn.disabled = true;
       buyNowBtn.textContent = '…';
-      buyNow(id, null, 1, itemType).catch(() => {
+      buyNow(id, null, 1, itemType, { format }).catch(() => {
         buyNowBtn.disabled = false;
         buyNowBtn.textContent = origText;
       });
@@ -4405,9 +4462,6 @@ async function openMarketplaceModal(type, id, triggerEl) {
     initMarketplaceGallery();
     initMpModalControls();
     initRelatedCarousel();
-    const detailScroll = body.querySelector('.mp-details-scroll[data-mp-detail-url]');
-    const extLink = modal.querySelector('#mp-external-link');
-    if (extLink && detailScroll?.dataset.mpDetailUrl) extLink.href = detailScroll.dataset.mpDetailUrl;
     body.querySelectorAll('.mp-scroll-col').forEach((el) => { el.scrollTop = 0; });
     
     const closeBtn = modal.querySelector('.marketplace-modal-close');
@@ -4504,16 +4558,56 @@ function initTopProductsFilters() {
   });
 }
 
+function initMobileNav() {
+  const navbar = document.querySelector('.navbar');
+  const toggle = document.querySelector('.mobile-nav-toggle');
+  const panel = document.getElementById('mobile-nav-panel');
+  const backdrop = document.querySelector('.mobile-nav-backdrop');
+  if (!navbar || !toggle || !panel) return;
+
+  function setMobileNavOpen(open) {
+    navbar.classList.toggle('mobile-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (backdrop) backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+    document.body.classList.toggle('mobile-nav-open', open);
+  }
+
+  toggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+    setMobileNavOpen(!navbar.classList.contains('mobile-open'));
+  });
+
+  backdrop?.addEventListener('click', () => setMobileNavOpen(false));
+
+  panel.querySelectorAll('a.mobile-nav-link').forEach((link) => {
+    link.addEventListener('click', () => setMobileNavOpen(false));
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!navbar.classList.contains('mobile-open')) return;
+    if (navbar.contains(event.target)) return;
+    setMobileNavOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && navbar.classList.contains('mobile-open')) {
+      setMobileNavOpen(false);
+      toggle.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) setMobileNavOpen(false);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSearchModal();
   initProductCardPopups();
   initTopProductsFilters();
-  document.querySelector('.mobile-nav-toggle')?.addEventListener('click', (event) => {
-    const header = event.currentTarget.closest('.navbar');
-    const open = !header.classList.contains('mobile-open');
-    header.classList.toggle('mobile-open', open);
-    event.currentTarget.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
+  initMobileNav();
 });
 
 window.openMarketplaceModal = openMarketplaceModal;
@@ -4558,6 +4652,7 @@ if (typeof document !== 'undefined') {
     const productPages = new Set(['shopall.php', 'products.php', 'product.php', 'search.php']);
     const categoryPages = new Set(['category.php']);
     const bundlePages = new Set(['bundles.php']);
+    const studioPages = new Set(['studio.php']);
     const homePages = new Set(['', '/', 'index.php']);
 
     function cleanPath(pathname) {
@@ -4570,6 +4665,7 @@ if (typeof document !== 'undefined') {
       if (productPages.has(file)) return 'products';
       if (categoryPages.has(file)) return 'category';
       if (bundlePages.has(file)) return 'bundles';
+      if (studioPages.has(file)) return 'studio';
       if (homePages.has(file)) {
         if (url.hash === '#products') return 'home-products';
         if (url.hash === '#category') return 'category';
@@ -4587,6 +4683,7 @@ if (typeof document !== 'undefined') {
       if (homePages.has(file) && url.hash === '#products') return 'home-products';
       if (categoryPages.has(file) || text === 'category') return 'category';
       if (bundlePages.has(file) || text === 'bundles') return 'bundles';
+      if (studioPages.has(file) || text === 'studio') return 'studio';
       if (homePages.has(file) && !url.hash && text === 'home') return 'home';
       if (homePages.has(file) && url.hash === '#category') return 'category';
       return '';
@@ -4594,7 +4691,8 @@ if (typeof document !== 'undefined') {
 
     function setActiveNav(group) {
       navLinks.forEach(link => {
-        const isActive = linkGroup(link) === group;
+        // Only mark as active if both the page and link have a meaningful group
+        const isActive = group !== '' && linkGroup(link) === group;
         link.classList.toggle('active', isActive);
         link.classList.toggle('nav-link-active', isActive);
         if (isActive) link.setAttribute('aria-current', 'page');
@@ -4637,12 +4735,15 @@ if (typeof document !== 'undefined') {
   });
 }
 
-// Buy Now function - adds to cart then redirects to checkout
-async function buyNow(productId, size, quantity, itemType = 'product') {
+// Buy Now — add item to cart, then go to checkout (or sign-in first)
+async function buyNow(productId, size, quantity, itemType = 'product', options = {}) {
+  const format = options.format || null;
+  const details = { item_type: itemType, ...(options.details || {}) };
+
   const userSession = getUserSession();
   if (!userSession || !userSession.id) {
     if (userSession) clearUserSession();
-    await addToCart(productId, size, quantity, { item_type: itemType }).catch(() => {});
+    await addToCart(productId, size, quantity, details, format).catch(() => {});
     showToast('Please sign in to complete your purchase', 'error');
     setTimeout(() => {
       window.location.href = 'signin.php?redirect=checkout.php';
@@ -4651,10 +4752,11 @@ async function buyNow(productId, size, quantity, itemType = 'product') {
   }
 
   try {
-    await addToCart(productId, size, quantity, { item_type: itemType });
+    await addToCart(productId, size, quantity, details, format);
     window.location.href = 'checkout.php';
   } catch (err) {
     showToast(typeof err === 'string' ? err : 'Failed to add item to cart.', 'error');
+    throw err;
   }
 }
 
@@ -4730,7 +4832,6 @@ window.handleSignOut = handleSignOut;
 window.signInWithGoogle = signInWithGoogle;
 window.signUpWithGoogle = signUpWithGoogle;
 window.checkAuthBeforeCheckout = checkAuthBeforeCheckout;
-window.loadOrderConfirmationPage = loadOrderConfirmationPage;
 
 // ==================== LOCALHOST SHOP INTERACTIONS ====================
 (function initLocalhostShop() {
@@ -4862,18 +4963,27 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
     return result;
   };
 
+  function profileDropdownMenuHtml() {
+    return `
+      <a href="account.php" role="menuitem"><i class="ph ph-user-circle"></i> Edit Profile</a>
+      <a href="orders.php" role="menuitem"><i class="ph ph-package"></i> My Orders</a>
+      <button type="button" role="menuitem" onclick="handleSignOut()"><i class="ph ph-sign-out"></i> Logout</button>
+    `;
+  }
+
   function syncHeaderAuth(user) {
     const signedIn = !!(user && user.id);
     const displayName = signedIn ? getUserFirstName(user) : '';
     const firstInitial = (displayName || 'U').charAt(0).toUpperCase();
+    const isMobileHeader = window.matchMedia('(max-width: 900px)').matches;
 
+    setSignInCtaVisible(!signedIn);
     document.querySelectorAll('.header-signin-cta, .nav-cta[href="signin.php"]').forEach((el) => {
-      el.style.display = signedIn ? 'none' : 'inline-flex';
       el.textContent = 'Sign In';
     });
 
     document.querySelectorAll('.profile-menu, .user-menu, .nav-user').forEach((menu) => {
-      menu.style.display = signedIn ? 'flex' : 'none';
+      menu.style.display = signedIn && !isMobileHeader ? 'flex' : 'none';
       const name = menu.querySelector('.user-name') || menu.querySelector('span');
       if (name && signedIn) {
         name.textContent = displayName;
@@ -4894,16 +5004,14 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
       if (legacyDropdown && signedIn) {
         legacyDropdown.innerHTML = `
           <a href="account.php" class="user-dropdown-item"><span>Edit Profile</span></a>
+          <a href="orders.php" class="user-dropdown-item"><span>My Orders</span></a>
           <button type="button" class="user-dropdown-item logout" onclick="handleSignOut()"><span>Logout</span></button>
         `;
       }
 
       const profileDropdown = menu.querySelector('.profile-dropdown');
       if (profileDropdown && signedIn) {
-        profileDropdown.innerHTML = `
-          <a href="account.php" role="menuitem">Edit Profile</a>
-          <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
-        `;
+        profileDropdown.innerHTML = profileDropdownMenuHtml();
       }
 
       if (signedIn && menu.classList.contains('user-menu') && !menu.querySelector('.profile-dropdown')) {
@@ -4917,8 +5025,7 @@ window.loadOrderConfirmationPage = loadOrderConfirmationPage;
               <i class="ph ph-caret-down"></i>
             </button>
             <div class="profile-dropdown" role="menu">
-              <a href="account.php" role="menuitem">Edit Profile</a>
-              <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
+              ${profileDropdownMenuHtml()}
             </div>
           `;
         }

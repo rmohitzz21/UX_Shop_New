@@ -9,9 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 validateCsrf();
 
 $input     = adminInput();
+drEnsureFreebieResourcesColumn($conn);
+
 $id        = (int) ($input['id'] ?? 0);
 $productId = (int) ($input['product_id'] ?? 0);
 $bundleId  = (int) ($input['bundle_id'] ?? 0);
+$freebieId = (int) ($input['freebie_id'] ?? 0);
 $title     = trim((string) ($input['title'] ?? ''));
 $type      = strtolower(trim((string) ($input['resource_type'] ?? 'file')));
 
@@ -21,8 +24,9 @@ if ($title === '' || strlen($title) > 255) {
 if (!in_array($type, drAllowedResourceTypes(), true)) {
     sendResponse('error', 'Invalid resource type.', null, 422);
 }
-if (($productId > 0) === ($bundleId > 0)) {
-    sendResponse('error', 'Link resource to a product or a bundle, not both.', null, 422);
+$ownerCount = ($productId > 0 ? 1 : 0) + ($bundleId > 0 ? 1 : 0) + ($freebieId > 0 ? 1 : 0);
+if ($ownerCount !== 1) {
+    sendResponse('error', 'Link resource to exactly one of product, bundle, or freebie.', null, 422);
 }
 
 $deliveryMode = drDeliveryModeForType($type);
@@ -82,9 +86,9 @@ if ($id > 0) {
 if ($productId > 0) {
     $stmt = $conn->prepare(
         'INSERT INTO digital_resources
-         (product_id, bundle_id, title, resource_type, delivery_mode, storage_provider,
+         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
           storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
-         VALUES (?, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+         VALUES (?, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
     );
     $stmt->bind_param(
         'issssssiiii',
@@ -100,16 +104,37 @@ if ($productId > 0) {
         $sortOrder,
         $isActive
     );
-} else {
+} elseif ($bundleId > 0) {
     $stmt = $conn->prepare(
         'INSERT INTO digital_resources
-         (product_id, bundle_id, title, resource_type, delivery_mode, storage_provider,
+         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
           storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
-         VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+         VALUES (NULL, ?, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
     );
     $stmt->bind_param(
         'issssssiiii',
         $bundleId,
+        $title,
+        $type,
+        $deliveryMode,
+        $provider,
+        $externalUrl,
+        $instructions,
+        $dlLimit,
+        $expiryDays,
+        $sortOrder,
+        $isActive
+    );
+} else {
+    $stmt = $conn->prepare(
+        'INSERT INTO digital_resources
+         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
+          storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
+         VALUES (NULL, NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+    );
+    $stmt->bind_param(
+        'issssssiiii',
+        $freebieId,
         $title,
         $type,
         $deliveryMode,

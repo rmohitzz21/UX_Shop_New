@@ -5,12 +5,70 @@ require_once __DIR__ . '/DigitalStorageService.php';
 
 class DigitalDownloadService
 {
+    /** Signed download link lifetime for local streaming (seconds). */
+    public static function accessTtlSeconds(): int
+    {
+        return max(60, min(3600, (int) (getenv('DIGITAL_DOWNLOAD_ACCESS_TTL_SECONDS') ?: 600)));
+    }
+
+    private static function signingSecret(): string
+    {
+        $custom = trim((string) (getenv('DIGITAL_DOWNLOAD_SIGNING_KEY') ?: ''));
+        if ($custom !== '') {
+            return $custom;
+        }
+        $hex = trim((string) (getenv('DIGITAL_STORAGE_ENCRYPT_KEY') ?: ''));
+        if ($hex !== '' && strlen($hex) === 64 && ctype_xdigit($hex)) {
+            return $hex;
+        }
+        return hash('sha256', (string) (getenv('APP_URL') ?: 'ux-shop') . '|download-signing');
+    }
+
+    public static function signDownloadAccess(string $token, int $userId): array
+    {
+        $exp = time() + self::accessTtlSeconds();
+        $sig = hash_hmac('sha256', $token . '|' . $userId . '|' . $exp, self::signingSecret());
+
+        return ['exp' => $exp, 'sig' => $sig];
+    }
+
+    public static function validateDownloadAccess(string $token, int $userId, int $exp, string $sig): bool
+    {
+        if ($exp < time()) {
+            return false;
+        }
+        if ($sig === '' || !preg_match('/^[a-f0-9]{64}$/', $sig)) {
+            return false;
+        }
+        $expected = hash_hmac('sha256', $token . '|' . $userId . '|' . $exp, self::signingSecret());
+
+        return hash_equals($expected, $sig);
+    }
+
+    public static function buildDownloadUrl(string $token, int $userId): string
+    {
+        $access = self::signDownloadAccess($token, $userId);
+        $query  = http_build_query([
+            'token' => $token,
+            'exp'   => $access['exp'],
+            'sig'   => $access['sig'],
+        ], '', '&', PHP_QUERY_RFC3986);
+
+        return 'api/download/file.php?' . $query;
+    }
+
     /**
      * Create download tokens for every digital resource in a paid order.
      * Idempotent: INSERT IGNORE on (order_item_id, resource_id).
      */
     public static function generateDownloadsForOrder(int $orderId, mysqli $conn): void
     {
+        $helpers = dirname(__DIR__) . '/api/admin/resources/_helpers.php';
+        if (is_file($helpers)) {
+            require_once $helpers;
+            drEnsureFreebieResourcesColumn($conn);
+        }
+
         $oStmt = $conn->prepare('SELECT user_id FROM orders WHERE id = ? LIMIT 1');
         $oStmt->bind_param('i', $orderId);
         $oStmt->execute();
@@ -54,7 +112,11 @@ class DigitalDownloadService
             SELECT id, title, download_limit, expiry_days
             FROM digital_resources
             WHERE is_active = 1
-              AND ((product_id = ? AND ? IS NOT NULL) OR (bundle_id = ? AND ? IS NOT NULL))
+              AND (
+                    (product_id = ? AND ? IS NOT NULL)
+                 OR (bundle_id = ? AND ? IS NOT NULL)
+                 OR (freebie_id = ? AND ? IS NOT NULL)
+              )
             ORDER BY sort_order ASC, id ASC
         ");
 
@@ -64,14 +126,14 @@ class DigitalDownloadService
             }
 
             $orderItemId = (int) $item['order_item_id'];
-            $productId   = in_array($item['item_type'], ['product', 'freebie'], true)
-                ? (int) $item['product_id'] : null;
+            $productId   = $item['item_type'] === 'product' ? (int) $item['product_id'] : null;
+            $freebieId   = $item['item_type'] === 'freebie' ? (int) $item['product_id'] : null;
             $bundleId    = $item['item_type'] === 'bundle' ? (int) $item['bundle_id'] : null;
             $itemName    = (string) $item['item_name'];
             $resources   = [];
 
             if ($resStmt !== false) {
-                $resStmt->bind_param('iiii', $productId, $productId, $bundleId, $bundleId);
+                $resStmt->bind_param('iiiiii', $productId, $productId, $bundleId, $bundleId, $freebieId, $freebieId);
                 $resStmt->execute();
                 $resources = $resStmt->get_result()->fetch_all(MYSQLI_ASSOC);
             }
@@ -157,7 +219,7 @@ class DigitalDownloadService
         $stmt->execute();
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-        return array_map(static function (array $row): array {
+        return array_map(static function (array $row) use ($userId): array {
             $mode = (string) ($row['delivery_mode'] ?? 'download');
             $hasFile = (int) $row['resource_id'] > 0 || $row['file_path'] !== '';
             $label = match ($mode) {
@@ -165,9 +227,13 @@ class DigitalDownloadService
                 'instructions' => 'View instructions',
                 default => 'Download',
             };
+            $token = (string) $row['token'];
+
             return [
                 'id'             => (int)  $row['id'],
-                'token'          => $row['token'],
+                'token'          => $token,
+                'download_url'   => self::buildDownloadUrl($token, $userId),
+                'access_ttl'     => self::accessTtlSeconds(),
                 'item_name'      => $row['item_name'],
                 'resource_type'  => $row['resource_type'] ?? 'file',
                 'delivery_mode'  => $mode,
@@ -272,6 +338,11 @@ class DigitalDownloadService
             exit;
         }
 
+        $legacyKey = self::pathToStorageKey($filePath);
+        if ($legacyKey !== '') {
+            DigitalStorageService::streamLocal($legacyKey);
+        }
+
         $absPath = self::resolveFilePath($filePath);
         if ($filePath === '' || !is_file($absPath)) {
             self::jsonError(503, 'File not yet available. Please contact support.');
@@ -285,6 +356,19 @@ class DigitalDownloadService
         header('X-Content-Type-Options: nosniff');
         readfile($absPath);
         exit;
+    }
+
+    private static function pathToStorageKey(string $path): string
+    {
+        $path = str_replace('\\', '/', trim($path));
+        if ($path === '') {
+            return '';
+        }
+        if (preg_match('#(?:^|/)(?:storage/private/)?((?:products|bundles|freebies)/.+)$#i', $path, $m)) {
+            return DigitalStorageService::sanitizeStorageKey($m[1]);
+        }
+
+        return '';
     }
 
     private static function jsonError(int $code, string $message): void

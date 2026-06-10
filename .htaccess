@@ -28,6 +28,12 @@ ErrorDocument 500 /Shop/UX_SHOP/UX_Shop_New/500.php
     # Block direct access to migrations directory
     RewriteRule ^migrations(/|$) - [F,L]
 
+    # Block direct access to private file storage (defense in depth)
+    RewriteRule ^storage(/|$) - [F,L]
+
+    # Block direct access to CLI scripts directory
+    RewriteRule ^scripts(/|$) - [F,L]
+
     # Block access to includes directory (it has its own .htaccess too)
     RewriteRule ^includes(/|$) - [F,L]
 

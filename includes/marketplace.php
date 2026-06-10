@@ -93,6 +93,7 @@ function marketplaceEnsureSchema(mysqli $conn): void {
     addColumnIfMissing($conn, 'products', 'grid_columns', "`grid_columns` VARCHAR(80) NULL AFTER `files_included`");
     addColumnIfMissing($conn, 'products', 'layout_type', "`layout_type` VARCHAR(120) NULL AFTER `grid_columns`");
     addColumnIfMissing($conn, 'products', 'license_type', "`license_type` VARCHAR(80) NULL DEFAULT 'Premium' AFTER `layout_type`");
+    addColumnIfMissing($conn, 'products', 'custom_fields', "`custom_fields` TEXT NULL COMMENT 'JSON array of {label,value} pairs' AFTER `license_type`");
 
     $conn->query("CREATE TABLE IF NOT EXISTS bundles (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -467,10 +468,12 @@ function marketplaceParseAdditionalImages(?string $json): array {
 }
 
 function marketplaceProductSpecs(array $row): array {
-    $category = strtolower((string) ($row['category'] ?? ''));
-    $availableType = (string) ($row['available_type'] ?? 'digital');
+    global $conn;
+    $global = shopSettingsGetAll($conn);
     $fileSpec = trim((string) ($row['file_specification'] ?? ''));
 
+    // files_included: use explicit row value, or try to derive from file_specification text,
+    // or fall back to the global shop setting — no hardcoded default.
     $filesIncluded = trim((string) ($row['files_included'] ?? ''));
     if ($filesIncluded === '' && $fileSpec !== '') {
         if (preg_match('/files?\s*:\s*([^\n]+)/i', $fileSpec, $m)) {
@@ -480,33 +483,46 @@ function marketplaceProductSpecs(array $row): array {
         }
     }
     if ($filesIncluded === '') {
-        $filesIncluded = $availableType === 'physical' ? 'Physical product' : 'FIG, PNG, PDF, SVG';
-    }
-
-    $compatible = trim((string) ($row['compatible_software'] ?? ''));
-    if ($compatible === '') {
-        if (str_contains($category, 'template') || str_contains($category, 'ui')) {
-            $compatible = 'Figma, Adobe XD, Sketch';
-        } elseif (str_contains($category, 'mockup')) {
-            $compatible = 'Photoshop, Figma';
-        } else {
-            $compatible = 'All modern design tools';
-        }
+        $filesIncluded = trim((string) ($global['files_included'] ?? ''));
     }
 
     $updatedAt = $row['updated_at'] ?? $row['created_at'] ?? null;
     $lastUpdate = $updatedAt ? date('M j, Y', strtotime((string) $updatedAt)) : date('M j, Y');
 
-    return [
-        'last_update' => $lastUpdate,
-        'high_resolution' => trim((string) ($row['high_resolution'] ?? '')) ?: ($availableType === 'physical' ? 'Print ready' : 'Yes'),
-        'compatible_software' => $compatible,
-        'software_version' => trim((string) ($row['software_version'] ?? '')) ?: 'Latest',
-        'files_included' => $filesIncluded,
-        'grid_columns' => trim((string) ($row['grid_columns'] ?? '')) ?: '12 Column',
-        'layout_type' => trim((string) ($row['layout_type'] ?? '')) ?: 'Responsive',
-        'license_type' => trim((string) ($row['license_type'] ?? '')) ?: 'Premium',
+    $specs = [
+        'last_update'        => $lastUpdate,
+        'high_resolution'    => trim((string) ($row['high_resolution']    ?? '')) ?: trim((string) ($global['high_resolution']    ?? '')),
+        'compatible_software'=> trim((string) ($row['compatible_software'] ?? '')) ?: trim((string) ($global['compatible_software'] ?? '')),
+        'software_version'   => trim((string) ($row['software_version']   ?? '')) ?: trim((string) ($global['software_version']   ?? '')),
+        'files_included'     => $filesIncluded,
+        'grid_columns'       => trim((string) ($row['grid_columns']       ?? '')) ?: trim((string) ($global['grid_columns']       ?? '')),
+        'layout_type'        => trim((string) ($row['layout_type']        ?? '')) ?: trim((string) ($global['layout_type']        ?? '')),
+        'license_type'       => trim((string) ($row['license_type']       ?? '')) ?: trim((string) ($global['license_type']       ?? '')),
     ];
+    $specs = shopSettingsApplyProductInfo($specs, $conn);
+
+    $customRaw = trim((string) ($row['custom_fields'] ?? ''));
+    if ($customRaw !== '') {
+        $parsed = json_decode($customRaw, true);
+        if (is_array($parsed)) {
+            $productExtras = [];
+            foreach ($parsed as $field) {
+                if (!is_array($field)) {
+                    continue;
+                }
+                $label = trim((string) ($field['label'] ?? ''));
+                $value = trim((string) ($field['value'] ?? ''));
+                if ($label !== '' && $value !== '') {
+                    $productExtras[] = ['label' => $label, 'value' => $value];
+                }
+            }
+            if ($productExtras) {
+                $specs['global_extra_rows'] = array_merge($specs['global_extra_rows'] ?? [], $productExtras);
+            }
+        }
+    }
+
+    return $specs;
 }
 
 function uxpIndexProductCard(array $row): string {
@@ -588,8 +604,186 @@ function uxpIndexProductCard(array $row): string {
       <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
     </div>
     <div class="uxp-product-actions">
-      <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$id}" data-item-type="product">{$buyLabel}</button>
+      <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$id}" data-item-type="product" data-available-type="{$availableType}">{$buyLabel}</button>
       <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$displayPrice}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}, item_type: 'product'}, '{$availableType}')"{$disabled}>Add to Cart</button>
+    </div>
+  </div>
+</article>
+HTML;
+}
+
+function uxpIndexBundleCard(array $bundle): string
+{
+    $bId = (int) $bundle['id'];
+    $bName = htmlspecialchars($bundle['name'], ENT_QUOTES, 'UTF-8');
+    $bDesc = htmlspecialchars($bundle['description'] ?? '', ENT_QUOTES, 'UTF-8');
+    $bImage = htmlspecialchars(marketplaceImage($bundle['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $bPrice = number_format((float) $bundle['price'], 0);
+    $bOldPrice = !empty($bundle['old_price']) ? number_format((float) $bundle['old_price'], 0) : '';
+    $bRating = number_format((float) ($bundle['rating'] ?? 4.5), 1);
+    $bFeatured = !empty($bundle['is_featured']);
+    $badgeText = $bFeatured ? 'Most Popular' : 'Bundle';
+
+    $includedItems = [];
+    if (!empty($bundle['whats_included'])) {
+        foreach (preg_split('/\r\n|\r|\n/', (string) $bundle['whats_included']) as $line) {
+            $line = trim(str_replace(['- ', '* '], '', $line));
+            if ($line !== '') {
+                $includedItems[] = htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
+            }
+        }
+    }
+    if (empty($includedItems)) {
+        $includedItems = ['Premium design resources', 'Editable source files', 'Bonus templates', 'Personal & commercial license'];
+    }
+    $includedItems = array_slice($includedItems, 0, 4);
+
+    $jsName = htmlspecialchars(json_encode($bundle['name']), ENT_QUOTES, 'UTF-8');
+    $jsImage = htmlspecialchars(json_encode($bundle['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $oldHtml = $bOldPrice ? "<span>₹{$bOldPrice}</span>" : '';
+    $listHtml = '';
+    foreach ($includedItems as $item) {
+        $listHtml .= "<li>{$item}</li>";
+    }
+
+    return <<<HTML
+<article class="uxp-bundle-card" data-type="bundle" data-id="{$bId}" data-product-id="{$bId}" data-name="{$bName}" data-image="{$bImage}" data-price="{$bundle['price']}" data-old-price="{$bundle['old_price']}" data-rating="{$bRating}">
+  <div class="uxp-bundle-image">
+    <img src="{$bImage}" alt="{$bName} preview" loading="lazy" onerror="this.src='img/poster.webp'" />
+    <span>{$badgeText}</span>
+  </div>
+  <div class="uxp-bundle-content">
+    <div class="uxp-bundle-title-row">
+      <h3>{$bName}</h3>
+      <span class="uxp-bundle-rating" aria-label="Rated {$bRating} out of 5">&#9733; <b>{$bRating}</b></span>
+    </div>
+    <p>{$bDesc}</p>
+    <ul>{$listHtml}</ul>
+    <div class="uxp-bundle-footer">
+      <strong>₹{$bPrice} {$oldHtml}</strong>
+      <div>
+        <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$bId}" data-item-type="bundle" data-available-type="digital">Buy Now</button>
+        <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart({$bId}, null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}, item_type: 'bundle'}, 'digital')">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</article>
+HTML;
+}
+
+function shopAllFormatLabel(array $row): string
+{
+    $files = strtolower(trim((string) ($row['files_included'] ?? '')));
+    if (str_contains($files, 'figma') || str_contains($files, 'fig')) {
+        return 'Figma';
+    }
+    if (str_contains($files, 'pdf')) {
+        return 'PDF';
+    }
+    if (str_contains($files, 'zip')) {
+        return 'ZIP';
+    }
+
+    $name = strtolower((string) ($row['name'] ?? ''));
+    $cat  = strtolower((string) ($row['category'] ?? ''));
+    if (str_contains($name, 'figma') || str_contains($cat, 'figma') || str_contains($cat, 'ui template')) {
+        return 'Figma';
+    }
+    if (str_contains($name, 'mockup') || str_contains($cat, 'mockup')) {
+        return 'Mockup';
+    }
+    if (str_contains($name, 'icon') || str_contains($cat, 'icon')) {
+        return 'Icons';
+    }
+    if (str_contains($name, 'workbook') || str_contains($cat, 'workbook')) {
+        return 'PDF';
+    }
+
+    return 'Digital';
+}
+
+function uxpShopAllProductCard(array $row): string
+{
+    $id = (int) $row['id'];
+    $name = htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8');
+    $categoryRaw = trim((string) ($row['category'] ?? ''));
+    $category = htmlspecialchars($categoryRaw, ENT_QUOTES, 'UTF-8');
+    $isFeatured = !empty($row['is_featured']);
+    $image = htmlspecialchars(marketplaceImage($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $isFreeProduct = !empty($row['is_free']);
+    $displayPrice = $isFreeProduct ? 0.0 : (float) $row['price'];
+    $price = number_format($displayPrice, 2);
+    $oldPrice = (!$isFreeProduct && !empty($row['old_price'])) ? (float) $row['old_price'] : 0;
+    $oldPriceFmt = $oldPrice > 0 ? number_format($oldPrice, 2) : '';
+    $rating = number_format((float) ($row['rating'] ?: 4.5), 1);
+    $availableType = 'digital';
+    $salesCount = number_format((int) ($row['sales_count'] ?? 0));
+    $formatLabel = htmlspecialchars(shopAllFormatLabel($row), ENT_QUOTES, 'UTF-8');
+
+    $rawDesc = strip_tags($row['description'] ?? 'Premium UX/UI design resource from UX Pacific.');
+    if (strlen($rawDesc) > 100) {
+        $rawDesc = substr($rawDesc, 0, 100) . '…';
+    }
+    $desc = htmlspecialchars($rawDesc, ENT_QUOTES, 'UTF-8');
+    $specs = 'Category: ' . ($category !== '' ? $category : 'Digital') . ' · ' . $salesCount . ' purchases';
+
+    $jsName = htmlspecialchars(json_encode($row['name']), ENT_QUOTES, 'UTF-8');
+    $jsImage = htmlspecialchars(json_encode($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $jsCategory = htmlspecialchars(json_encode($row['category'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $jsDesc = htmlspecialchars(json_encode($row['description'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+    $oldHtml = $oldPriceFmt !== ''
+        ? "<span class='uxp-old-price'>₹{$oldPriceFmt}</span>"
+        : '';
+
+    $featuredBadge = $isFeatured
+        ? '<span cl/ass="shop-card-badge shop-card-badge--featured">Featured</span>'
+        : '';
+    $freeBadge = $isFreeProduct
+        ? '<span class="shop-card-badge shop-card-badge--free">Free</span>'
+        : '';
+    $formatBadge = '<span class="shop-card-badge shop-card-badge--format">' . $formatLabel . '</span>';
+    $buyLabel = $isFreeProduct ? 'Get Free' : 'Buy Now';
+    $isFreeAttr = $isFreeProduct ? '1' : '0';
+    $isFeaturedAttr = $isFeatured ? '1' : '0';
+
+    return <<<HTML
+<article class="uxp-product-card shop-product-card digital-product-card"
+  data-product-id="{$id}"
+  data-name="{$name}"
+  data-image="{$image}"
+  data-category="{$category}"
+  data-type="digital"
+  data-is-free="{$isFreeAttr}"
+  data-featured="{$isFeaturedAttr}"
+  data-price="{$displayPrice}"
+  data-old-price="{$row['old_price']}"
+  data-rating="{$rating}">
+  <a href="#" class="uxp-product-media js-product-popup" data-product-id="{$id}" data-item-type="product" aria-label="Quick view {$name}">
+    <img src="{$image}" alt="{$name}" loading="lazy" width="480" height="360" onerror="this.src='img/sticker.webp'">
+    {$featuredBadge}
+    {$freeBadge}
+    {$formatBadge}
+    <span class="uxp-qv-overlay" aria-hidden="true">
+      <span class="uxp-qv-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Quick View
+      </span>
+    </span>
+  </a>
+  <div class="uxp-product-body">
+    <div class="uxp-product-title-row">
+      <h3 title="{$name}">{$name}</h3>
+      <div class="uxp-rating" aria-label="Rating {$rating} out of 5"><span aria-hidden="true">&#9733;</span><b>{$rating}</b></div>
+    </div>
+    <p>{$desc}</p>
+    <p class="uxp-product-spec">{$specs}</p>
+    <div class="uxp-product-meta">
+      <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
+    </div>
+    <div class="uxp-product-actions">
+      <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$id}" data-item-type="product" data-available-type="digital">{$buyLabel}</button>
+      <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$displayPrice}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}, item_type: 'product'}, 'digital')">Add to Cart</button>
     </div>
   </div>
 </article>

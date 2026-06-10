@@ -4,9 +4,9 @@
                 <img src="img/1.png" alt="UX PACIFIC" class="logo" style="height:36px; margin: 0 auto; margin-bottom: 20px; display:block;" onerror="this.outerHTML='<span style=\'font-weight:700; font-size: 1.5rem; letter-spacing: -0.5px; display:flex; justify-content:center; gap:8px;\'><i class=\'ph ph-squares-four\'></i>UX PACIFIC</span>'" />
             </div>
             <nav class="footer-nav">
-                <a href="shopAll.php">Shop</a> &bull;
-                <a href="bundles.php">Bundles</a> &bull;
-                <a href="freebies.php">Freebies</a>
+                <a href="https://academy.uxpacific.com/" target="_blank" rel="noopener">UXP Academy</a> &bull;
+                <a href="https://uxpacific.com" target="_blank" rel="noopener">UX Pacific</a> &bull;
+                <a href="https://community.uxpacific.com/" target="_blank" rel="noopener">UXP Community</a>
             </nav>
             <div class="social-links">
                 <a href="https://www.linkedin.com/company/uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/in1.png" alt="LinkedIn" /></a>
@@ -22,9 +22,11 @@
         <div class="footer-bottom">
             <p>&copy; <?php echo date('Y'); ?> UX Pacific. All rights reserved.</p>
             <div class="legal-links">
-                <a href="policies.php">Privacy Policy</a> |
-                <a href="policies.php">Cookie Policy</a> |
-                <a href="policies.php">Terms and Condition</a>
+                <a href="policies.php">Our Policies</a> |
+                <a href="contact.php">Contact Us</a>
+                <!-- <a href="policies.php">Cookie Policy</a> |
+                <a href="policies.php">Terms and Condition</a> -->
+        
             </div>
         </div>
     </footer>

@@ -1,5 +1,8 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
+require_once __DIR__ . '/api/admin/resources/_helpers.php';
+
+drEnsureFreebieResourcesColumn($conn);
 
 /**
  * Unified freebies listing: standalone freebies + products marked is_free in admin.
@@ -7,7 +10,12 @@ require_once 'includes/config.php';
 $freebieItems = [];
 
 $freebieResult = $conn->query(
-    'SELECT *, "freebie" AS catalog_source FROM freebies WHERE is_active = 1 ORDER BY is_featured DESC, sort_order ASC, id DESC'
+    'SELECT f.*, "freebie" AS catalog_source,
+            (SELECT COUNT(*) FROM digital_resources dr
+             WHERE dr.freebie_id = f.id AND dr.is_active = 1) AS resource_count
+     FROM freebies f
+     WHERE f.is_active = 1
+     ORDER BY f.is_featured DESC, f.sort_order ASC, f.id DESC'
 );
 if ($freebieResult) {
     while ($row = $freebieResult->fetch_assoc()) {
@@ -72,8 +80,8 @@ foreach ($freebieItems as $f) {
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
     <title>Free Design Resources – UX Pacific Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="img/fav.png" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <link rel="stylesheet" href="assets/css/freebies.css" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -167,7 +175,7 @@ foreach ($freebieItems as $f) {
                             $hasFile = true;
                         } else {
                             $downloads = number_format((int) ($f['download_count'] ?? 0));
-                            $hasFile = !empty($f['file_url']);
+                            $hasFile = !empty($f['file_url']) || (int) ($f['resource_count'] ?? 0) > 0;
                         }
                         $nameLower = htmlspecialchars(strtolower($f['name']), ENT_QUOTES);
                         $descLower = htmlspecialchars(strtolower($f['description'] ?? ''), ENT_QUOTES);
@@ -311,7 +319,7 @@ foreach ($freebieItems as $f) {
     </main>
     <?php include 'includes/footer.php'; ?>
 </div>
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 <script>
 let currentFreebieCategory = 'All';
 

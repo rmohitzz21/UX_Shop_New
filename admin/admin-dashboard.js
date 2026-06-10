@@ -1,5 +1,23 @@
 // Production admin dashboard controller.
 
+// ── Generic confirm modal ─────────────────────────────────────────────────────
+let _confirmResolve = null;
+
+function showConfirmModal(title, message, confirmLabel = 'Delete') {
+  document.getElementById('confirm-modal-title').textContent = title;
+  document.getElementById('confirm-modal-message').innerHTML = message;
+  document.getElementById('confirm-modal-btn').textContent = confirmLabel;
+  document.getElementById('confirm-modal-overlay').classList.add('active');
+  return new Promise(resolve => { _confirmResolve = resolve; });
+}
+
+function _resolveConfirm(value) {
+  document.getElementById('confirm-modal-overlay').classList.remove('active');
+  if (_confirmResolve) { _confirmResolve(value); _confirmResolve = null; }
+}
+
+window._resolveConfirm = _resolveConfirm;
+
 const state = {
   users: [],
   products: [],
@@ -15,7 +33,7 @@ async function fetchJson(url, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (csrfToken && method !== 'GET' && method !== 'HEAD') headers['X-CSRF-Token'] = csrfToken;
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
   const text = await response.text();
   let json;
   try {
@@ -324,6 +342,24 @@ async function loadProducts() {
   }
 }
 
+function productPurchaseCell(p) {
+  const buyers = Number(p.buyer_count || 0);
+  const downloads = Number(p.download_total || 0);
+  const sales = Number(p.sales_count || 0);
+  const isDigital = ['digital', 'both'].includes(String(p.available_type || 'digital').toLowerCase());
+
+  if (isDigital) {
+    const main = downloads > 0 ? `${downloads.toLocaleString()} downloads` : `${sales.toLocaleString()} sales`;
+    const sub = buyers > 0 ? `${buyers.toLocaleString()} buyer${buyers === 1 ? '' : 's'}` : '';
+    return sub
+      ? `<div>${escapeHtml(main)}</div><div class="cell-sub">${escapeHtml(sub)}</div>`
+      : escapeHtml(main);
+  }
+
+  const sold = sales > 0 ? sales : buyers;
+  return `${Number(sold).toLocaleString()} sold`;
+}
+
 function renderProducts(products) {
   const table = document.getElementById('products-table');
   const q = document.getElementById('product-search')?.value.toLowerCase().trim() || '';
@@ -351,7 +387,7 @@ function renderProducts(products) {
         </td>
         <td><span class="badge badge-info">${escapeHtml(p.category || 'Uncategorized')}</span></td>
         <td>${money(p.price)}${p.is_free == 1 ? ' <span class="badge badge-success" style="margin-left:4px;">Free</span>' : ''}</td>
-        <td>${Number(p.stock || 0).toLocaleString()}</td>
+        <td>${productPurchaseCell(p)}</td>
         <td>${escapeHtml(p.rating || '0.0')}</td>
         <td>${p.is_active == 1 ? getStatusBadge('active') : getStatusBadge('archived')}</td>
         <td>
@@ -448,6 +484,45 @@ function revokeProductPendingUrls() {
   });
 }
 
+function renderProductCustomFields(rows = []) {
+  const container = document.getElementById('product-custom-fields');
+  const hidden = document.getElementById('edit-product-custom-fields');
+  if (!container || !hidden) return;
+  const list = Array.isArray(rows) && rows.length ? rows : [];
+  container.innerHTML = list.length
+    ? list.map((row) => `
+      <div class="qv-custom-row product-custom-row">
+        <div class="form-group">
+          <label class="form-label">Label</label>
+          <input class="form-input product-cf-label" type="text" value="${escapeHtml(row.label || '')}" placeholder="e.g. Artboard Size" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value</label>
+          <input class="form-input product-cf-value" type="text" value="${escapeHtml(row.value || '')}" placeholder="e.g. 1920×1080px" />
+        </div>
+        <button type="button" class="btn btn-ghost btn-xs product-cf-remove" aria-label="Remove field">Remove</button>
+      </div>
+    `).join('')
+    : '<p class="form-hint" style="margin:0;">No custom fields yet. Use <strong>+ Add field</strong> to add rows like Support, File size, or Dimensions.</p>';
+  syncProductCustomFieldsHidden();
+}
+
+function collectProductCustomFields() {
+  return [...document.querySelectorAll('#product-custom-fields .product-custom-row')]
+    .map((row) => ({
+      label: row.querySelector('.product-cf-label')?.value.trim() || '',
+      value: row.querySelector('.product-cf-value')?.value.trim() || '',
+    }))
+    .filter((row) => row.label && row.value);
+}
+
+function syncProductCustomFieldsHidden() {
+  const hidden = document.getElementById('edit-product-custom-fields');
+  if (hidden) {
+    hidden.value = JSON.stringify(collectProductCustomFields());
+  }
+}
+
 function clearProductForm() {
   const form = document.getElementById('edit-product-form');
   if (!form) return;
@@ -471,6 +546,7 @@ function clearProductForm() {
   const galleryInput = document.getElementById('edit-product-gallery');
   if (galleryInput) galleryInput.value = '';
   renderProductMediaPreviews();
+  renderProductCustomFields([]);
   toggleProductResourcesSection();
   loadProductResources(0);
 }
@@ -711,7 +787,24 @@ async function editProduct(productId) {
   set('edit-product-description', p.description);
   set('edit-product-whats', p.whats_included);
   set('edit-product-specs', p.file_specification);
+  set('edit-product-high-resolution', p.high_resolution);
+  set('edit-product-compatible-software', p.compatible_software);
+  set('edit-product-software-version', p.software_version);
+  set('edit-product-files-included', p.files_included);
+  set('edit-product-grid-columns', p.grid_columns);
+  set('edit-product-layout-type', p.layout_type);
+  set('edit-product-license-type', p.license_type);
   set('edit-product-tags', p.tags);
+  const customFields = Array.isArray(p.custom_fields_parsed)
+    ? p.custom_fields_parsed
+    : (() => {
+      try {
+        return JSON.parse(p.custom_fields || '[]');
+      } catch {
+        return [];
+      }
+    })();
+  renderProductCustomFields(customFields);
   set('edit-product-price', p.price);
   set('edit-product-old-price', p.old_price);
   set('edit-product-commercial-price', p.commercial_price);
@@ -731,6 +824,7 @@ async function saveProductForm(event) {
   event.preventDefault();
   const form = event.target;
   syncProductAdditionalImagesField();
+  syncProductCustomFieldsHidden();
   document.getElementById('edit-product-existing-image').value = productMediaState.main || '';
   const endpoint = form.querySelector('[name="id"]').value ? '../api/admin/product/update.php' : '../api/admin/product/create.php';
   const submit = form.querySelector('button[type="submit"]');
@@ -773,14 +867,25 @@ async function duplicateProduct(productId) {
 }
 
 async function deleteProduct(productId) {
-  if (!confirm('Delete this product? If it has orders it will be archived instead.')) return;
-  await fetchJson('../api/admin/product/delete.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: productId }),
-  });
-  await loadProducts();
-  showToast('Product deleted.', 'success');
+  const product = state.products.find(p => p.id == productId);
+  const name = product ? escapeHtml(product.name) : `Product #${productId}`;
+  const confirmed = await showConfirmModal(
+    'Delete Product',
+    `Are you sure you want to delete <strong>${name}</strong>?<br><br>If this product has existing orders it will be <em>archived</em> instead of permanently deleted.`
+  );
+  if (!confirmed) return;
+  try {
+    const result = await fetchJson('../api/admin/product/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productId }),
+    });
+    await loadProducts();
+    const action = result?.action || 'deleted';
+    showToast(action === 'archived' ? 'Product archived (has existing orders).' : 'Product permanently deleted.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not delete product.', 'error');
+  }
 }
 
 async function loadAdminCategories() {
@@ -865,6 +970,7 @@ async function adminDeleteCategory(id) {
     showToast(err.message, 'error');
   }
 }
+
 
 async function loadAdminBundles() {
   const table = document.getElementById('bundles-table');
@@ -1119,17 +1225,24 @@ async function adminToggleBundle(id, field) {
 }
 
 async function adminDeleteBundle(id) {
-  if (!confirm('Delete this bundle?')) return;
+  const bundle = state.bundles.find(b => b.id == id);
+  const name = bundle ? escapeHtml(bundle.name) : `Bundle #${id}`;
+  const confirmed = await showConfirmModal(
+    'Delete Bundle',
+    `Are you sure you want to delete <strong>${name}</strong>?<br><br>If this bundle has existing orders it will be <em>archived</em> instead of permanently deleted. All attached digital resources will also be removed.`
+  );
+  if (!confirmed) return;
   try {
-    await fetchJson('../api/admin/bundles/delete.php', {
+    const result = await fetchJson('../api/admin/bundles/delete.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
     await loadAdminBundles();
-    showToast('Bundle deleted.', 'success');
+    const action = result?.action || 'deleted';
+    showToast(action === 'archived' ? 'Bundle archived (has existing orders).' : 'Bundle permanently deleted.', 'success');
   } catch (err) {
-    showToast(err.message, 'error');
+    showToast(err.message || 'Could not delete bundle.', 'error');
   }
 }
 
@@ -1620,6 +1733,7 @@ function resetFreebieForm() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Add Freebie`;
   renderFreebieImagePreview('');
+  loadFreebieResources(0);
 }
 
 function openFreebiesForm() {
@@ -1692,6 +1806,7 @@ function adminEditFreebie(id) {
   document.getElementById('freebie-submit-btn').innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     Save Changes`;
+  loadFreebieResources(row.id);
 }
 
 async function adminSaveFreebies(event) {
@@ -1705,13 +1820,17 @@ async function adminSaveFreebies(event) {
   if (document.getElementById('freebie-is-featured').checked) fd.set('is_featured', '1');
   else fd.set('is_featured', '0');
   const fileUrl = (document.getElementById('freebie-file-url')?.value || '').trim();
-  if (!fileUrl || !/^https?:\/\//i.test(fileUrl)) {
-    showToast('Enter a valid resource link (https://…).', 'error');
+  if (fileUrl && !/^https?:\/\//i.test(fileUrl)) {
+    showToast('Legacy link must be a valid https:// URL, or leave it blank.', 'error');
     return;
   }
   try {
-    await fetchJson('../api/admin/freebies/save.php', { method: 'POST', body: fd });
-    closeFreebiesForm();
+    const saved = await fetchJson('../api/admin/freebies/save.php', { method: 'POST', body: fd });
+    const freebieId = Number(saved?.id || document.getElementById('freebie-id')?.value || 0);
+    if (freebieId > 0) {
+      document.getElementById('freebie-id').value = String(freebieId);
+      await loadFreebieResources(freebieId);
+    }
     await loadAdminFreebies();
     showToast('Freebie saved.', 'success');
   } catch (err) {
@@ -1769,69 +1888,223 @@ function resourceDeliveryMode(type) {
   return 'download';
 }
 
-function promptResourcePayload(ownerKey, ownerId) {
-  const title = window.prompt('Resource title');
-  if (!title || !title.trim()) return null;
+// ── Resource Modal ────────────────────────────────────────────────────────────
+const resourceModalState = { ownerKey: '', ownerId: 0, editId: 0 };
 
-  const rawType = (window.prompt('Resource type: file, zip, pdf, canva, figma, external_link, instructions', 'file') || 'file').trim().toLowerCase();
-  const resourceType = RESOURCE_TYPES.includes(rawType) ? rawType : 'file';
-  const deliveryMode = resourceDeliveryMode(resourceType);
+const RESOURCE_TYPE_COLORS = {
+  file: '#6366f1', zip: '#8b5cf6', pdf: '#ef4444',
+  canva: '#06b6d4', figma: '#f59e0b', external_link: '#10b981',
+  instructions: '#64748b',
+};
 
-  let externalUrl = '';
-  let instructions = '';
-  if (deliveryMode === 'open_link') {
-    externalUrl = window.prompt('Protected HTTPS link for this resource') || '';
-    if (!/^https:\/\//i.test(externalUrl.trim())) {
-      showToast('External resource links must start with https://', 'error');
-      return null;
-    }
-  } else if (deliveryMode === 'instructions') {
-    instructions = window.prompt('Instructions shown to entitled customers') || '';
-    if (!instructions.trim()) {
-      showToast('Instructions text is required.', 'error');
-      return null;
-    }
-  }
+function openResourceModal(ownerKey, ownerId, existingRow) {
+  resourceModalState.ownerKey = ownerKey;
+  resourceModalState.ownerId = Number(ownerId) || 0;
+  resourceModalState.editId = existingRow ? Number(existingRow.id) : 0;
 
-  const downloadLimitRaw = window.prompt('Download/access limit', '5') || '5';
-  const expiryDaysRaw = window.prompt('Expiry days', '30') || '30';
-  const sortOrderRaw = window.prompt('Sort order', '0') || '0';
+  document.getElementById('resource-modal-title').textContent = existingRow ? 'Edit Resource' : 'Add Resource';
+  document.getElementById('rm-id').value = resourceModalState.editId || '';
+  document.getElementById('rm-owner-key').value = ownerKey;
+  document.getElementById('rm-owner-id').value = resourceModalState.ownerId;
 
-  return {
-    [ownerKey]: ownerId,
-    title: title.trim(),
-    resource_type: resourceType,
-    external_url: externalUrl.trim(),
-    instructions: instructions.trim(),
-    download_limit: Math.max(1, Math.min(100, Number.parseInt(downloadLimitRaw, 10) || 5)),
-    expiry_days: Math.max(1, Math.min(3650, Number.parseInt(expiryDaysRaw, 10) || 30)),
-    sort_order: Number.parseInt(sortOrderRaw, 10) || 0,
-    is_active: 1,
-  };
+  const type = existingRow ? (existingRow.resource_type || 'file') : 'file';
+  document.getElementById('rm-title').value = existingRow ? (existingRow.title || '') : '';
+  document.getElementById('rm-type').value = type;
+  document.getElementById('rm-url').value = existingRow ? (existingRow.external_url || '') : '';
+  document.getElementById('rm-instructions').value = existingRow ? (existingRow.instructions || '') : '';
+  document.getElementById('rm-dl-limit').value = existingRow ? (existingRow.download_limit ?? 5) : 5;
+  document.getElementById('rm-expiry').value = existingRow ? (existingRow.expiry_days ?? 30) : 30;
+  document.getElementById('rm-sort').value = existingRow ? (existingRow.sort_order ?? 0) : 0;
+  document.getElementById('rm-active').checked = existingRow ? Number(existingRow.is_active) === 1 : true;
+
+  updateResourceModalFields(type);
+  document.getElementById('resource-modal-overlay').classList.add('active');
+  setTimeout(() => document.getElementById('rm-title').focus(), 50);
 }
 
-function renderResourceRows(rows, uploadAction, deleteAction) {
+function closeResourceModal() {
+  document.getElementById('resource-modal-overlay').classList.remove('active');
+}
+
+function updateResourceModalFields(type) {
+  const mode = resourceDeliveryMode(type);
+  document.getElementById('rm-url-group').style.display = mode === 'open_link' ? '' : 'none';
+  document.getElementById('rm-instructions-group').style.display = mode === 'instructions' ? '' : 'none';
+}
+
+async function saveResourceModal() {
+  const title = document.getElementById('rm-title').value.trim();
+  if (!title) { showToast('Title is required.', 'error'); return; }
+
+  const type = document.getElementById('rm-type').value;
+  const mode = resourceDeliveryMode(type);
+  let externalUrl = '';
+  let instructions = '';
+
+  if (mode === 'open_link') {
+    externalUrl = document.getElementById('rm-url').value.trim();
+    if (!/^https:\/\//i.test(externalUrl)) {
+      showToast('External URL must start with https://', 'error');
+      return;
+    }
+  } else if (mode === 'instructions') {
+    instructions = document.getElementById('rm-instructions').value.trim();
+    if (!instructions) { showToast('Instructions text is required.', 'error'); return; }
+  }
+
+  const ownerKey = document.getElementById('rm-owner-key').value;
+  const ownerId = Number(document.getElementById('rm-owner-id').value);
+  const editId = Number(document.getElementById('rm-id').value) || 0;
+
+  const payload = {
+    [ownerKey]: ownerId,
+    title,
+    resource_type: type,
+    external_url: externalUrl,
+    instructions,
+    download_limit: Math.max(1, Math.min(100, Number.parseInt(document.getElementById('rm-dl-limit').value, 10) || 5)),
+    expiry_days: Math.max(1, Math.min(3650, Number.parseInt(document.getElementById('rm-expiry').value, 10) || 30)),
+    sort_order: Number.parseInt(document.getElementById('rm-sort').value, 10) || 0,
+    is_active: document.getElementById('rm-active').checked ? 1 : 0,
+  };
+  if (editId > 0) payload.id = editId;
+
+  const saveBtn = document.getElementById('resource-modal-save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  try {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    await fetchJson('../api/admin/resources/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify(payload),
+    });
+    closeResourceModal();
+    if (ownerKey === 'product_id') await loadProductResources(ownerId);
+    else if (ownerKey === 'bundle_id') await loadBundleResources(ownerId);
+    else await loadFreebieResources(ownerId);
+    showToast(editId > 0 ? 'Resource updated.' : 'Resource created.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not save resource.', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Resource';
+  }
+}
+
+function openResourceViewModal(resourceId, ownerKey) {
+  const rows = ownerKey === 'product_id'
+    ? productResourcesState.rows
+    : ownerKey === 'bundle_id'
+      ? bundleResourcesState.rows
+      : freebieResourcesState.rows;
+  const r = rows.find(x => x.id === resourceId);
+  if (!r) return;
+
+  const mode = r.delivery_mode || '';
+  const typeColor = RESOURCE_TYPE_COLORS[r.resource_type] || '#6366f1';
+  const typeLabel = String(r.resource_type || 'file').replace('_', ' ');
+
+  const statusHtml = r.has_file
+    ? '<span style="color:#22c55e;">&#10003; File attached</span>'
+    : mode === 'open_link'
+      ? (r.external_url ? '<span style="color:#22c55e;">&#10003; Link set</span>' : '<span style="color:#f59e0b;">No link set</span>')
+      : mode === 'instructions'
+        ? '<span style="color:#22c55e;">&#10003; Instructions set</span>'
+        : '<span style="color:#f59e0b;">No file uploaded yet</span>';
+
+  const rows2 = [
+    ['Title', escapeHtml(r.title)],
+    ['Type', `<span style="background:${typeColor}20;color:${typeColor};border:1px solid ${typeColor}40;padding:2px 10px;border-radius:9999px;font-size:.75rem;font-weight:600;">${escapeHtml(typeLabel)}</span>`],
+    ['Delivery', escapeHtml(r.delivery_mode || '—')],
+    ['Status', statusHtml],
+    mode === 'open_link' && r.external_url ? ['Link', `<span style="word-break:break-all;font-size:.82rem;">${escapeHtml(r.external_url)}</span>`] : null,
+    mode === 'instructions' && r.instructions ? ['Instructions', `<span style="white-space:pre-wrap;font-size:.82rem;">${escapeHtml(r.instructions)}</span>`] : null,
+    ['Download limit', `${r.download_limit} per customer`],
+    ['Expiry', `${r.expiry_days} days`],
+    ['Sort order', String(r.sort_order ?? 0)],
+    ['Active', r.is_active ? '<span style="color:#22c55e;">Yes</span>' : '<span style="color:#94a3b8;">No</span>'],
+  ].filter(Boolean);
+
+  document.getElementById('resource-view-content').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:.875rem;">
+      ${rows2.map(([k, v]) => `
+        <tr>
+          <td style="padding:8px 12px 8px 0;color:var(--text-3);font-weight:600;white-space:nowrap;vertical-align:top;width:38%;">${k}</td>
+          <td style="padding:8px 0;color:var(--text);">${v}</td>
+        </tr>`).join('')}
+    </table>`;
+
+  const linkBtn = document.getElementById('resource-view-link');
+  if (mode === 'open_link' && r.external_url) {
+    linkBtn.href = r.external_url;
+    linkBtn.style.display = '';
+  } else {
+    linkBtn.style.display = 'none';
+  }
+
+  document.getElementById('resource-view-modal-overlay').classList.add('active');
+}
+
+function closeResourceViewModal() {
+  document.getElementById('resource-view-modal-overlay').classList.remove('active');
+}
+
+function renderResourceRows(rows, ownerKey) {
+  const actionMap = {
+    product_id: { upload: 'upload-resource', edit: 'edit-resource', view: 'view-resource', del: 'delete-resource' },
+    bundle_id:  { upload: 'upload-bundle-resource', edit: 'edit-bundle-resource', view: 'view-bundle-resource', del: 'delete-bundle-resource' },
+    freebie_id: { upload: 'upload-freebie-resource', edit: 'edit-freebie-resource', view: 'view-freebie-resource', del: 'delete-freebie-resource' },
+  };
+  const actions = actionMap[ownerKey] || actionMap.product_id;
+  const upload = actions.upload;
+  const edit   = actions.edit;
+  const view   = actions.view;
+  const del    = actions.del;
+
   return rows.map(r => {
     const type = String(r.resource_type || 'file');
     const mode = String(r.delivery_mode || resourceDeliveryMode(type));
-    const accessText = mode === 'open_link'
-      ? 'External HTTPS link'
-      : mode === 'instructions'
-        ? 'Instructions'
-        : (r.has_file ? 'Private file attached' : 'Upload required');
-    const uploadButton = mode === 'download'
-      ? `<button type="button" class="btn-ghost small" data-action="${uploadAction}" data-id="${r.id}">Upload file</button>`
-      : '';
+    const isActive = Number(r.is_active) === 1;
+    const typeColor = RESOURCE_TYPE_COLORS[type] || '#6366f1';
+    const typeLabel = type.replace('_', ' ');
+
+    let accessHtml;
+    if (mode === 'open_link') {
+      accessHtml = r.external_url
+        ? '<span style="color:#22c55e;">Link set</span>'
+        : '<span style="color:#f59e0b;">No link — edit to add URL</span>';
+    } else if (mode === 'instructions') {
+      accessHtml = r.instructions
+        ? '<span style="color:#22c55e;">Instructions set</span>'
+        : '<span style="color:#f59e0b;">No instructions yet</span>';
+    } else {
+      accessHtml = r.has_file
+        ? '<span style="color:#22c55e;">File attached</span>'
+        : '<span style="color:#f59e0b;">No file — upload required</span>';
+    }
+
+    const uploadBtn = mode === 'download'
+      ? `<button class="btn btn-ghost btn-xs" data-action="${upload}" data-id="${r.id}">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+           Upload
+         </button>` : '';
+
     return `
-    <div class="adm-resource-row" data-id="${r.id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:10px;">
-      <strong>${escapeHtml(r.title)}</strong>
-      <span style="opacity:0.7">(${escapeHtml(type)} - ${escapeHtml(mode)})</span>
-      <div style="color:#94a3b8;font-size:.82rem;margin-top:4px;">
-        ${escapeHtml(accessText)} - limit ${escapeHtml(r.download_limit || 5)} - expires in ${escapeHtml(r.expiry_days || 30)} days
+    <div class="adm-resource-row" data-id="${r.id}">
+      <div class="resource-row-main">
+        <div class="resource-row-header">
+          <span class="resource-row-name">${escapeHtml(r.title)}</span>
+          <span class="resource-type-chip" style="background:${typeColor}20;color:${typeColor};border:1px solid ${typeColor}40;">${escapeHtml(typeLabel)}</span>
+          ${!isActive ? '<span class="resource-type-chip" style="background:rgba(100,116,139,.12);color:#94a3b8;border:1px solid rgba(100,116,139,.2);">Inactive</span>' : ''}
+        </div>
+        <div class="resource-row-meta">${accessHtml} &middot; Limit&nbsp;${escapeHtml(String(r.download_limit ?? 5))} &middot; Expires&nbsp;${escapeHtml(String(r.expiry_days ?? 30))}d</div>
       </div>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        ${uploadButton}
-        <button type="button" class="btn-ghost small" data-action="${deleteAction}" data-id="${r.id}">Remove</button>
+      <div class="resource-row-actions">
+        <button class="btn btn-ghost btn-xs" data-action="${view}" data-id="${r.id}">View</button>
+        <button class="btn btn-ghost btn-xs" data-action="${edit}" data-id="${r.id}">Edit</button>
+        ${uploadBtn}
+        <button class="btn btn-danger-ghost btn-xs" data-action="${del}" data-id="${r.id}">Remove</button>
       </div>
     </div>`;
   }).join('');
@@ -1866,10 +2139,10 @@ function renderProductResourcesList() {
   const list = document.getElementById('product-resources-list');
   if (!list) return;
   if (!productResourcesState.rows.length) {
-    list.innerHTML = '<p class="form-hint">No resources yet.</p>';
+    list.innerHTML = '<p class="form-hint">No resources yet. Click "+ Add resource" to get started.</p>';
     return;
   }
-  list.innerHTML = renderResourceRows(productResourcesState.rows, 'upload-resource', 'delete-resource');
+  list.innerHTML = renderResourceRows(productResourcesState.rows, 'product_id');
 }
 
 async function addProductResourceRow() {
@@ -1878,16 +2151,17 @@ async function addProductResourceRow() {
     showToast('Save the product before adding resources.', 'error');
     return;
   }
-  const payload = promptResourcePayload('product_id', productId);
-  if (!payload) return;
-  const productResourceCsrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/resources/save.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': productResourceCsrf },
-    body: JSON.stringify(payload),
-  });
-  await loadProductResources(productId);
-  showToast('Resource saved.', 'success');
+  openResourceModal('product_id', productId, null);
+}
+
+function editProductResource(resourceId) {
+  const r = productResourcesState.rows.find(x => x.id === resourceId);
+  if (!r) return;
+  openResourceModal('product_id', productResourcesState.productId, r);
+}
+
+function viewProductResource(resourceId) {
+  openResourceViewModal(resourceId, 'product_id');
 }
 
 async function uploadProductResourceFile(resourceId) {
@@ -1915,15 +2189,24 @@ async function uploadProductResourceFile(resourceId) {
 }
 
 async function deleteProductResource(resourceId) {
-  if (!window.confirm('Remove this resource?')) return;
-  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  await fetchJson('../api/admin/resources/delete.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-    body: JSON.stringify({ id: resourceId }),
-  });
-  await loadProductResources(productResourcesState.productId);
-  showToast('Resource removed.', 'success');
+  const r = productResourcesState.rows.find(x => x.id === resourceId);
+  const confirmed = await showConfirmModal(
+    'Remove Resource',
+    `Remove <strong>${r ? escapeHtml(r.title) : 'this resource'}</strong>? Any uploaded file will also be permanently deleted.`,
+    'Remove'
+  );
+  if (!confirmed) return;
+  try {
+    await fetchJson('../api/admin/resources/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: resourceId }),
+    });
+    await loadProductResources(productResourcesState.productId);
+    showToast('Resource removed.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not remove resource.', 'error');
+  }
 }
 
 // ── Bundle Digital Resources ──────────────────────────────────────────────────
@@ -1947,24 +2230,26 @@ function renderBundleResourcesList() {
   const list = document.getElementById('bundle-resources-list');
   if (!list) return;
   if (!bundleResourcesState.rows.length) {
-    list.innerHTML = '<p class="form-hint">No resources yet.</p>';
+    list.innerHTML = '<p class="form-hint">No resources yet. Click "+ Add resource" to get started.</p>';
     return;
   }
-  list.innerHTML = renderResourceRows(bundleResourcesState.rows, 'upload-bundle-resource', 'delete-bundle-resource');
+  list.innerHTML = renderResourceRows(bundleResourcesState.rows, 'bundle_id');
 }
 
 async function addBundleResourceRow() {
   const bundleId = bundleResourcesState.bundleId || Number(document.querySelector('#bundle-editor-form [name="id"]')?.value || 0);
   if (!bundleId) { showToast('Save the bundle before adding resources.', 'error'); return; }
-  const payload = promptResourcePayload('bundle_id', bundleId);
-  if (!payload) return;
-  await fetchJson('../api/admin/resources/save.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  await loadBundleResources(bundleId);
-  showToast('Resource saved.', 'success');
+  openResourceModal('bundle_id', bundleId, null);
+}
+
+function editBundleResource(resourceId) {
+  const r = bundleResourcesState.rows.find(x => x.id === resourceId);
+  if (!r) return;
+  openResourceModal('bundle_id', bundleResourcesState.bundleId, r);
+}
+
+function viewBundleResource(resourceId) {
+  openResourceViewModal(resourceId, 'bundle_id');
 }
 
 async function uploadBundleResourceFile(resourceId) {
@@ -1992,13 +2277,119 @@ async function uploadBundleResourceFile(resourceId) {
 }
 
 async function deleteBundleResource(resourceId) {
-  if (!window.confirm('Remove this resource?')) return;
-  await fetchJson('../api/admin/resources/delete.php', {
-    method: 'POST',
-    body: JSON.stringify({ id: resourceId }),
-  });
-  await loadBundleResources(bundleResourcesState.bundleId);
-  showToast('Resource removed.', 'success');
+  const r = bundleResourcesState.rows.find(x => x.id === resourceId);
+  const confirmed = await showConfirmModal(
+    'Remove Resource',
+    `Remove <strong>${r ? escapeHtml(r.title) : 'this resource'}</strong>? Any uploaded file will also be permanently deleted.`,
+    'Remove'
+  );
+  if (!confirmed) return;
+  try {
+    await fetchJson('../api/admin/resources/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: resourceId }),
+    });
+    await loadBundleResources(bundleResourcesState.bundleId);
+    showToast('Resource removed.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not remove resource.', 'error');
+  }
+}
+
+// ── Freebie Digital Resources ─────────────────────────────────────────────────
+const freebieResourcesState = { rows: [], freebieId: 0 };
+
+async function loadFreebieResources(freebieId) {
+  freebieResourcesState.freebieId = Number(freebieId) || 0;
+  freebieResourcesState.rows = [];
+  const list = document.getElementById('freebie-resources-list');
+  if (!list) return;
+  if (freebieResourcesState.freebieId <= 0) {
+    list.innerHTML = '<p class="form-hint">Save the freebie first, then add digital resources.</p>';
+    return;
+  }
+  try {
+    const rows = await fetchJson(`../api/admin/resources/list.php?freebie_id=${freebieResourcesState.freebieId}`);
+    freebieResourcesState.rows = Array.isArray(rows) ? rows : [];
+    renderFreebieResourcesList();
+  } catch (err) {
+    list.innerHTML = `<p class="form-hint">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderFreebieResourcesList() {
+  const list = document.getElementById('freebie-resources-list');
+  if (!list) return;
+  if (!freebieResourcesState.rows.length) {
+    list.innerHTML = '<p class="form-hint">No resources yet. Click "+ Add resource" to upload an encrypted file or add a link.</p>';
+    return;
+  }
+  list.innerHTML = renderResourceRows(freebieResourcesState.rows, 'freebie_id');
+}
+
+async function addFreebieResourceRow() {
+  const freebieId = freebieResourcesState.freebieId || Number(document.getElementById('freebie-id')?.value || 0);
+  if (freebieId <= 0) {
+    showToast('Save the freebie before adding resources.', 'error');
+    return;
+  }
+  openResourceModal('freebie_id', freebieId, null);
+}
+
+function editFreebieResource(resourceId) {
+  const r = freebieResourcesState.rows.find(x => x.id === resourceId);
+  if (!r) return;
+  openResourceModal('freebie_id', freebieResourcesState.freebieId, r);
+}
+
+function viewFreebieResource(resourceId) {
+  openResourceViewModal(resourceId, 'freebie_id');
+}
+
+async function uploadFreebieResourceFile(resourceId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.zip,.png,.jpg,.jpeg,.webp,.svg';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('resource_id', String(resourceId));
+    fd.append('file', file);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const res = await fetch('../api/admin/resources/upload.php', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrf },
+      body: fd,
+    });
+    const data = await res.json();
+    if (data.status !== 'success') { showToast(data.message || 'Upload failed.', 'error'); return; }
+    await loadFreebieResources(freebieResourcesState.freebieId);
+    showToast('File uploaded to private storage.', 'success');
+  };
+  input.click();
+}
+
+async function deleteFreebieResource(resourceId) {
+  const r = freebieResourcesState.rows.find(x => x.id === resourceId);
+  const confirmed = await showConfirmModal(
+    'Remove Resource',
+    `Remove <strong>${r ? escapeHtml(r.title) : 'this resource'}</strong>? Any uploaded file will also be permanently deleted.`,
+    'Remove'
+  );
+  if (!confirmed) return;
+  try {
+    await fetchJson('../api/admin/resources/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: resourceId }),
+    });
+    await loadFreebieResources(freebieResourcesState.freebieId);
+    showToast('Resource removed.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not remove resource.', 'error');
+  }
 }
 
 function initDashboard() {
@@ -2023,29 +2414,64 @@ function bindDashboard() {
   if (categoryIconInput) categoryIconInput.addEventListener('change', onCategoryIconSelected);
   const freebieCoverInput = document.getElementById('freebie-cover-image');
   if (freebieCoverInput) freebieCoverInput.addEventListener('change', onFreebieCoverSelected);
+  document.getElementById('freebie-resource-add-btn')?.addEventListener('click', addFreebieResourceRow);
+  document.getElementById('freebie-resources-list')?.addEventListener('click', event => {
+    const btn = event.target.closest('[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id || 0);
+    if (btn.dataset.action === 'upload-freebie-resource') uploadFreebieResourceFile(id);
+    if (btn.dataset.action === 'edit-freebie-resource')   editFreebieResource(id);
+    if (btn.dataset.action === 'view-freebie-resource')   viewFreebieResource(id);
+    if (btn.dataset.action === 'delete-freebie-resource') deleteFreebieResource(id);
+  });
   document.getElementById('edit-product-available')?.addEventListener('change', toggleProductResourcesSection);
   document.getElementById('product-resource-add-btn')?.addEventListener('click', addProductResourceRow);
   document.getElementById('product-resources-list')?.addEventListener('click', event => {
     const btn = event.target.closest('[data-action]');
     if (!btn) return;
     const id = Number(btn.dataset.id || 0);
-    if (btn.dataset.action === 'upload-resource') uploadProductResourceFile(id);
-    if (btn.dataset.action === 'delete-resource') deleteProductResource(id);
+    if (btn.dataset.action === 'upload-resource')  uploadProductResourceFile(id);
+    if (btn.dataset.action === 'edit-resource')    editProductResource(id);
+    if (btn.dataset.action === 'view-resource')    viewProductResource(id);
+    if (btn.dataset.action === 'delete-resource')  deleteProductResource(id);
+  });
+  document.getElementById('product-add-custom-field')?.addEventListener('click', () => {
+    renderProductCustomFields([...collectProductCustomFields(), { label: '', value: '' }]);
+  });
+  document.getElementById('product-custom-fields')?.addEventListener('input', syncProductCustomFieldsHidden);
+  document.getElementById('product-custom-fields')?.addEventListener('click', (event) => {
+    const btn = event.target.closest('.product-cf-remove');
+    if (!btn) return;
+    btn.closest('.product-custom-row')?.remove();
+    if (!document.querySelector('#product-custom-fields .product-custom-row')) {
+      renderProductCustomFields([]);
+    } else {
+      syncProductCustomFieldsHidden();
+    }
   });
   document.getElementById('bundle-resource-add-btn')?.addEventListener('click', addBundleResourceRow);
   document.getElementById('bundle-resources-list')?.addEventListener('click', event => {
     const btn = event.target.closest('[data-action]');
     if (!btn) return;
     const id = Number(btn.dataset.id || 0);
-    if (btn.dataset.action === 'upload-bundle-resource') uploadBundleResourceFile(id);
-    if (btn.dataset.action === 'delete-bundle-resource') deleteBundleResource(id);
+    if (btn.dataset.action === 'upload-bundle-resource')  uploadBundleResourceFile(id);
+    if (btn.dataset.action === 'edit-bundle-resource')    editBundleResource(id);
+    if (btn.dataset.action === 'view-bundle-resource')    viewBundleResource(id);
+    if (btn.dataset.action === 'delete-bundle-resource')  deleteBundleResource(id);
   });
+  document.getElementById('rm-type')?.addEventListener('change', e => updateResourceModalFields(e.target.value));
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+      _resolveConfirm(false);
       closeStatusModal();
       closeOrderDetailsModal();
       closeEditProductModal();
+      closeResourceModal();
+      closeResourceViewModal();
     }
+  });
+  document.getElementById('confirm-modal-overlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) _resolveConfirm(false);
   });
   initDashboard();
 }
@@ -2108,6 +2534,9 @@ const exported = {
   removeBundleGalleryImage,
   removeCategoryIcon,
   removeFreebieImage,
+  closeResourceModal,
+  closeResourceViewModal,
+  saveResourceModal,
 };
 
 Object.assign(window, exported);

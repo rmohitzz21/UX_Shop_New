@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 if (empty($_SESSION['user_id'])) {
     header('Location: signin.php?redirect=wishlist.php');
@@ -28,8 +28,8 @@ $items = $stmt->get_result();
   <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
   <title>Wishlist - UX Pacific Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="img/fav.png">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
 </head>
 <body>
 <div class="page">
@@ -54,6 +54,6 @@ $items = $stmt->get_result();
   </main>
   <?php include 'includes/footer.php'; ?>
 </div>
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 </body>
 </html>

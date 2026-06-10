@@ -21,13 +21,15 @@ if (!$row) {
     sendResponse('error', 'Resource not found.', null, 404);
 }
 
+// Delete the stored file from private storage if one exists
 if (!empty($row['storage_key'])) {
     DigitalStorageService::delete((string) $row['storage_key']);
 }
 
-$stmt = $conn->prepare('UPDATE digital_resources SET is_active = 0, storage_key = NULL WHERE id = ?');
+// Hard-delete the record so it no longer appears in resource lists
+$stmt = $conn->prepare('DELETE FROM digital_resources WHERE id = ?');
 $stmt->bind_param('i', $id);
-if (!$stmt->execute()) {
+if (!$stmt->execute() || $stmt->affected_rows < 1) {
     sendResponse('error', 'Could not remove resource.', null, 500);
 }
 

@@ -13,8 +13,10 @@ if ($resourceId <= 0) {
     sendResponse('error', 'resource_id is required.', null, 422);
 }
 
+drEnsureFreebieResourcesColumn($conn);
+
 $chk = $conn->prepare(
-    'SELECT id, product_id, bundle_id, delivery_mode FROM digital_resources WHERE id = ? LIMIT 1'
+    'SELECT id, product_id, bundle_id, freebie_id, delivery_mode FROM digital_resources WHERE id = ? LIMIT 1'
 );
 $chk->bind_param('i', $resourceId);
 $chk->execute();
@@ -48,7 +50,15 @@ if ($mime !== $allowed[$ext] && !in_array($mime, ['application/octet-stream', 'a
     sendResponse('error', 'File content does not match extension.', null, 422);
 }
 
-$owner = $row['product_id'] ? 'products/' . (int) $row['product_id'] : 'bundles/' . (int) $row['bundle_id'];
+if (!empty($row['product_id'])) {
+    $owner = 'products/' . (int) $row['product_id'];
+} elseif (!empty($row['bundle_id'])) {
+    $owner = 'bundles/' . (int) $row['bundle_id'];
+} elseif (!empty($row['freebie_id'])) {
+    $owner = 'freebies/' . (int) $row['freebie_id'];
+} else {
+    sendResponse('error', 'Resource is not linked to a product, bundle, or freebie.', null, 422);
+}
 $storageKey = $owner . '/' . $resourceId . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
 
 if (!DigitalStorageService::upload((string) $file['tmp_name'], $storageKey)) {

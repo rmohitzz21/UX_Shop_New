@@ -16,7 +16,8 @@
     <meta name="twitter:card" content="summary_large_image" />
     <title>UX Pacific – Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
+    <?php include 'includes/auth-preload.php'; ?>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
@@ -108,7 +109,7 @@
                 $topProducts = [];
                 $topCategories = [];
                 if (isset($conn)) {
-                    $sql = 'SELECT * FROM products WHERE is_active = 1 ORDER BY is_featured DESC, rating DESC, COALESCE(view_count, 0) DESC, id DESC LIMIT 8';
+                    $sql = 'SELECT * FROM products WHERE is_active = 1 ORDER BY is_featured DESC, rating DESC, COALESCE(view_count, 0) DESC, id DESC LIMIT 4';
                     $result = $conn->query($sql);
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {
@@ -344,7 +345,7 @@ HTML;
             <strong>₹{$bPrice} {$oldHtml}</strong>
 
             <div>
-              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$bId}" data-item-type="bundle">Buy Now</button>
+              <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$bId}" data-item-type="bundle" data-available-type="digital">Buy Now</button>
               <button type="button" class="uxp-card-btn uxp-card-btn-secondary" onclick="addToCart({$bId}, null, 1, {name: {$jsName}, price: {$bundle['price']}, image: {$jsImage}, item_type: 'bundle'}, 'digital')">Add to Cart</button>
             </div>
           </div>
@@ -372,31 +373,6 @@ HTML;
 </section>
     </main>
 
-    <section class="achieve-section">
-        <h2 class="section-heading">What You'll Achieve</h2>
-            <div class="achieve-grid">
-            <div class="achieve-card">
-                <div class="icon-wrap"><img src="img/ss/newsec/streamline-ultimate_job-responsibility-bag-hand.png" alt="briefcase" style="height:36px; width:36px; object-fit:contain;" /></div>
-                <h4>Get Job Ready</h4>
-                <p>Build a portfolio that makes recruiters say yes</p>
-            </div>
-            <div class="achieve-card">
-                <div class="icon-wrap"><img src="img/ss/newsec/uil_arrow-growth.png" alt="trend up" style="height:36px; width:36px; object-fit:contain;" /></div>
-                <h4>Land Internships</h4>
-                <p>Stand out from hundreds of applicants</p>
-            </div>
-            <div class="achieve-card">
-                <div class="icon-wrap"><img src="img/ss/newsec/Vector2.png" alt="laptop" style="height:36px; width:36px; object-fit:contain;" /></div>
-                <h4>Start Freelancing</h4>
-                <p>Earn while you learn with client-ready deliverables</p>
-            </div>
-            <div class="achieve-card">
-                <div class="icon-wrap"><img src="img/ss/newsec/Vector-1.png" alt="books" style="height:36px; width:36px; object-fit:contain;" /></div>
-                <h4>Master UI/UX</h4>
-                <p>Learn the right way with structured resources</p>
-            </div>
-        </div>
-    </section>
 
     <section class="explore-more">
         <div class="explore-banner">
@@ -409,37 +385,8 @@ HTML;
         </div>
     </section>
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="img/1.png" alt="UX PACIFIC" class="logo" style="height:36px; margin: 0 auto; margin-bottom: 20px; display:block;" onerror="this.outerHTML='<span style=\'font-weight:700; font-size: 1.5rem; letter-spacing: -0.5px; display:flex; justify-content:center; gap:8px;\'><i class=\'ph ph-squares-four\'></i>UX PACIFIC</span>'" />
-            </div>
-            <nav class="footer-nav">
-                <a href="shopAll.php">Shop</a> &bull;
-                <a href="bundles.php">Bundles</a> &bull;
-                <a href="freebies.php">Freebies</a>
-            </nav>
-            <div class="social-links">
-                <a href="https://www.linkedin.com/company/uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/in1.png" alt="LinkedIn" /></a>
-                <a href="https://www.instagram.com/official_uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/i.webp" alt="Instagram" /></a>
-                <a href="https://www.behance.net/ux_pacific" class="social-icon" target="_blank" rel="noopener"><img src="img/be.webp" alt="Behance" /></a>
-                <a href="https://in.pinterest.com/uxpacific/" class="social-icon" target="_blank" rel="noopener"><img src="img/p.webp" alt="Pinterest" /></a>
-                <a href="https://dribbble.com/social-ux-pacific" class="social-icon" target="_blank" rel="noopener"><img src="img/bl.webp" alt="Dribbble" /></a>
-                <a href="https://medium.com/@uxpacific" class="social-icon" target="_blank" rel="noopener"><img src="img/medium.png" alt="Medium" /></a>
-            </div>
-            <p class="contact-info">+91 9274061063 <span style="margin: 0 10px;">|</span> <?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></p>
-            <p class="address">512, Majestic Building, Near Law Garden BRTS Stand, Ahmedabad</p>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date('Y'); ?> UX Pacific. All rights reserved.</p>
-            <div class="legal-links">
-                <a href="policies.php">Privacy Policy</a> |
-                <a href="policies.php">Cookie Policy</a> |
-                <a href="policies.php">Terms and Condition</a>
-            </div>
-        </div>
-    </footer>
+    <?php include 'includes/footer.php'; ?>
 
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 </body>
 </html>

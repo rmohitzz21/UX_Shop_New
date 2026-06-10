@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
 require_once __DIR__ . '/../../includes/auth_rate_limit.php';
+require_once __DIR__ . '/../../includes/EmailService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
@@ -64,7 +65,22 @@ if (!$stmt->execute()) {
     sendResponse('error', 'Could not save your message.', null, 500);
 }
 
-// Send notification email (non-fatal — message is saved to DB regardless)
-sendContactEmail(['name' => $name, 'email' => $email, 'phone' => $phone, 'subject' => $subject, 'message' => $message]);
+$messageId = (int) $conn->insert_id;
 
-sendResponse('success', "Thank you {$name}. Your message has been received.");
+$emailResult = EmailService::sendContactEmails($name, $email, $subject, $message, $phone);
+if (!$emailResult['admin']) {
+    error_log('api/contact/send.php: admin notification failed for message #' . $messageId);
+}
+if (!$emailResult['user']) {
+    error_log('api/contact/send.php: user confirmation failed for message #' . $messageId . ' (' . $email . ')');
+}
+
+$userMessage = "Thank you {$name}. Your message has been received.";
+if ($emailResult['user']) {
+    $userMessage .= ' A confirmation email has been sent to your inbox.';
+}
+
+sendResponse('success', $userMessage, [
+    'message_id' => $messageId,
+    'emails_sent' => $emailResult,
+]);

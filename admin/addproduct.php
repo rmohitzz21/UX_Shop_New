@@ -19,7 +19,7 @@ if (empty($_SESSION['csrf_token'])) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="../style.css" />
-    <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
+    <link rel="icon" type="image/png" href="../img/fav.png" />
   <style>
     /* ==================== ADD PRODUCT PAGE STYLES ==================== */
 
@@ -512,6 +512,15 @@ if (empty($_SESSION['csrf_token'])) {
           </div>
         </div>
 
+        <!-- Custom Fields -->
+        <div class="form-section">
+          <h2 class="form-section-title">Custom Fields</h2>
+          <p class="form-help-text" style="margin-bottom:1rem;">Add custom label/value pairs that appear in the Product Information section of the quick view popup and product page.</p>
+          <div id="custom-fields-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <button type="button" onclick="addCustomField()" style="margin-top:12px;padding:8px 16px;background:var(--admin-bg);border:1px dashed var(--admin-border);border-radius:8px;color:var(--admin-text);cursor:pointer;font-size:0.875rem;width:100%;text-align:center;">+ Add Custom Field</button>
+          <input type="hidden" id="custom-fields-data" name="custom_fields" value="[]">
+        </div>
+
         <!-- Form Actions -->
         <div class="form-actions">
           <a href="admin-dashboard.php" class="btn-secondary">Cancel</a>
@@ -707,6 +716,32 @@ if (empty($_SESSION['csrf_token'])) {
       const savedTheme = localStorage.getItem('admin-theme') || 'light';
       document.body.setAttribute('data-theme', savedTheme);
     });
+
+    /* ── Custom Fields ───────────────────────────────────────────────────── */
+    function addCustomField(label = '', value = '') {
+      const list = document.getElementById('custom-fields-list');
+      const row = document.createElement('div');
+      row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;';
+      row.innerHTML = `
+        <input type="text" class="form-input cf-label" placeholder="Label (e.g. Artboard Size)" value="${label.replace(/"/g, '&quot;')}" />
+        <input type="text" class="form-input cf-value" placeholder="Value (e.g. 1920×1080px)" value="${value.replace(/"/g, '&quot;')}" />
+        <button type="button" onclick="this.closest('div').remove()" style="padding:8px 12px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;line-height:1;">×</button>
+      `;
+      list.appendChild(row);
+    }
+
+    function serializeCustomFields() {
+      const rows = document.querySelectorAll('#custom-fields-list > div');
+      const fields = [];
+      rows.forEach(row => {
+        const label = row.querySelector('.cf-label')?.value.trim() || '';
+        const value = row.querySelector('.cf-value')?.value.trim() || '';
+        if (label && value) fields.push({ label, value });
+      });
+      document.getElementById('custom-fields-data').value = JSON.stringify(fields);
+    }
+
+    document.getElementById('add-product-form').addEventListener('submit', serializeCustomFields, true);
   </script>
 </body>
 

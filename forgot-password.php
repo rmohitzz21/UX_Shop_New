@@ -1,4 +1,4 @@
-<?php require_once 'includes/config.php'; ?>
+﻿<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en" class="auth-premium-root">
 <head>
@@ -8,7 +8,7 @@
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
   <?php include 'includes/auth-preload.php'; ?>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
+  <link rel="icon" type="image/png" href="img/fav.png" />
   <link rel="stylesheet" href="css/auth-premium.css" />
 </head>
 <body class="auth-premium-page">
@@ -48,6 +48,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 </body>
 </html>

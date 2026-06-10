@@ -15,7 +15,7 @@ if (!empty($_SESSION['admin_id'])) {
   <title>Admin Login – UX Pacific Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>" />
-  <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
+  <link rel="icon" type="image/png" href="../img/fav.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

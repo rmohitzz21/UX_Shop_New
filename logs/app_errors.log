@@ -2560,3 +2560,1454 @@ Stack trace:
 [05-Jun-2026 08:08:23 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
 [05-Jun-2026 08:08:24 Europe/Berlin] SMTP << 550 No Such User Here
 [05-Jun-2026 08:08:24 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:43:05 +0530
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:13:07 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:13:09 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:13:09 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:09 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:13:09 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:10 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:13:10 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:13:11 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:13:11 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:13:12 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:13:12 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:13:13 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:13:14 Europe/Berlin] SMTP << 250 OK id=1wVQc5-00000001GC9-0Mzk
+[05-Jun-2026 11:13:14 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:13:14 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-A1EF12)" to rmohittt21@gmail.com
+[05-Jun-2026 11:13:16 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:43:16 +0530
+[05-Jun-2026 11:13:16 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:13:16 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:13:16 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:13:17 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:18 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:13:18 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:18 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:13:18 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:13:19 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:13:19 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:13:19 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:13:19 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:13:20 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:13:20 Europe/Berlin] SMTP << 250 OK id=1wVQcC-00000001GUb-0nXz
+[05-Jun-2026 11:13:20 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:13:20 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-A1EF12 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 11:13:26 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:43:22 +0530
+[05-Jun-2026 11:13:26 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:13:26 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:13:26 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:13:27 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:28 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:13:28 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:28 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:13:28 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:13:29 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:13:29 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:13:29 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:13:29 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:13:31 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:43:30 +0530
+[05-Jun-2026 11:13:31 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:13:31 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:13:31 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:13:33 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:35 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:13:35 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:13:35 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:13:35 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:13:36 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:13:36 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:13:36 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:13:36 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:44:53 +0530
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:14:54 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:14:55 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:14:55 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:14:55 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:14:55 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:14:56 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:14:56 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:14:56 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:14:56 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:14:57 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:14:57 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:14:57 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:14:58 Europe/Berlin] SMTP << 250 OK id=1wVQdl-00000001IZK-2zzh
+[05-Jun-2026 11:14:58 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:14:58 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-AF5D03)" to rmohittt21@gmail.com
+[05-Jun-2026 11:15:01 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:45:01 +0530
+[05-Jun-2026 11:15:01 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:15:01 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:15:01 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:15:02 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:03 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:15:03 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:15:03 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:15:03 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:15:04 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:15:04 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:15:04 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:15:04 Europe/Berlin] SMTP << 250 OK id=1wVQds-00000001Ioc-1Wgw
+[05-Jun-2026 11:15:04 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:15:04 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-AF5D03 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:45:06 +0530
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:15:07 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:15:08 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:15:08 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:08 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:15:08 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:09 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:15:09 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:15:09 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:15:09 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:15:11 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:15:11 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 14:45:12 +0530
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:15:14 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:15:15 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:15:16 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:15:16 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:15:16 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:15:16 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 15:18:30 +0530
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:48:31 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:32 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:48:32 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:33 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:48:33 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:48:33 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:48:33 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:48:34 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:48:34 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:48:34 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:48:34 Europe/Berlin] SMTP << 250 OK id=1wVRAI-00000001uvm-13SE
+[05-Jun-2026 11:48:34 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:48:34 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-4F1A59)" to rmohittt21@gmail.com
+[05-Jun-2026 11:48:36 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 15:18:36 +0530
+[05-Jun-2026 11:48:36 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:48:36 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:48:36 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:48:37 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:38 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:48:38 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:48:38 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:48:38 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 11:48:39 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 11:48:39 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 11:48:39 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 11:48:40 Europe/Berlin] SMTP << 250 OK id=1wVRAN-00000001v59-223F
+[05-Jun-2026 11:48:40 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 11:48:40 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-4F1A59 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 11:48:41 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 15:18:41 +0530
+[05-Jun-2026 11:48:41 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:48:41 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:48:41 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:48:42 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:43 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:48:43 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:48:43 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:48:43 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:48:43 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:48:43 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 15:18:44 +0530
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 11:48:45 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 11:48:46 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 11:48:47 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 11:48:47 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:42:37 +0530
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:12:38 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:12:39 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:12:39 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:39 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:12:39 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:40 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:12:40 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:12:40 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:12:40 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 14:12:41 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 14:12:41 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 14:12:41 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 14:12:41 Europe/Berlin] SMTP << 250 OK id=1wVTPl-00000004Jzt-1Qsb
+[05-Jun-2026 14:12:41 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 14:12:41 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-291C8E)" to rmohittt21@gmail.com
+[05-Jun-2026 14:12:46 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:42:46 +0530
+[05-Jun-2026 14:12:46 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:12:46 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:12:46 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:12:47 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:12:48 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 14:12:49 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 14:12:49 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 14:12:49 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 14:12:50 Europe/Berlin] SMTP << 250 OK id=1wVTPt-00000004K3f-2fWv
+[05-Jun-2026 14:12:50 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 14:12:50 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-291C8E — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 14:12:51 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:42:51 +0530
+[05-Jun-2026 14:12:51 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:12:51 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:12:51 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:12:52 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:53 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:12:53 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:12:53 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:12:53 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 14:12:53 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 14:12:53 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:42:54 +0530
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:12:55 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:12:56 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 14:12:57 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 14:12:57 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 14:28:47 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:58:47 +0530
+[05-Jun-2026 14:28:47 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:28:47 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:28:47 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:28:48 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:28:49 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:28:49 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:28:49 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:28:49 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 14:28:50 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 14:28:50 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 14:28:51 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 14:28:51 Europe/Berlin] SMTP << 250 OK id=1wVTfO-00000000G0w-2tbC
+[05-Jun-2026 14:28:51 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 14:28:51 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260605-00C287)" to rmohittt21@gmail.com
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:58:53 +0530
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:28:54 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:28:55 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:28:55 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:28:55 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:28:55 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:28:56 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:28:56 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[05-Jun-2026 14:28:57 Europe/Berlin] SMTP << 250 Accepted
+[05-Jun-2026 14:28:57 Europe/Berlin] SMTP >> DATA
+[05-Jun-2026 14:28:57 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[05-Jun-2026 14:28:57 Europe/Berlin] SMTP << 250 OK id=1wVTfV-00000000G5J-0IuM
+[05-Jun-2026 14:28:57 Europe/Berlin] SMTP >> QUIT
+[05-Jun-2026 14:28:57 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260605-00C287 — UX Pacific" to rmohittt21@gmail.com
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:58:58 +0530
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:28:59 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:29:00 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:29:00 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:29:00 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:29:00 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 14:29:00 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 14:29:00 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Fri, 05 Jun 2026 17:59:01 +0530
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-SIZE 52428800
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-8BITMIME
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-PIPELINING
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-PIPECONNECT
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP << 250 HELP
+[05-Jun-2026 14:29:02 Europe/Berlin] SMTP >> AUTH LOGIN
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP >> [base64-redacted]
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP << 235 Authentication succeeded
+[05-Jun-2026 14:29:03 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[05-Jun-2026 14:29:04 Europe/Berlin] SMTP << 250 OK
+[05-Jun-2026 14:29:04 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[05-Jun-2026 14:29:04 Europe/Berlin] SMTP << 550 No Such User Here
+[05-Jun-2026 14:29:04 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[06-Jun-2026 10:27:17 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Sat, 06 Jun 2026 13:57:16 +0530
+[06-Jun-2026 10:27:17 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[06-Jun-2026 10:27:17 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[06-Jun-2026 10:27:17 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [122.170.74.195]
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-SIZE 52428800
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-8BITMIME
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-PIPELINING
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-PIPECONNECT
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 250 HELP
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP >> AUTH LOGIN
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[06-Jun-2026 10:27:18 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:19 Europe/Berlin] SMTP << 235 Authentication succeeded
+[06-Jun-2026 10:27:19 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[06-Jun-2026 10:27:19 Europe/Berlin] SMTP << 250 OK
+[06-Jun-2026 10:27:19 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[06-Jun-2026 10:27:20 Europe/Berlin] SMTP << 250 Accepted
+[06-Jun-2026 10:27:20 Europe/Berlin] SMTP >> DATA
+[06-Jun-2026 10:27:20 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[06-Jun-2026 10:27:20 Europe/Berlin] SMTP << 250 OK id=1wVmND-00000003Ya7-3B3T
+[06-Jun-2026 10:27:20 Europe/Berlin] SMTP >> QUIT
+[06-Jun-2026 10:27:20 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260606-9F3B6D)" to rmohittt21@gmail.com
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Sat, 06 Jun 2026 13:57:21 +0530
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [122.170.74.195]
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-SIZE 52428800
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-8BITMIME
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-PIPELINING
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-PIPECONNECT
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 250 HELP
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP >> AUTH LOGIN
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[06-Jun-2026 10:27:23 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:24 Europe/Berlin] SMTP << 235 Authentication succeeded
+[06-Jun-2026 10:27:24 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[06-Jun-2026 10:27:24 Europe/Berlin] SMTP << 250 OK
+[06-Jun-2026 10:27:24 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[06-Jun-2026 10:27:25 Europe/Berlin] SMTP << 250 Accepted
+[06-Jun-2026 10:27:25 Europe/Berlin] SMTP >> DATA
+[06-Jun-2026 10:27:25 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[06-Jun-2026 10:27:25 Europe/Berlin] SMTP << 250 OK id=1wVmNI-00000003Ygj-2p9f
+[06-Jun-2026 10:27:25 Europe/Berlin] SMTP >> QUIT
+[06-Jun-2026 10:27:25 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260606-9F3B6D — UX Pacific" to rmohittt21@gmail.com
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Sat, 06 Jun 2026 13:57:26 +0530
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [122.170.74.195]
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-SIZE 52428800
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-8BITMIME
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-PIPELINING
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-PIPECONNECT
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP << 250 HELP
+[06-Jun-2026 10:27:27 Europe/Berlin] SMTP >> AUTH LOGIN
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP << 235 Authentication succeeded
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP << 250 OK
+[06-Jun-2026 10:27:28 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[06-Jun-2026 10:27:29 Europe/Berlin] SMTP << 550 No Such User Here
+[06-Jun-2026 10:27:29 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[06-Jun-2026 10:27:29 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260606-9F3B6D — ₹1,178.82" to hello@uxpacific.com
+[06-Jun-2026 10:27:33 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Sat, 06 Jun 2026 13:57:32 +0530
+[06-Jun-2026 10:27:33 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[06-Jun-2026 10:27:33 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[06-Jun-2026 10:27:33 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [122.170.74.195]
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-SIZE 52428800
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-8BITMIME
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-PIPELINING
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-PIPECONNECT
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 250 HELP
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP >> AUTH LOGIN
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[06-Jun-2026 10:27:34 Europe/Berlin] SMTP >> [base64-redacted]
+[06-Jun-2026 10:27:35 Europe/Berlin] SMTP << 235 Authentication succeeded
+[06-Jun-2026 10:27:35 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[06-Jun-2026 10:27:35 Europe/Berlin] SMTP << 250 OK
+[06-Jun-2026 10:27:35 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[06-Jun-2026 10:27:35 Europe/Berlin] SMTP << 550 No Such User Here
+[06-Jun-2026 10:27:35 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[06-Jun-2026 10:27:35 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260606-9F3B6D — ₹1,178.82" to hello@uxpacific.com
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 16:18:10 +0530
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 12:48:08 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 12:48:09 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 12:48:09 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:09 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 12:48:09 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:10 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 12:48:10 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 12:48:10 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 12:48:10 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[08-Jun-2026 12:48:11 Europe/Berlin] SMTP << 250 Accepted
+[08-Jun-2026 12:48:11 Europe/Berlin] SMTP >> DATA
+[08-Jun-2026 12:48:11 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[08-Jun-2026 12:48:11 Europe/Berlin] SMTP << 250 OK id=1wWXWf-00000004Hpe-0wVp
+[08-Jun-2026 12:48:11 Europe/Berlin] SMTP >> QUIT
+[08-Jun-2026 12:48:11 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260608-E184F9)" to zulauiux@gmail.com
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 16:18:14 +0530
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 12:48:13 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:14 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 12:48:14 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 12:48:14 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 12:48:14 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[08-Jun-2026 12:48:15 Europe/Berlin] SMTP << 250 Accepted
+[08-Jun-2026 12:48:15 Europe/Berlin] SMTP >> DATA
+[08-Jun-2026 12:48:15 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[08-Jun-2026 12:48:15 Europe/Berlin] SMTP << 250 OK id=1wWXWj-00000004Hwu-1Moy
+[08-Jun-2026 12:48:15 Europe/Berlin] SMTP >> QUIT
+[08-Jun-2026 12:48:15 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260608-E184F9 — UX Pacific" to zulauiux@gmail.com
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 16:18:18 +0530
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 12:48:17 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:18 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 12:48:18 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 12:48:18 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 12:48:18 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[08-Jun-2026 12:48:18 Europe/Berlin] SMTP << 550 No Such User Here
+[08-Jun-2026 12:48:18 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[08-Jun-2026 12:48:18 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260608-E184F9 — ₹0.00" to hello@uxpacific.com
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 16:18:21 +0530
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 12:48:20 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 12:48:21 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 12:48:22 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 12:48:22 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[08-Jun-2026 12:48:22 Europe/Berlin] SMTP << 550 No Such User Here
+[08-Jun-2026 12:48:22 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[08-Jun-2026 12:48:22 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260608-E184F9 — ₹0.00" to hello@uxpacific.com
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 17:41:55 +0530
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 14:11:54 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:11:55 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 14:11:55 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 14:11:55 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 14:11:55 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[08-Jun-2026 14:11:56 Europe/Berlin] SMTP << 250 Accepted
+[08-Jun-2026 14:11:56 Europe/Berlin] SMTP >> DATA
+[08-Jun-2026 14:11:56 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[08-Jun-2026 14:11:57 Europe/Berlin] SMTP << 250 OK id=1wWYpi-00000001a4X-3VjH
+[08-Jun-2026 14:11:57 Europe/Berlin] SMTP >> QUIT
+[08-Jun-2026 14:11:57 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260608-0D0D9E)" to zulauiux@gmail.com
+[08-Jun-2026 14:11:58 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 17:42:00 +0530
+[08-Jun-2026 14:11:58 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 14:11:58 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 14:11:58 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 14:11:59 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:12:00 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 14:12:00 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 14:12:00 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 14:12:00 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[08-Jun-2026 14:12:01 Europe/Berlin] SMTP << 250 Accepted
+[08-Jun-2026 14:12:01 Europe/Berlin] SMTP >> DATA
+[08-Jun-2026 14:12:01 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[08-Jun-2026 14:12:01 Europe/Berlin] SMTP << 250 OK id=1wWYpn-00000001a8k-1Q6q
+[08-Jun-2026 14:12:01 Europe/Berlin] SMTP >> QUIT
+[08-Jun-2026 14:12:01 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260608-0D0D9E — UX Pacific" to zulauiux@gmail.com
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 17:42:04 +0530
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 14:12:03 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 14:12:04 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 14:12:05 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 14:12:05 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[08-Jun-2026 14:12:05 Europe/Berlin] SMTP << 550 No Such User Here
+[08-Jun-2026 14:12:05 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[08-Jun-2026 14:12:05 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260608-0D0D9E — ₹34.22" to hello@uxpacific.com
+[08-Jun-2026 14:12:06 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Mon, 08 Jun 2026 17:42:08 +0530
+[08-Jun-2026 14:12:06 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[08-Jun-2026 14:12:06 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[08-Jun-2026 14:12:06 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-SIZE 52428800
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-8BITMIME
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-PIPELINING
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-PIPECONNECT
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 250 HELP
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP >> AUTH LOGIN
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[08-Jun-2026 14:12:07 Europe/Berlin] SMTP >> [base64-redacted]
+[08-Jun-2026 14:12:08 Europe/Berlin] SMTP << 235 Authentication succeeded
+[08-Jun-2026 14:12:08 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[08-Jun-2026 14:12:08 Europe/Berlin] SMTP << 250 OK
+[08-Jun-2026 14:12:08 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[08-Jun-2026 14:12:08 Europe/Berlin] SMTP << 550 No Such User Here
+[08-Jun-2026 14:12:08 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[08-Jun-2026 14:12:09 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260608-0D0D9E — ₹34.22" to hello@uxpacific.com
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 12:21:34 +0530
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 08:51:35 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:36 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 08:51:36 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:36 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 08:51:36 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 08:51:37 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 08:51:37 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[09-Jun-2026 08:51:37 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 08:51:37 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 08:51:37 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 08:51:38 Europe/Berlin] SMTP << 250 OK id=1wWqJG-00000000CoK-0A46
+[09-Jun-2026 08:51:38 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 08:51:38 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260609-277932)" to rmohittt21@gmail.com
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 12:21:39 +0530
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 08:51:39 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 08:51:40 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 08:51:41 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 08:51:41 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[09-Jun-2026 08:51:41 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 08:51:41 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 08:51:42 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 08:51:42 Europe/Berlin] SMTP << 250 OK id=1wWqJK-00000000Csq-1Fpe
+[09-Jun-2026 08:51:42 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 08:51:42 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260609-277932 — UX Pacific" to rmohittt21@gmail.com
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 12:21:43 +0530
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 08:51:44 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:45 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 08:51:45 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:45 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 08:51:45 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 08:51:46 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 08:51:46 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[09-Jun-2026 08:51:46 Europe/Berlin] SMTP << 550 No Such User Here
+[09-Jun-2026 08:51:46 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[09-Jun-2026 08:51:46 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260609-277932 — ₹0.00" to hello@uxpacific.com
+[09-Jun-2026 08:51:47 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 12:21:47 +0530
+[09-Jun-2026 08:51:47 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 08:51:47 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 08:51:47 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 08:51:48 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 08:51:49 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 08:51:49 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 08:51:49 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 08:51:49 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[09-Jun-2026 08:51:49 Europe/Berlin] SMTP << 550 No Such User Here
+[09-Jun-2026 08:51:49 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[09-Jun-2026 08:51:49 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260609-277932 — ₹0.00" to hello@uxpacific.com
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 14:02:13 +0530
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 10:32:14 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 10:32:15 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 10:32:15 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 10:32:16 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 10:32:16 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 10:32:17 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 10:32:17 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[09-Jun-2026 10:32:17 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 10:32:17 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 10:32:17 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 10:32:18 Europe/Berlin] SMTP << 250 OK id=1wWrsf-00000002AxI-3eWG
+[09-Jun-2026 10:32:18 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 10:32:18 Europe/Berlin] EmailService: sent "[Contact Form] New inquiry from Hello UX Pacific" to support@uxpacific.com
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 14:02:19 +0530
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 10:32:19 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 10:32:20 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 10:32:21 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 10:32:21 Europe/Berlin] SMTP >> RCPT TO:<hello@uxpacific.com>
+[09-Jun-2026 10:32:21 Europe/Berlin] SMTP << 550 No Such User Here
+[09-Jun-2026 10:32:21 Europe/Berlin] Mailer SMTP error: SMTP expected 25, got: 550 No Such User Here
+[09-Jun-2026 10:32:21 Europe/Berlin] EmailService: failed to send "Thank you for contacting UX Pacific" to hello@uxpacific.com
+[09-Jun-2026 10:32:21 Europe/Berlin] api/contact/send.php: user confirmation failed for message #9 (hello@uxpacific.com)
+[09-Jun-2026 11:15:03 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[09-Jun-2026 11:15:28 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:28 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:29 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:29 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:29 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:29 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:30 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\tmp\sess_hh6h97ta0626k94ihhchgrqlh4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:15:31 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\tmp) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 53
+[09-Jun-2026 11:16:54 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function execute() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\list.php:29
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\list.php on line 29
+[09-Jun-2026 11:20:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function execute() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\list.php:29
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\list.php on line 29
+[09-Jun-2026 11:32:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (08004/1040): Too many connections in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[09-Jun-2026 11:32:35 Europe/Berlin] PHP Warning:  mysqli::__construct(): (08004/1040): Too many connections in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[09-Jun-2026 11:58:16 Europe/Berlin] api/admin/messages/list.php prepare: Unknown column 'is_read' in 'field list'
+[09-Jun-2026 12:13:58 Europe/Berlin] PHP Warning:  mysqli::__construct(): (08004/1040): Too many connections in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[09-Jun-2026 12:16:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[09-Jun-2026 12:39:08 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function shopSettingsGetAll(), 0 passed in Command line code on line 1 and exactly 1 expected in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:27
+Stack trace:
+#0 Command line code(1): shopSettingsGetAll()
+#1 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 27
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:27 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:27 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:30 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:30 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:32 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:32 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:32 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:32 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:33 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:33 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:50 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:50 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:50 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:50 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:51 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:51 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:40:51 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:40:51 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:41:10 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:41:10 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:41:14 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:41:15 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:41:15 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:42:59 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:42:59 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:00 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:00 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:00 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:00 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:02 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:02 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:19 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:19 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:26 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:35 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:36 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:36 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:43:37 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 12:43:37 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: shopSettingsApplyProductInfo(): Argument #2 ($conn) must be of type mysqli, null given, called in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510 and defined in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php:80
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php(510): shopSettingsApplyProductInfo(Array, NULL)
+#1 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\catalog\detail.php(80): marketplaceProductSpecs(Array)
+#2 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\ShopSettings.php on line 80
+[09-Jun-2026 12:44:14 Europe/Berlin] PHP Warning:  Undefined variable $conn in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 510
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 16:48:32 +0530
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 13:18:32 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 13:18:33 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 13:18:33 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:33 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 13:18:33 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:34 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 13:18:34 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 13:18:34 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 13:18:34 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[09-Jun-2026 13:18:35 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 13:18:35 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 13:18:35 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 13:18:35 Europe/Berlin] SMTP << 250 OK id=1wWuTb-00000000ve6-2ZYr
+[09-Jun-2026 13:18:35 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 13:18:35 Europe/Berlin] EmailService: sent "Order confirmed — Your downloads are ready! (#UXP-20260609-3FAD02)" to zulauiux@gmail.com
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 16:48:37 +0530
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 13:18:37 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 13:18:38 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[09-Jun-2026 13:18:39 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 13:18:39 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 13:18:39 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 13:18:40 Europe/Berlin] SMTP << 250 OK id=1wWuTg-00000000vjY-0IR5
+[09-Jun-2026 13:18:40 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 13:18:40 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260609-3FAD02 — UX Pacific" to zulauiux@gmail.com
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 16:48:41 +0530
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 13:18:41 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 13:18:42 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 13:18:43 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 13:18:43 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[09-Jun-2026 13:18:43 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 13:18:43 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 13:18:43 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 13:18:44 Europe/Berlin] SMTP << 250 OK id=1wWuTk-00000000vny-0Adp
+[09-Jun-2026 13:18:44 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 13:18:44 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260609-3FAD02 — ₹236.00" to support@uxpacific.com
+[09-Jun-2026 13:18:48 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 16:48:48 +0530
+[09-Jun-2026 13:18:48 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 13:18:48 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 13:18:48 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 13:18:49 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 13:18:50 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 13:18:51 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 13:18:51 Europe/Berlin] SMTP << 250 OK id=1wWuTr-00000000w1m-1Oit
+[09-Jun-2026 13:18:51 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 13:18:51 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260609-3FAD02 — ₹236.00" to support@uxpacific.com
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 18:26:02 +0530
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 14:56:02 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 14:56:03 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 14:56:03 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:03 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 14:56:03 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:04 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 14:56:04 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 14:56:04 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 14:56:04 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[09-Jun-2026 14:56:05 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 14:56:05 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 14:56:05 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 14:56:05 Europe/Berlin] SMTP << 250 OK id=1wWvzx-00000002t7z-2qGA
+[09-Jun-2026 14:56:05 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 14:56:05 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260609-0AB1E8)" to zulauiux@gmail.com
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 18:26:07 +0530
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 14:56:08 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 14:56:09 Europe/Berlin] SMTP >> RCPT TO:<zulauiux@gmail.com>
+[09-Jun-2026 14:56:10 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 14:56:10 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 14:56:10 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 14:56:10 Europe/Berlin] SMTP << 250 OK id=1wWw02-00000002tCB-32IO
+[09-Jun-2026 14:56:10 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 14:56:10 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260609-0AB1E8 — UX Pacific" to zulauiux@gmail.com
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 18:26:11 +0530
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 14:56:12 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 14:56:13 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 14:56:14 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 14:56:14 Europe/Berlin] SMTP << 250 OK id=1wWw06-00000002tGi-1aQO
+[09-Jun-2026 14:56:14 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 14:56:14 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260609-0AB1E8 — ₹0.00" to support@uxpacific.com
+[09-Jun-2026 14:56:15 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Tue, 09 Jun 2026 18:26:15 +0530
+[09-Jun-2026 14:56:15 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[09-Jun-2026 14:56:15 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[09-Jun-2026 14:56:15 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-SIZE 52428800
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-8BITMIME
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-PIPELINING
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-PIPECONNECT
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 250 HELP
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP >> AUTH LOGIN
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[09-Jun-2026 14:56:16 Europe/Berlin] SMTP >> [base64-redacted]
+[09-Jun-2026 14:56:17 Europe/Berlin] SMTP << 235 Authentication succeeded
+[09-Jun-2026 14:56:17 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[09-Jun-2026 14:56:18 Europe/Berlin] SMTP << 250 OK
+[09-Jun-2026 14:56:18 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[09-Jun-2026 14:56:19 Europe/Berlin] SMTP << 250 Accepted
+[09-Jun-2026 14:56:19 Europe/Berlin] SMTP >> DATA
+[09-Jun-2026 14:56:19 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[09-Jun-2026 14:56:19 Europe/Berlin] SMTP << 250 OK id=1wWw0B-00000002tJf-3BNX
+[09-Jun-2026 14:56:19 Europe/Berlin] SMTP >> QUIT
+[09-Jun-2026 14:56:19 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260609-0AB1E8 — ₹0.00" to support@uxpacific.com

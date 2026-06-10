@@ -1,6 +1,18 @@
 <?php
 // includes/helpers.php
 
+/**
+ * Cache-busted asset URL based on file modification time.
+ */
+function asset_url(string $path): string
+{
+    $rel = ltrim(str_replace('\\', '/', $path), '/');
+    $full = dirname(__DIR__) . '/' . $rel;
+    $version = is_file($full) ? (string) filemtime($full) : '1';
+
+    return $rel . '?v=' . rawurlencode($version);
+}
+
 function sendResponse($status, $message, $data = null, $code = 200) {
     http_response_code($code);
     header('Content-Type: application/json');
@@ -83,24 +95,16 @@ function sendOrderConfirmationEmail($email, $name, $orderData) {
 function sendContactEmail($data) {
     require_once __DIR__ . '/EmailService.php';
     try {
-        $adminSent = EmailService::sendContactFormNotification(
+        return EmailService::sendContactEmails(
             (string) ($data['name'] ?? ''),
             (string) ($data['email'] ?? ''),
             (string) ($data['subject'] ?? 'General enquiry'),
             (string) ($data['message'] ?? ''),
             (string) ($data['phone'] ?? '')
         );
-        $userSent = false;
-        if (!empty($data['email']) && filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $userSent = EmailService::sendContactConfirmation(
-                (string) ($data['name'] ?? 'Customer'),
-                (string) $data['email']
-            );
-        }
-        return $adminSent || $userSent;
     } catch (Throwable $e) {
         error_log('sendContactEmail: ' . $e->getMessage());
-        return false;
+        return ['admin' => false, 'user' => false];
     }
 }
 

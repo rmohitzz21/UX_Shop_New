@@ -1,4 +1,5 @@
-<?php require_once 'includes/config.php'; ?>
+﻿<?php require_once 'includes/config.php'; ?>
+<?php require_once __DIR__ . '/marketplace.php'; ?>
 <?php
 // ── Category filter resolution ──────────────────────────────────────────────
 $rawFilter    = isset($_GET['category']) ? trim($_GET['category']) : '';
@@ -32,14 +33,14 @@ if ($rawFilter !== '') {
 }
 
 // ── Category list for tabs ───────────────────────────────────────────────────
-$catResult  = $conn->query("SELECT DISTINCT category FROM products WHERE is_active = 1 ORDER BY category");
+$catResult  = $conn->query("SELECT DISTINCT category FROM products WHERE is_active = 1 AND available_type != 'physical' ORDER BY category");
 $categories = [];
 while ($cat = $catResult->fetch_assoc()) {
     $categories[] = $cat['category'];
 }
 
 // ── Price range for sidebar slider ──────────────────────────────────────────
-$priceRange = $conn->query("SELECT MIN(price) as min_price, MAX(price) as max_price FROM products WHERE is_active = 1")->fetch_assoc();
+$priceRange = $conn->query("SELECT MIN(price) as min_price, MAX(price) as max_price FROM products WHERE is_active = 1 AND available_type != 'physical'")->fetch_assoc();
 $minPrice   = floor($priceRange['min_price'] ?? 0);
 $maxPrice   = ceil($priceRange['max_price'] ?? 5000);
 
@@ -51,11 +52,14 @@ $offset = ($page - 1) * $limit;
 // Build base for pagination links (preserves category param)
 $pageBase = $rawFilter !== '' ? '?category=' . urlencode($rawFilter) . '&page=' : '?page=';
 
+// Digital-only catalog (no physical products)
+$digitalWhere = "is_active = 1 AND available_type != 'physical'";
+
 // ── Count (category-aware) ───────────────────────────────────────────────────
 if ($categoryName !== '') {
     $cntStmt = $conn->prepare(
         "SELECT COUNT(*) AS total FROM products
-         WHERE is_active = 1 AND (stock > 0 OR available_type != 'physical') AND category = ?"
+         WHERE {$digitalWhere} AND category = ?"
     );
     $cntStmt->bind_param("s", $categoryName);
     $cntStmt->execute();
@@ -63,26 +67,26 @@ if ($categoryName !== '') {
     $cntStmt->close();
 } else {
     $totalProducts = $conn->query(
-        "SELECT COUNT(*) AS total FROM products WHERE is_active = 1 AND (stock > 0 OR available_type != 'physical')"
+        "SELECT COUNT(*) AS total FROM products WHERE {$digitalWhere}"
     )->fetch_assoc()['total'];
 }
 $totalPages = max(1, (int) ceil($totalProducts / $limit));
 if ($page > $totalPages) $page = $totalPages;
 
-// ── Products query (category-aware) ─────────────────────────────────────────
+// ── Products query (category-aware, digital only) ─────────────────────────
 if ($categoryName !== '') {
     $stmt = $conn->prepare(
         "SELECT * FROM products
-         WHERE is_active = 1 AND (stock > 0 OR available_type != 'physical') AND category = ?
-         ORDER BY is_featured DESC, rating DESC, created_at DESC
+         WHERE {$digitalWhere} AND category = ?
+         ORDER BY is_featured DESC, sales_count DESC, rating DESC, created_at DESC
          LIMIT ? OFFSET ?"
     );
     $stmt->bind_param("sii", $categoryName, $limit, $offset);
 } else {
     $stmt = $conn->prepare(
         "SELECT * FROM products
-         WHERE is_active = 1 AND (stock > 0 OR available_type != 'physical')
-         ORDER BY is_featured DESC, created_at DESC
+         WHERE {$digitalWhere}
+         ORDER BY is_featured DESC, sales_count DESC, rating DESC, created_at DESC
          LIMIT ? OFFSET ?"
     );
     $stmt->bind_param("ii", $limit, $offset);
@@ -103,8 +107,9 @@ function catSlug(string $name): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
+    <link rel="stylesheet" href="assets/css/shop-all.css" />
+    <link rel="icon" type="image/png" href="img/fav.png" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
 
@@ -131,7 +136,7 @@ function catSlug(string $name): string {
           <?php else: ?>
             <h1 class="shop-all-title">Design <span>Resources &amp;<br class="mobile-title-break"> Products</span></h1>
             <p class="shop-all-subtitle">
-              Explore premium UX/UI design resources including digital assets and physical products.
+              Explore premium UX/UI design resources — Figma kits, templates, mockups, and digital assets ready to download.
             </p>
           <?php endif; ?>
         </section>
@@ -168,24 +173,20 @@ function catSlug(string $name): string {
           <!-- Left Sidebar -->
           <aside class="shop-sidebar">
 
-            <!-- Product Type Filter -->
+            <!-- Quick filters -->
             <div class="filter-section">
-              <h3 class="filter-title">Product Type</h3>
+              <h3 class="filter-title">Quick Filters</h3>
+              <p class="filter-hint">All items are digital downloads — instant access after checkout.</p>
               <div class="filter-options">
                 <label class="filter-checkbox">
-                  <input type="checkbox" name="type" value="physical" checked />
+                  <input type="checkbox" id="filter-free" name="free" value="1" />
                   <span class="checkmark"></span>
-                  Physical
+                  Free resources only
                 </label>
                 <label class="filter-checkbox">
-                  <input type="checkbox" name="type" value="digital" checked />
+                  <input type="checkbox" id="filter-featured" name="featured" value="1" />
                   <span class="checkmark"></span>
-                  Digital
-                </label>
-                <label class="filter-checkbox">
-                  <input type="checkbox" name="type" value="both" checked />
-                  <span class="checkmark"></span>
-                  Both
+                  Featured only
                 </label>
               </div>
             </div>
@@ -209,86 +210,13 @@ function catSlug(string $name): string {
 
           <!-- Product Grid -->
           <div class="shop-products">
+            <div class="shop-results-meta" id="shop-results-meta">
+              <span>Showing <strong id="shop-visible-count"><?= (int) $totalProducts ?></strong> digital resources</span>
+            </div>
             <div class="product-grid shop-grid" id="product-grid">
               <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()):
-                  $id            = $row['id'];
-                  $name          = htmlspecialchars($row['name']);
-                  $jsName        = htmlspecialchars(addslashes($row['name']), ENT_QUOTES, 'UTF-8');
-                  $jsImage       = htmlspecialchars(addslashes($row['image'] ?? ''), ENT_QUOTES, 'UTF-8');
-                  $jsCategory    = htmlspecialchars(addslashes($row['category']), ENT_QUOTES, 'UTF-8');
-                  $jsAvailType   = htmlspecialchars(addslashes($row['available_type'] ?? 'physical'), ENT_QUOTES, 'UTF-8');
-                  $price         = number_format($row['price'], 2);
-                  $oldPrice      = !empty($row['old_price']) ? number_format($row['old_price'], 2) : '';
-                  $imgSrc        = !empty($row['image']) ? htmlspecialchars($row['image']) : 'img/sticker.webp';
-                  $category      = htmlspecialchars($row['category']);
-                  $rating        = number_format($row['rating'] ?: 4.5, 1);
-                  $availableType = $row['available_type'] ?? 'physical';
-                  $description   = htmlspecialchars(mb_strimwidth($row['description'] ?? '', 0, 100, '…'));
-                  $outOfStock    = $row['stock'] <= 0 && $availableType === 'physical';
-                ?>
-                <article class="uxp-product-card shop-product-card"
-                  data-product-id="<?= $id ?>"
-                  data-name="<?= $name ?>"
-                  data-image="<?= $imgSrc ?>"
-                  data-category="<?= $category ?>"
-                  data-type="<?= htmlspecialchars($availableType) ?>"
-                  data-price="<?= $row['price'] ?>"
-                  data-old-price="<?= $row['old_price'] ?>"
-                  data-rating="<?= $rating ?>">
-
-                  <a href="#"
-                     class="uxp-product-media js-product-popup"
-                     aria-label="Quick view <?= $name ?>"
-                     data-product-id="<?= $id ?>"
-                     data-item-type="product">
-                    <img src="<?= $imgSrc ?>" alt="<?= $name ?>"
-                         loading="lazy" width="480" height="360"
-                         onerror="this.src='img/sticker.webp'" />
-                    <span class="uxp-qv-overlay" aria-hidden="true">
-                      <span class="uxp-qv-btn">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                        Quick View
-                      </span>
-                    </span>
-                  </a>
-
-                  <div class="uxp-product-body">
-                    <div class="uxp-product-title-row">
-                      <h3><?= $name ?></h3>
-                      <div class="uxp-rating" aria-label="Rating <?= $rating ?> out of 5">
-                        <span aria-hidden="true">&#9733;</span>
-                        <b><?= $rating ?></b>
-                      </div>
-                    </div>
-
-                    <p><?= $description ?></p>
-
-                    <p class="uxp-product-spec">Category: <?= $category ?></p>
-
-                    <div class="uxp-product-meta">
-                      <div class="uxp-product-price">
-                        ₹<?= $price ?>
-                        <?= $oldPrice ? "<span class='uxp-old-price'>₹{$oldPrice}</span>" : '' ?>
-                      </div>
-                    </div>
-
-                    <div class="uxp-product-actions">
-                      <a href="product.php?id=<?= $id ?>"
-                         class="uxp-card-btn uxp-card-btn-primary js-product-popup"
-                         data-product-id="<?= $id ?>">Buy Now</a>
-
-                      <button
-                        onclick="addToCart('<?= $id ?>',null,1,{name:'<?= $jsName ?>',price:<?= $row['price'] ?>,image:'<?= $jsImage ?>',category:'<?= $jsCategory ?>'},'<?= $jsAvailType ?>')"
-                        class="uxp-card-btn uxp-card-btn-secondary"
-                        type="button"
-                        aria-label="Add to cart"
-                        <?= $outOfStock ? 'disabled' : '' ?>>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </article>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                <?= uxpShopAllProductCard($row) ?>
                 <?php endwhile; ?>
               <?php else: ?>
                 <div class="shop-empty-state">
@@ -345,28 +273,37 @@ function catSlug(string $name): string {
       <?php include 'includes/footer.php'; ?>
     </div>
 
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const productCards  = document.querySelectorAll('.shop-product-card');
-      const typeCheckboxes = document.querySelectorAll('input[name="type"]');
-      const priceRangeEl  = document.getElementById('price-range');
-      const sortSelect    = document.getElementById('sort-select');
-      const priceMaxVal   = document.getElementById('price-max-val');
+      const productCards   = document.querySelectorAll('.shop-product-card');
+      const filterFree     = document.getElementById('filter-free');
+      const filterFeatured = document.getElementById('filter-featured');
+      const priceRangeEl   = document.getElementById('price-range');
+      const sortSelect     = document.getElementById('sort-select');
+      const priceMaxVal    = document.getElementById('price-max-val');
+      const visibleCountEl = document.getElementById('shop-visible-count');
 
-      // ── Client-side filter (type + price) ─────────────────────────────────
+      // ── Client-side filter (free / featured / price) ──────────────────────
       function filterProducts() {
-        const checkedTypes = Array.from(typeCheckboxes)
-          .filter(cb => cb.checked).map(cb => cb.value);
+        const freeOnly = filterFree?.checked === true;
+        const featuredOnly = filterFeatured?.checked === true;
         const maxPrice = parseFloat(priceRangeEl?.value || 999999);
+        let visible = 0;
 
         productCards.forEach(card => {
-          const cardType  = card.dataset.type || 'physical';
           const cardPrice = parseFloat(card.dataset.price || 0);
-          const typeMatch  = checkedTypes.includes(cardType);
+          const isFree = card.dataset.isFree === '1';
+          const isFeatured = card.dataset.featured === '1';
+          const freeMatch = !freeOnly || isFree;
+          const featuredMatch = !featuredOnly || isFeatured;
           const priceMatch = cardPrice <= maxPrice;
-          card.style.display = (typeMatch && priceMatch) ? '' : 'none';
+          const show = freeMatch && featuredMatch && priceMatch;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
         });
+
+        if (visibleCountEl) visibleCountEl.textContent = String(visible);
       }
 
       // ── Client-side sort ──────────────────────────────────────────────────
@@ -389,7 +326,8 @@ function catSlug(string $name): string {
       }
 
       // ── Event listeners ───────────────────────────────────────────────────
-      typeCheckboxes.forEach(cb => cb.addEventListener('change', filterProducts));
+      filterFree?.addEventListener('change', filterProducts);
+      filterFeatured?.addEventListener('change', filterProducts);
 
       if (priceRangeEl) {
         priceRangeEl.addEventListener('input', function () {

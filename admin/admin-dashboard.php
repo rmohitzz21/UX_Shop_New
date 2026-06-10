@@ -17,7 +17,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
   <title>Admin Dashboard – UX Pacific Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
-  <link rel="icon" type="image/x-icon" href="../img/faviconUXP444@4x-789.png" />
+  <link rel="icon" type="image/png" href="../img/fav.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="admin.css" />
 </head>
@@ -428,7 +428,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                   <th>Product</th>
                   <th>Category</th>
                   <th>Price</th>
-                  <th>Stock</th>
+                  <th>Purchases</th>
                   <th>Rating</th>
                   <th>Status</th>
                   <th style="width:1%">Actions</th>
@@ -917,10 +917,10 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                   <label class="form-label">Category</label>
                   <input class="form-input" name="category" id="freebie-category" placeholder="e.g. Figma UI Kit, Canva Template, Icons" />
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Resource Link <span class="req">*</span></label>
-                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" required placeholder="https://www.figma.com/… or https://www.canva.com/…" />
-                  <small style="color:var(--text-2);font-size:.75rem;margin-top:4px;display:block;">Paste a Figma, Canva, Google Drive, or any public downloadable link</small>
+                <div class="form-group form-col-full">
+                  <label class="form-label">Legacy link (optional)</label>
+                  <input class="form-input" name="file_url" id="freebie-file-url" type="url" placeholder="https://www.figma.com/… (optional — prefer Digital Resources below)" />
+                  <small style="color:var(--text-2);font-size:.75rem;margin-top:4px;display:block;">For external Figma/Canva links only. Uploaded files use encrypted private storage via Digital Resources.</small>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Sort Order</label>
@@ -947,6 +947,20 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
                   <textarea class="form-input" name="description" id="freebie-description" rows="3" placeholder="Brief description of this resource" style="resize:vertical;"></textarea>
                 </div>
               </div>
+
+              <div class="form-section" id="freebie-digital-resources-section" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+                  <div>
+                    <h3 style="margin:0;font-size:1rem;">Digital Resources</h3>
+                    <p class="form-hint" style="margin:4px 0 0;">Secure encrypted files, HTTPS links, or instructions — delivered after free checkout.</p>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" type="button" id="freebie-resource-add-btn">+ Add resource</button>
+                </div>
+                <div id="freebie-resources-list" class="adm-resources-list">
+                  <p class="form-hint">Save the freebie first, then add digital resources.</p>
+                </div>
+              </div>
+
               <div class="form-actions">
                 <div></div>
                 <div class="form-actions-right">
@@ -1138,6 +1152,56 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
           </div>
         </div>
 
+        <!-- Product Information (quick view) -->
+        <div class="form-section">
+          <div class="form-section-title">Product Information</div>
+          <p class="form-hint" style="margin:0 0 12px;color:#94a3b8;font-size:0.875rem;">
+            Shown in the quick view modal for this product. Leave blank to use shop-wide defaults from Shop Settings.
+          </p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="edit-product-high-resolution">High Resolution</label>
+              <input class="form-input" id="edit-product-high-resolution" name="high_resolution" placeholder="Yes" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-product-software-version">Software Version</label>
+              <input class="form-input" id="edit-product-software-version" name="software_version" placeholder="Latest" />
+            </div>
+            <div class="form-group form-col-full">
+              <label class="form-label" for="edit-product-compatible-software">Compatible With</label>
+              <input class="form-input" id="edit-product-compatible-software" name="compatible_software" placeholder="Figma, Adobe XD, Sketch" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-product-files-included">Files Included</label>
+              <input class="form-input" id="edit-product-files-included" name="files_included" placeholder="FIG, PNG, PDF, SVG" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-product-grid-columns">Column</label>
+              <input class="form-input" id="edit-product-grid-columns" name="grid_columns" placeholder="12 Column" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-product-layout-type">Layout</label>
+              <input class="form-input" id="edit-product-layout-type" name="layout_type" placeholder="Responsive" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-product-license-type">License</label>
+              <input class="form-input" id="edit-product-license-type" name="license_type" placeholder="Premium" />
+            </div>
+          </div>
+
+          <div class="panel-subsection">
+            <div class="panel-subsection-head">
+              <div>
+                <h3>Custom fields</h3>
+                <p>Add extra label/value rows shown in quick view for this product only.</p>
+              </div>
+              <button type="button" class="btn btn-ghost btn-xs" id="product-add-custom-field">+ Add field</button>
+            </div>
+            <div id="product-custom-fields" class="qv-custom-rows"></div>
+            <input type="hidden" id="edit-product-custom-fields" name="custom_fields" value="[]" />
+          </div>
+        </div>
+
         <!-- Digital Resources (digital / both products) -->
         <div class="form-section" id="product-digital-resources-section" style="display:none;">
           <div class="form-section-title">Digital Resources</div>
@@ -1273,8 +1337,8 @@ function toggleSidebar() {
 /* ── Tab switching ── */
 const tabTitles = {
   overview:'Overview', analytics:'Analytics', products:'Products',
-  bundles:'Bundles', categories:'Categories', orders:'Orders',
-  users:'Users', reviews:'Reviews', messages:'Messages', freebies:'Freebies'
+  bundles:'Bundles', categories:'Categories',
+  orders:'Orders', users:'Users', reviews:'Reviews', messages:'Messages', freebies:'Freebies'
 };
 function switchTab(tab, element) {
   event && event.preventDefault && event.preventDefault();
@@ -1331,5 +1395,127 @@ window.toggleSidebarCollapse = toggleSidebarCollapse;
 window.toggleSidebar = toggleSidebar;
 window.switchTab = switchTab;
 </script>
+
+<!-- ═══════════════════════════════════════════════════
+     GENERIC CONFIRM MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-modal-overlay">
+  <div class="modal modal-sm" onclick="event.stopPropagation()" style="max-width:440px;">
+    <div class="modal-head">
+      <h2 id="confirm-modal-title">Confirm</h2>
+      <button class="modal-close" onclick="_resolveConfirm(false)" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-modal-message" style="margin:0;color:var(--text-2);line-height:1.65;font-size:.9rem;"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="_resolveConfirm(false)">Cancel</button>
+      <button class="btn btn-danger" id="confirm-modal-btn" onclick="_resolveConfirm(true)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     RESOURCE EDITOR MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="resource-modal-overlay" onclick="closeResourceModal()">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2 id="resource-modal-title">Add Resource</h2>
+      <button class="modal-close" onclick="closeResourceModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rm-id" value="" />
+      <input type="hidden" id="rm-owner-key" value="" />
+      <input type="hidden" id="rm-owner-id" value="" />
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label">Title <span class="req">*</span></label>
+        <input class="form-input" id="rm-title" placeholder="e.g. Main Template PDF" autocomplete="off" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label">Resource Type <span class="req">*</span></label>
+        <select class="form-select" id="rm-type">
+          <option value="file">File (generic)</option>
+          <option value="zip">ZIP Archive</option>
+          <option value="pdf">PDF Document</option>
+          <option value="canva">Canva Template</option>
+          <option value="figma">Figma File</option>
+          <option value="external_link">External Link</option>
+          <option value="instructions">Instructions Only</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="rm-url-group" style="margin-bottom:16px;display:none;">
+        <label class="form-label">HTTPS Link <span class="req">*</span></label>
+        <input class="form-input" id="rm-url" type="url" placeholder="https://…" />
+        <span class="form-help" style="font-size:.75rem;color:var(--text-3);margin-top:4px;display:block;">Must start with https://</span>
+      </div>
+
+      <div class="form-group" id="rm-instructions-group" style="margin-bottom:16px;display:none;">
+        <label class="form-label">Instructions <span class="req">*</span></label>
+        <textarea class="form-textarea" id="rm-instructions" rows="3" placeholder="Access instructions shown to customers after purchase…"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="form-group">
+          <label class="form-label">Download Limit</label>
+          <input class="form-input" id="rm-dl-limit" type="number" min="1" max="100" value="5" />
+          <span class="form-help" style="font-size:.75rem;color:var(--text-3);margin-top:4px;display:block;">1–100 per customer</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expiry (days)</label>
+          <input class="form-input" id="rm-expiry" type="number" min="1" max="3650" value="30" />
+          <span class="form-help" style="font-size:.75rem;color:var(--text-3);margin-top:4px;display:block;">1–3650 days</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Sort Order</label>
+          <input class="form-input" id="rm-sort" type="number" value="0" />
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:2px;">
+          <label class="toggle-wrap">
+            <span class="toggle"><input type="checkbox" id="rm-active" checked /><span class="toggle-track"></span></span>
+            <span class="toggle-label">Active</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeResourceModal()">Cancel</button>
+      <button class="btn btn-primary" id="resource-modal-save-btn" onclick="saveResourceModal()">Save Resource</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     RESOURCE VIEW MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="resource-view-modal-overlay" onclick="closeResourceViewModal()">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Resource Details</h2>
+      <button class="modal-close" onclick="closeResourceViewModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="resource-view-content" style="line-height:1.8;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeResourceViewModal()">Close</button>
+      <a id="resource-view-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display:none;">
+        Open Link
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

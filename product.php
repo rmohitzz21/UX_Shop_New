@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 require_once __DIR__ . '/includes/marketplace.php';
 
@@ -174,7 +174,8 @@ function getRelatedProducts($conn, $product) {
                         <div class='product-related-rating'>★ $r_rating</div>
                       </div>
                       <div class='product-related-actions'>
-                        <button onclick=\"addToCart('$r_id', null, 1, {name: '$jsRName', price: {$rel['price']}, image: '$jsRImage', category: '$jsRCategory'}, '$jsRAvailableType')\" class='btn-primary small' aria-label='Add to cart'>Add to Cart</button>
+                        <button type='button' class='btn-primary small js-buy-now' data-product-id='$r_id' data-item-type='product' data-available-type='$jsRAvailableType' aria-label='Buy $r_name now'>Buy Now</button>
+                        <button onclick=\"addToCart('$r_id', null, 1, {name: '$jsRName', price: {$rel['price']}, image: '$jsRImage', category: '$jsRCategory'}, '$jsRAvailableType')\" class='btn-ghost small' aria-label='Add to cart'>Add to Cart</button>
                         <a href='product.php?id=$r_id' class='btn-ghost small'>View Details</a>
                       </div>
                     </div>
@@ -200,8 +201,8 @@ $related_html = getRelatedProducts($conn, $product);
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-      <link rel="icon" type="image/x-icon" href="img/faviconUXP444@4x-789.png" />
-    <link rel="stylesheet" href="style.css" />
+      <link rel="icon" type="image/png" href="img/fav.png" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
   <body>
@@ -329,7 +330,7 @@ $related_html = getRelatedProducts($conn, $product);
               <p style="color: #ef4444; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">Only <?php echo $stock; ?> left in stock!</p>
             <?php endif; ?>
             <button class="btn-ghost product-page-btn" onclick="addToCartWrapper(<?php echo $product_id; ?>)">Add to Cart</button>
-            <button class="btn-primary product-page-btn" onclick="handleBuyNowWrapper(<?php echo $product_id; ?>)">Buy Now</button>
+            <button type="button" class="btn-primary product-page-btn" id="product-buy-now-btn" onclick="handleBuyNowWrapper(<?php echo $product_id; ?>)"><?php echo $isFreeProduct ? 'Get Free' : 'Buy Now'; ?></button>
           <?php endif; ?>
         </div>
 
@@ -490,20 +491,20 @@ $related_html = getRelatedProducts($conn, $product);
             </div>
           </div>
           <div class="footer-contact">
-             <p>Support : +91 9274061063 | Email : <a href="mailto:hello@uxpacific.com"    style="text-decoration: none; color: inherit"
-                target="_blank" >hello@uxpacific.com</a></p>
+             <p>Support : +91 9274061063 | Email : <a href="mailto:<?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?>" style="text-decoration: none; color: inherit"
+                target="_blank"><?php echo htmlspecialchars(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'); ?></a></p>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>©2026 UXPacific. All rights reserved.</p>
+        <p>&copy; <?php echo date('Y'); ?> UX Pacific. All rights reserved.</p>
         <div class="footer-links">
           <a href="policies.php">Our Policies</a> <span>•</span> <a href="contact.php">Contact Us</a>
         </div>
       </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
     <script>
       // PHP-fed image array for slider logic
       const productImages = <?php echo json_encode($images); ?>;
@@ -628,47 +629,40 @@ $related_html = getRelatedProducts($conn, $product);
       }
 
       window.handleBuyNowWrapper = async function(id) {
-         // Determine current price being displayed
-         const format = document.getElementById('product-format-select').value;
-         const license = document.getElementById('license-type') ? document.getElementById('license-type').value : null;
-         
+         const formatEl = document.getElementById('product-format-select');
+         const format = formatEl ? formatEl.value : '<?php echo addslashes($available_type); ?>';
+         const licenseEl = document.getElementById('license-type');
+         const license = licenseEl ? licenseEl.value : null;
+
          let finalPrice = basePrice;
          if (format === 'digital' && license === 'Commercial') {
              finalPrice = commercialPrice;
          }
 
-         // Auth Check
-         const userSession = localStorage.getItem('userSession');
-         let isLoggedIn = false;
-         if (userSession) {
-             try {
-                const session = JSON.parse(userSession);
-                if (session && session.id) isLoggedIn = true;
-             } catch(e) {}
+         const qty = parseInt(document.getElementById('count').textContent, 10) || 1;
+         const btn = document.getElementById('product-buy-now-btn');
+         const origLabel = btn ? btn.textContent : 'Buy Now';
+
+         if (btn) {
+           btn.disabled = true;
+           btn.textContent = 'Processing…';
          }
 
-         if (!isLoggedIn) {
-             // Not logged in -> Redirect to Signin with message
-             window.location.href = 'signin.php?redirect=checkout.php&message=Please sign in first';
-             return;
-         }
-         
-         // Logged in -> Add to Cart then Checkout
          try {
-             await addToCart(
-                 id, 
-                 getSelectedSize(), 
-                 parseInt(document.getElementById('count').textContent), 
-                 {
-                     name: '<?php echo addslashes($name); ?>', 
-                     price: finalPrice, 
-                     image: '<?php echo addslashes($images[0]); ?>'
-                 }, 
-                 format
-             );
-             window.location.href = 'checkout.php';
-         } catch(e) {
-             console.error("Buy Now failed", e);
+           await buyNow(id, getSelectedSize(), qty, 'product', {
+             format,
+             details: {
+               name: '<?php echo addslashes($name); ?>',
+               price: finalPrice,
+               image: '<?php echo addslashes($images[0]); ?>'
+             }
+           });
+         } catch (e) {
+           console.error('Buy Now failed', e);
+           if (btn) {
+             btn.disabled = false;
+             btn.textContent = origLabel;
+           }
          }
       }
       

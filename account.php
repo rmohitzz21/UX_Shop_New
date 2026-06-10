@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 if (empty($_SESSION['user_id'])) {
     header('Location: signin.php?redirect=account.php');
@@ -42,7 +42,8 @@ if ($statsStmt) {
   <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
   <title>Account - UX Pacific Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
     .account-shell {
       max-width: 1180px;
@@ -258,7 +259,7 @@ if ($statsStmt) {
   </main>
   <?php include 'includes/footer.php'; ?>
 </div>
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 <script>
 document.getElementById('account-form').addEventListener('submit', async (event) => {
   event.preventDefault();

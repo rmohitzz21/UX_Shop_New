@@ -26,6 +26,13 @@ if (!in_array($availableType, ['physical', 'digital', 'both'], true)) $available
 $active = adminBool($input['is_active'] ?? 1, 1);
 $featured = adminBool($input['is_featured'] ?? 0, 0);
 $isFree = adminBool($input['is_free'] ?? 0, 0);
+$highResolution = trim((string) ($input['high_resolution'] ?? ''));
+$compatibleSoftware = trim((string) ($input['compatible_software'] ?? ''));
+$softwareVersion = trim((string) ($input['software_version'] ?? ''));
+$filesIncluded = trim((string) ($input['files_included'] ?? ''));
+$gridColumns = trim((string) ($input['grid_columns'] ?? ''));
+$layoutType = trim((string) ($input['layout_type'] ?? ''));
+$licenseType = trim((string) ($input['license_type'] ?? ''));
 if ($isFree) {
     $price = 0.0;
     $oldPrice = null;
@@ -35,6 +42,22 @@ if ($isFree) {
     }
 }
 $slug = slugify($input['slug'] ?? $name);
+
+$customFields = [];
+$customFieldsRaw = trim((string) ($input['custom_fields'] ?? ''));
+if ($customFieldsRaw !== '') {
+    $parsedCf = json_decode($customFieldsRaw, true);
+    if (is_array($parsedCf)) {
+        foreach ($parsedCf as $cf) {
+            $cfLabel = trim((string) ($cf['label'] ?? ''));
+            $cfValue = trim((string) ($cf['value'] ?? ''));
+            if ($cfLabel !== '' && $cfValue !== '') {
+                $customFields[] = ['label' => $cfLabel, 'value' => $cfValue];
+            }
+        }
+    }
+}
+$customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 $imageUploads = adminUploadImages('image');
 $mediaUploads = adminUploadImages('media');
@@ -81,15 +104,15 @@ if ($id > 0) {
         }
     }
 
-    $stmt = $conn->prepare('UPDATE products SET name=?, slug=?, sku=?, description=?, whats_included=?, file_specification=?, category=?, tags=?, price=?, old_price=?, commercial_price=?, image=?, additional_images=?, stock=?, rating=?, available_type=?, is_active=?, is_featured=?, is_free=? WHERE id=?');
-    $stmt->bind_param('ssssssssdddssidsiiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree, $id);
+    $stmt = $conn->prepare('UPDATE products SET name=?, slug=?, sku=?, description=?, whats_included=?, file_specification=?, category=?, tags=?, price=?, old_price=?, commercial_price=?, image=?, additional_images=?, stock=?, rating=?, available_type=?, is_active=?, is_featured=?, is_free=?, high_resolution=?, compatible_software=?, software_version=?, files_included=?, grid_columns=?, layout_type=?, license_type=?, custom_fields=? WHERE id=?');
+    $stmt->bind_param('ssssssssdddssidsiiissssssssi', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree, $highResolution, $compatibleSoftware, $softwareVersion, $filesIncluded, $gridColumns, $layoutType, $licenseType, $customFieldsJson, $id);
     if (!$stmt->execute()) sendResponse('error', 'Could not update product: ' . $stmt->error, null, 500);
     adminRecordInventory($conn, 'product', $id, (int) $before['stock'], $stock, 'Admin product update');
     sendResponse('success', 'Product updated.', ['id' => $id, 'image' => $mainImage]);
 }
 
-$stmt = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured, is_free) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-$stmt->bind_param('ssssssssdddssidsiii', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree);
+$stmt = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured, is_free, high_resolution, compatible_software, software_version, files_included, grid_columns, layout_type, license_type, custom_fields) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+$stmt->bind_param('ssssssssdddssidsiiissssssss', $name, $slug, $sku, $description, $whats, $specs, $category, $tags, $price, $oldPrice, $commercialPrice, $mainImage, $additionalJson, $stock, $rating, $availableType, $active, $featured, $isFree, $highResolution, $compatibleSoftware, $softwareVersion, $filesIncluded, $gridColumns, $layoutType, $licenseType, $customFieldsJson);
 if (!$stmt->execute()) sendResponse('error', 'Could not create product: ' . $stmt->error, null, 500);
 $newId = (int) $conn->insert_id;
 adminRecordInventory($conn, 'product', $newId, 0, $stock, 'Admin product create');

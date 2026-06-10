@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 
 $query    = trim((string) ($_GET['q'] ?? ''));
@@ -12,7 +12,7 @@ if ($typeFilter !== 'bundle') {
     if ($query !== '') {
         $like = '%' . $query . '%';
         $pStmt = $conn->prepare(
-            'SELECT id, name, price, old_price, image, category, description, available_type, rating, created_at, "product" AS item_type
+            'SELECT *, "product" AS item_type
              FROM products
              WHERE (name LIKE ? OR category LIKE ? OR description LIKE ?) AND is_active = 1
              LIMIT 80'
@@ -20,8 +20,7 @@ if ($typeFilter !== 'bundle') {
         $pStmt->bind_param('sss', $like, $like, $like);
     } else {
         $pStmt = $conn->prepare(
-            'SELECT id, name, price, old_price, image, category, description, available_type, rating, created_at, "product" AS item_type
-             FROM products WHERE is_active = 1 LIMIT 80'
+            'SELECT *, "product" AS item_type FROM products WHERE is_active = 1 LIMIT 80'
         );
     }
     $pStmt->execute();
@@ -36,7 +35,7 @@ if ($typeFilter !== 'product') {
     if ($query !== '') {
         $like = '%' . $query . '%';
         $bStmt = $conn->prepare(
-            'SELECT id, name, price, old_price, image, category, description, "digital" AS available_type, rating, created_at, "bundle" AS item_type
+            'SELECT *, "bundle" AS item_type, "digital" AS available_type
              FROM bundles
              WHERE (name LIKE ? OR category LIKE ? OR description LIKE ?) AND is_active = 1
              LIMIT 80'
@@ -44,8 +43,7 @@ if ($typeFilter !== 'product') {
         $bStmt->bind_param('sss', $like, $like, $like);
     } else {
         $bStmt = $conn->prepare(
-            'SELECT id, name, price, old_price, image, category, description, "digital" AS available_type, rating, created_at, "bundle" AS item_type
-             FROM bundles WHERE is_active = 1 LIMIT 80'
+            'SELECT *, "bundle" AS item_type, "digital" AS available_type FROM bundles WHERE is_active = 1 LIMIT 80'
         );
     }
     $bStmt->execute();
@@ -84,7 +82,8 @@ $safeQuery = htmlspecialchars($query, ENT_QUOTES, 'UTF-8');
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
     <title><?php echo $query !== '' ? 'Search: ' . $safeQuery . ' — UX Pacific Shop' : 'All Products — UX Pacific Shop'; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;600&family=Gabarito:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="bundles-page search-page">
     <?php include 'includes/header.php'; ?>
@@ -106,25 +105,28 @@ $safeQuery = htmlspecialchars($query, ENT_QUOTES, 'UTF-8');
                 <div class="search-page-input-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input
-                        type="search"
+                        type="text"
                         name="q"
+                        inputmode="search"
+                        enterkeyhint="search"
+                        role="searchbox"
                         value="<?php echo $safeQuery; ?>"
                         placeholder="Search products and bundles…"
                         autocomplete="off"
+                        spellcheck="false"
                         autofocus
                     />
-                    <?php if ($query !== ''): ?>
-                        <a href="search.php" class="search-page-clear" aria-label="Clear search">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </a>
-                    <?php endif; ?>
-                    <button type="submit" class="search-page-submit">Search</button>
+                    <button type="submit" class="search-page-submit">
+                        <span class="search-page-submit-label">Search</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
                 </div>
             </form>
         </section>
 
         <!-- Filters row -->
         <div class="search-controls">
+            <p class="search-results-meta"><?php echo $total; ?> result<?php echo $total !== 1 ? 's' : ''; ?></p>
             <div class="search-type-filters">
                 <?php
                 $types = ['all' => 'All', 'product' => 'Products', 'bundle' => 'Bundles'];
@@ -148,8 +150,8 @@ $safeQuery = htmlspecialchars($query, ENT_QUOTES, 'UTF-8');
             </form>
         </div>
 
-        <!-- Results grid -->
-        <section class="search-results-grid" id="search-results-grid">
+        <!-- Results grid (same cards as homepage) -->
+        <section class="uxp-product-grid search-results-grid" id="search-results-grid">
             <?php if ($total === 0): ?>
                 <div class="search-empty-state">
                     <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" style="width:64px;height:64px;margin:0 auto 16px;color:#5c5c7a;"><circle cx="28" cy="28" r="18"/><line x1="46" y1="46" x2="60" y2="60"/></svg>
@@ -160,61 +162,14 @@ $safeQuery = htmlspecialchars($query, ENT_QUOTES, 'UTF-8');
             <?php endif; ?>
 
             <?php foreach ($items as $item):
-                $id          = (int) $item['id'];
-                $itemType    = (string) $item['item_type'];
-                $name        = (string) $item['name'];
-                $price       = (float)  $item['price'];
-                $oldPrice    = $item['old_price'] !== null ? (float) $item['old_price'] : null;
-                $image       = trim((string) ($item['image'] ?? '')) ?: 'img/sticker.webp';
-                $category    = (string) ($item['category'] ?? 'Products');
-                $description = (string) ($item['description'] ?? '');
-                $availType   = (string) ($item['available_type'] ?? 'digital');
-                $isBundle    = $itemType === 'bundle';
-                $viewHref    = $isBundle ? 'bundles.php' : 'product.php?id=' . $id;
-            ?>
-            <article class="search-product-card">
-                <a href="<?php echo $viewHref; ?>" class="search-card-img-link" tabindex="-1" aria-hidden="true">
-                    <img
-                        src="<?php echo htmlspecialchars($image); ?>"
-                        alt="<?php echo htmlspecialchars($name); ?>"
-                        loading="lazy"
-                        onerror="this.src='img/sticker.webp'"
-                    />
-                    <?php if ($isBundle): ?>
-                        <span class="search-card-badge">Bundle</span>
-                    <?php endif; ?>
-                </a>
-                <div>
-                    <span><?php echo htmlspecialchars($category); ?></span>
-                    <h2><?php echo htmlspecialchars($name); ?></h2>
-                    <p><?php echo htmlspecialchars(mb_substr($description, 0, 80)) . (mb_strlen($description) > 80 ? '…' : ''); ?></p>
-                    <div class="search-card-price">
-                        <strong>₹<?php echo number_format($price, 0); ?></strong>
-                        <?php if ($oldPrice !== null && $oldPrice > $price): ?>
-                            <del>₹<?php echo number_format($oldPrice, 0); ?></del>
-                        <?php endif; ?>
-                    </div>
-                    <div class="search-product-actions">
-                        <button
-                            type="button"
-                            data-add-to-cart="<?php echo $id; ?>"
-                            data-item-type="<?php echo $itemType; ?>"
-                            data-name="<?php echo htmlspecialchars($name); ?>"
-                            data-price="<?php echo $price; ?>"
-                            data-image="<?php echo htmlspecialchars($image); ?>"
-                            data-category="<?php echo htmlspecialchars($category); ?>"
-                            data-description="<?php echo htmlspecialchars($description); ?>"
-                            data-type="<?php echo htmlspecialchars($availType); ?>"
-                        >Add to Cart</button>
-                        <a href="<?php echo $viewHref; ?>" class="search-view-btn">View</a>
-                    </div>
-                </div>
-            </article>
-            <?php endforeach; ?>
+                echo ($item['item_type'] ?? '') === 'bundle'
+                    ? uxpIndexBundleCard($item)
+                    : uxpIndexProductCard($item);
+            endforeach; ?>
         </section>
 
     </main>
 
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 </body>
 </html>

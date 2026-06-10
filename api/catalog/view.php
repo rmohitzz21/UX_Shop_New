@@ -9,6 +9,8 @@ if ($id <= 0) {
 
 $table = $type === 'bundle' ? 'bundles' : 'products';
 $metric = $type === 'bundle' ? 'sales_count' : 'view_count';
-$conn->query("UPDATE `$table` SET `$metric` = `$metric` + 1 WHERE id = " . $id);
+$stmt = $conn->prepare("UPDATE `$table` SET `$metric` = `$metric` + 1 WHERE id = ?");
+$stmt->bind_param('i', $id);
+$stmt->execute();
 
 sendResponse('success', 'View recorded.');

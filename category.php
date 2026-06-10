@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'includes/config.php';
 
 $selected = trim((string) ($_GET['cat'] ?? ''));
@@ -35,7 +35,7 @@ if ($selected !== '') {
     <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
     <title>Categories - UX Pacific Shop</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,600;1,9..40,200&family=Gabarito:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
 </head>
 <body class="category-page">
 <div class="page">
@@ -190,6 +190,6 @@ if ($selected !== '') {
     </main>
     <?php include 'includes/footer.php'; ?>
 </div>
-<script src="script.js"></script>
+<script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 </body>
 </html>

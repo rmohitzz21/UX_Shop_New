@@ -33,7 +33,7 @@ if ($_SESSION['admin_login_attempts'] >= 5) {
 
 $allowedRoles = ['admin', 'super_admin', 'superadmin'];
 
-$stmt = $conn->prepare('SELECT id, email, password_hash, role FROM users WHERE email = ? LIMIT 1');
+$stmt = $conn->prepare('SELECT id, email, password_hash, role FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();

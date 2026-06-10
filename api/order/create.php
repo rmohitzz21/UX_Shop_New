@@ -276,6 +276,7 @@ try {
         'shipping_cost'  => $shippingCost,
         'status'         => $orderStatus,
         'payment_status' => $paymentStatus,
+        'redirect'       => 'order-confirmation.php?order_id=' . $orderId,
     ]);
 } catch (InvalidArgumentException $e) {
     $conn->rollback();
