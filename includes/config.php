@@ -5,7 +5,7 @@
 require_once __DIR__ . '/env.php';
 
 // ── 1. Error reporting (never display in production) ─────────────────────────
-$app_debug = (getenv('APP_DEBUG') === 'true');
+$app_debug = (env('APP_DEBUG', 'false') === 'true');
 error_reporting(E_ALL);
 ini_set('display_errors',  $app_debug ? '1' : '0');
 ini_set('display_startup_errors', $app_debug ? '1' : '0');
@@ -33,7 +33,7 @@ if (!headers_sent()) {
     // Permissions policy
     header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
     // Content Security Policy (includes Razorpay for payments)
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://checkout.razorpay.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://lh3.googleusercontent.com; connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self';");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://checkout.razorpay.com https://cdn.razorpay.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://checkout.razorpay.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://lh3.googleusercontent.com https://cdn.razorpay.com https://checkout.razorpay.com; connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://cdn.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self';");
     // HSTS (only meaningful on HTTPS — harmless on HTTP dev)
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
@@ -61,10 +61,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // ── 4. Database connection ────────────────────────────────────────────────────
-$host     = getenv('DB_HOST') ?: 'localhost';
-$username = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASS') ?: '';
-$database = getenv('DB_NAME') ?: 'uxmerchandise';
+$host     = env('DB_HOST', 'localhost');
+$username = env('DB_USER', 'root');
+$password = env('DB_PASS', '');
+$database = env('DB_NAME', 'uxmerchandise');
+
 
 try {
     $conn = new mysqli($host, $username, $password, $database);
@@ -97,9 +98,7 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/marketplace.php';
 require_once __DIR__ . '/ShopSettings.php';
 require_once __DIR__ . '/reviews.php';
-// Runtime DDL only before migration 004 marker; production uses migrations/*.sql.
-$appEnv = getenv('APP_ENV') ?: 'local';
-$migrationMarker = dirname(__DIR__) . '/.migration-complete';
-if ($appEnv === 'local' && !is_file($migrationMarker)) {
+// Run schema ensure once until storage/cache/schema-v12.ok exists (see marketplaceEnsureSchema).
+if (!is_file(marketplaceSchemaMarkerPath())) {
     marketplaceEnsureSchema($conn);
 }

@@ -41,9 +41,11 @@ if ($statsStmt) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
   <title>Account - UX Pacific Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
     .account-shell {
       max-width: 1180px;

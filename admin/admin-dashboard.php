@@ -1073,7 +1073,7 @@ $adminInitial = strtoupper(substr($adminEmail, 0, 1));
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeStatusModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmStatusUpdate()">Update Status</button>
+      <button class="btn btn-primary" id="status-confirm-btn" onclick="confirmStatusUpdate()">Update Status</button>
     </div>
   </div>
 </div>

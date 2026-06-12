@@ -6,6 +6,7 @@ storage/private/
 
 # Logs
 logs/*.log
+*.log
 
 # Editor/OS
 .DS_Store
@@ -18,3 +19,11 @@ vendor/
 
 # Node deps (if added later)
 node_modules/
+
+# Local test / diagnostic scripts (never deploy)
+test-*.php
+check-*.php
+create-test-*.php
+seed-*.php
+hello.md
+image.png

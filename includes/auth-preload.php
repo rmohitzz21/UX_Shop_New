@@ -2,6 +2,11 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+?>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+<?php
 
 $authPreloadSignedIn = !empty($_SESSION['user_id']);
 ?>

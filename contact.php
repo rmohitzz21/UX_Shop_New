@@ -7,10 +7,12 @@
   <meta name="csrf-token" content="<?php echo e($_SESSION['csrf_token'] ?? ''); ?>">
   <title>Contact Us — UX Pacific Shop</title>
   <link rel="icon" type="image/png" href="img/fav.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>">
   <link rel="stylesheet" href="assets/css/contact.css">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="contact-page">
 <div class="page">

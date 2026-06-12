@@ -20,6 +20,12 @@ if (!$order) {
     sendResponse('error', 'Order not found.', null, 404);
 }
 
+$protected = ['paid', 'processing', 'shipped', 'delivered'];
+$status = strtolower(trim((string) ($order['status'] ?? '')));
+if (in_array($status, $protected, true)) {
+    sendResponse('error', 'Paid or fulfilled orders cannot be deleted. Cancel the order instead.', null, 422);
+}
+
 $conn->begin_transaction();
 try {
     $stmt = $conn->prepare('DELETE FROM order_items WHERE order_id = ?');

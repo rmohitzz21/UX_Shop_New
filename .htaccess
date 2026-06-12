@@ -38,7 +38,7 @@ ErrorDocument 500 /Shop/UX_SHOP/UX_Shop_New/500.php
     RewriteRule ^includes(/|$) - [F,L]
 
     # Block access to diagnostic/debug scripts left in root
-    RewriteRule ^(check-users|create-test-user|test-login|test-session|seed-bundles|test_cart_phase2)\.php$ - [F,L]
+    RewriteRule ^(check-users|create-test-user|test-login|test-session|seed-bundles|test_cart_phase2|test-smtp|test-contact-db|diag-razorpay|encrypt-storage|audit-api-smoke)\.php$ - [F,L]
 </IfModule>
 
 # ── PHP settings ──────────────────────────────────────────────────────────────

@@ -22,6 +22,11 @@ if ((int) $row['is_active'] === $active) {
     sendResponse('success', $active ? 'Product is already active.' : 'Product is already archived.');
 }
 $stmt = $conn->prepare('UPDATE products SET is_active = ? WHERE id = ?');
+if (!$stmt) {
+    sendResponse('error', 'Could not update product status.', null, 500);
+}
 $stmt->bind_param('ii', $active, $id);
-$stmt->execute();
+if (!$stmt->execute()) {
+    sendResponse('error', 'Could not update product status.', null, 500);
+}
 sendResponse('success', $active ? 'Product activated.' : 'Product archived.');

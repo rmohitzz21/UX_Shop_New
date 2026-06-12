@@ -14,42 +14,66 @@ $todayStart   = date('Y-m-d 00:00:00');
 $lastMonthEnd = date('Y-m-t 23:59:59', strtotime('last month'));
 $lastMonth    = date('Y-m-01 00:00:00', strtotime('first day of last month'));
 
-$revenueTotal = adminStatsScalar(
+// ── Batched catalog + user counts (1 round trip) ─────────────────────────────
+$catalogCounts = adminStatsRows(
     $conn,
-    "SELECT COALESCE(SUM(total), 0) FROM orders WHERE status IN ({$revIn})",
-    $revTypes,
-    $revenueStatuses,
-    'float'
+    "SELECT
+        (SELECT COUNT(*) FROM users WHERE role = 'customer') AS users_total,
+        (SELECT COUNT(*) FROM users WHERE role = 'customer' AND created_at >= ?) AS users_month,
+        (SELECT COUNT(*) FROM users WHERE role = 'customer' AND created_at BETWEEN ? AND ?) AS users_last,
+        (SELECT COUNT(*) FROM products WHERE is_active = 1) AS products_active,
+        (SELECT COUNT(*) FROM products) AS products_all,
+        (SELECT COUNT(*) FROM products WHERE created_at >= ?) AS products_added_month,
+        (SELECT COUNT(*) FROM bundles) AS bundles_total,
+        (SELECT COUNT(*) FROM bundles WHERE is_active = 1) AS bundles_active,
+        (SELECT COUNT(*) FROM categories) AS categories_total,
+        (SELECT COUNT(*) FROM categories WHERE is_active = 1) AS categories_active",
+    'ssss',
+    [$thisMonth, $lastMonth, $lastMonthEnd, $thisMonth]
 );
+$counts = $catalogCounts[0] ?? [];
 
-$revenueToday = adminStatsScalar(
+$usersMonth  = (float) ($counts['users_month'] ?? 0);
+$usersLast   = (float) ($counts['users_last'] ?? 0);
+$ordersMonth = 0.0;
+$ordersLast  = 0.0;
+$addedThisMonth = (int) ($counts['products_added_month'] ?? 0);
+
+// ── Batched order metrics (1 round trip) ─────────────────────────────────────
+$orderMetrics = adminStatsRows(
     $conn,
-    "SELECT COALESCE(SUM(total), 0) FROM orders WHERE status IN ({$revIn}) AND created_at >= ?",
-    $revTypes . 's',
-    [...$revenueStatuses, $todayStart],
-    'float'
+    "SELECT
+        COALESCE(SUM(CASE WHEN status IN ({$revIn}) THEN total ELSE 0 END), 0) AS revenue_total,
+        COALESCE(SUM(CASE WHEN status IN ({$revIn}) AND created_at >= ? THEN total ELSE 0 END), 0) AS revenue_today,
+        COALESCE(SUM(CASE WHEN status IN ({$revIn}) AND created_at >= ? THEN total ELSE 0 END), 0) AS revenue_month,
+        COALESCE(SUM(CASE WHEN status IN ({$revIn}) AND created_at BETWEEN ? AND ? THEN total ELSE 0 END), 0) AS revenue_last,
+        COUNT(CASE WHEN status IN ({$revIn}) THEN 1 END) AS paid_order_count,
+        COUNT(*) AS orders_total,
+        COUNT(CASE WHEN created_at >= ? THEN 1 END) AS orders_month,
+        COUNT(CASE WHEN created_at BETWEEN ? AND ? THEN 1 END) AS orders_last,
+        COUNT(CASE WHEN status IN ({$pendIn}) THEN 1 END) AS orders_pending",
+    $revTypes . 'sssssss' . $pendTypes,
+    [
+        ...$revenueStatuses,
+        $todayStart,
+        $thisMonth,
+        $lastMonth,
+        $lastMonthEnd,
+        $thisMonth,
+        $lastMonth,
+        $lastMonthEnd,
+        ...$pendingStatuses,
+    ]
 );
+$orders = $orderMetrics[0] ?? [];
 
-$revenueMonth = adminStatsScalar(
-    $conn,
-    "SELECT COALESCE(SUM(total), 0) FROM orders WHERE status IN ({$revIn}) AND created_at >= ?",
-    $revTypes . 's',
-    [...$revenueStatuses, $thisMonth],
-    'float'
-);
-
-$revenueLast = adminStatsScalar(
-    $conn,
-    "SELECT COALESCE(SUM(total), 0) FROM orders WHERE status IN ({$revIn}) AND created_at BETWEEN ? AND ?",
-    $revTypes . 'ss',
-    [...$revenueStatuses, $lastMonth, $lastMonthEnd],
-    'float'
-);
-
-$ordersMonth = adminStatsScalar($conn, 'SELECT COUNT(*) FROM orders WHERE created_at >= ?', 's', [$thisMonth]);
-$ordersLast  = adminStatsScalar($conn, 'SELECT COUNT(*) FROM orders WHERE created_at BETWEEN ? AND ?', 'ss', [$lastMonth, $lastMonthEnd]);
-$usersMonth  = adminStatsScalar($conn, "SELECT COUNT(*) FROM users WHERE role = 'customer' AND created_at >= ?", 's', [$thisMonth]);
-$usersLast   = adminStatsScalar($conn, "SELECT COUNT(*) FROM users WHERE role = 'customer' AND created_at BETWEEN ? AND ?", 'ss', [$lastMonth, $lastMonthEnd]);
+$revenueTotal    = (float) ($orders['revenue_total'] ?? 0);
+$revenueToday    = (float) ($orders['revenue_today'] ?? 0);
+$revenueMonth    = (float) ($orders['revenue_month'] ?? 0);
+$revenueLast     = (float) ($orders['revenue_last'] ?? 0);
+$paidOrderCount  = (int) ($orders['paid_order_count'] ?? 0);
+$ordersMonth     = (float) ($orders['orders_month'] ?? 0);
+$ordersLast      = (float) ($orders['orders_last'] ?? 0);
 
 $topProducts = adminStatsRows(
     $conn,
@@ -100,57 +124,39 @@ $recentActivity = adminStatsRows($conn, "
     ORDER BY created_at DESC, id DESC
     LIMIT 10");
 
-$addedThisMonth = adminStatsScalar($conn, 'SELECT COUNT(*) FROM products WHERE created_at >= ?', 's', [$thisMonth]);
-
-$unreadMessages = 0;
-if (tableExists($conn, 'contact_messages') && columnExists($conn, 'contact_messages', 'is_read')) {
-    $unreadWhere = 'archived = 0 AND is_read = 0';
-    if (!columnExists($conn, 'contact_messages', 'archived')) {
-        $unreadWhere = 'is_read = 0';
-    }
-    $unreadMessages = adminStatsScalar($conn, "SELECT COUNT(*) FROM contact_messages WHERE {$unreadWhere}");
-}
-
-$paidOrderCount = adminStatsScalar(
+$unreadMessages = adminStatsScalar(
     $conn,
-    "SELECT COUNT(*) FROM orders WHERE status IN ({$revIn})",
-    $revTypes,
-    $revenueStatuses
+    'SELECT COUNT(*) FROM contact_messages WHERE COALESCE(archived, 0) = 0 AND COALESCE(is_read, 0) = 0'
 );
 
 sendResponse('success', 'Dashboard stats loaded.', [
     'users' => [
-        'total'  => adminStatsScalar($conn, "SELECT COUNT(*) FROM users WHERE role = 'customer'"),
-        'change' => adminStatsFormatChange((float) $usersMonth, (float) $usersLast),
+        'total'  => (int) ($counts['users_total'] ?? 0),
+        'change' => adminStatsFormatChange($usersMonth, $usersLast),
     ],
     'products' => [
-        'total'  => adminStatsScalar($conn, 'SELECT COUNT(*) FROM products WHERE is_active = 1'),
-        'all'    => adminStatsScalar($conn, 'SELECT COUNT(*) FROM products'),
+        'total'  => (int) ($counts['products_active'] ?? 0),
+        'all'    => (int) ($counts['products_all'] ?? 0),
         'change' => '+' . $addedThisMonth . ' added this month',
     ],
     'bundles' => [
-        'total'  => adminStatsScalar($conn, 'SELECT COUNT(*) FROM bundles'),
-        'active' => adminStatsScalar($conn, 'SELECT COUNT(*) FROM bundles WHERE is_active = 1'),
+        'total'  => (int) ($counts['bundles_total'] ?? 0),
+        'active' => (int) ($counts['bundles_active'] ?? 0),
     ],
     'categories' => [
-        'total'  => adminStatsScalar($conn, 'SELECT COUNT(*) FROM categories'),
-        'active' => adminStatsScalar($conn, 'SELECT COUNT(*) FROM categories WHERE is_active = 1'),
+        'total'  => (int) ($counts['categories_total'] ?? 0),
+        'active' => (int) ($counts['categories_active'] ?? 0),
     ],
     'orders' => [
-        'total'   => adminStatsScalar($conn, 'SELECT COUNT(*) FROM orders'),
-        'pending' => adminStatsScalar(
-            $conn,
-            "SELECT COUNT(*) FROM orders WHERE status IN ({$pendIn})",
-            $pendTypes,
-            $pendingStatuses
-        ),
-        'change'  => adminStatsFormatChange((float) $ordersMonth, (float) $ordersLast),
+        'total'   => (int) ($orders['orders_total'] ?? 0),
+        'pending' => (int) ($orders['orders_pending'] ?? 0),
+        'change'  => adminStatsFormatChange($ordersMonth, $ordersLast),
     ],
     'revenue' => [
-        'total'  => $revenueTotal,
-        'today'  => $revenueToday,
-        'month'  => $revenueMonth,
-        'change' => adminStatsFormatChange($revenueMonth, $revenueLast),
+        'total'     => $revenueTotal,
+        'today'     => $revenueToday,
+        'month'     => $revenueMonth,
+        'change'    => adminStatsFormatChange($revenueMonth, $revenueLast),
         'avg_order' => $paidOrderCount > 0 ? round($revenueTotal / $paidOrderCount, 2) : 0,
     ],
     'messages' => [

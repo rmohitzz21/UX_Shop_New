@@ -106,11 +106,13 @@ function catSlug(string $name): string {
     <title><?= $categoryName ? htmlspecialchars($categoryName) . ' Products – UX Pacific' : 'Shop All Products – UX Pacific' ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <link rel="stylesheet" href="assets/css/shop-all.css" />
     <link rel="icon" type="image/png" href="img/fav.png" />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
 
   <body class="shopAll">
@@ -134,139 +136,78 @@ function catSlug(string $name): string {
               Showing <?= $totalProducts ?> product<?= $totalProducts !== 1 ? 's' : '' ?> in <strong><?= htmlspecialchars($categoryName) ?></strong>
             </p>
           <?php else: ?>
-            <h1 class="shop-all-title">Design <span>Resources &amp;<br class="mobile-title-break"> Products</span></h1>
+            <h1 class="shop-all-title">Design Resources &amp; Products</span></h1>
             <p class="shop-all-subtitle">
               Explore premium UX/UI design resources — Figma kits, templates, mockups, and digital assets ready to download.
             </p>
           <?php endif; ?>
         </section>
 
-        <!-- Category Tabs + Sort -->
+        <!-- Controls: Category tabs + filter pills + sort -->
         <div class="shop-controls">
           <div class="category-tabs">
-            <a class="category-tab <?= $categoryName === '' ? 'active' : '' ?>"
-               href="shopAll.php">All</a>
+            <a class="category-tab <?= $categoryName === '' ? 'active' : '' ?>" href="shopAll.php">All</a>
             <?php foreach ($categories as $cat):
               $slug = catSlug($cat);
               $isActive = $categoryName !== '' && strtolower($cat) === strtolower($categoryName);
             ?>
-              <a class="category-tab <?= $isActive ? 'active' : '' ?>"
-                 href="shopAll.php?category=<?= urlencode($slug) ?>">
+              <a class="category-tab <?= $isActive ? 'active' : '' ?>" href="shopAll.php?category=<?= urlencode($slug) ?>">
                 <?= htmlspecialchars($cat) ?>
               </a>
             <?php endforeach; ?>
+            <span class="cat-tabs-sep" aria-hidden="true"></span>
+            <button type="button" class="category-tab spc-filter-pill" id="filter-featured-btn">⚡ Featured</button>
+            <button type="button" class="category-tab spc-filter-pill" id="filter-free-btn">Free</button>
           </div>
           <div class="sort-control">
-            <label for="sort-select">Sort By:</label>
+            <label for="sort-select">Sort:</label>
             <select id="sort-select">
               <option value="default">Default</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
+              <option value="price-low">Price: Low → High</option>
+              <option value="price-high">Price: High → Low</option>
               <option value="rating">Top Rated</option>
             </select>
           </div>
         </div>
 
-        <!-- Main Layout: Sidebar + Grid -->
-        <section class="shop-layout">
+        <!-- Results meta -->
+        <div class="shop-results-meta" id="shop-results-meta">
+          Showing <strong id="shop-visible-count"><?= (int) $totalProducts ?></strong> digital resources
+        </div>
 
-          <!-- Left Sidebar -->
-          <aside class="shop-sidebar">
-
-            <!-- Quick filters -->
-            <div class="filter-section">
-              <h3 class="filter-title">Quick Filters</h3>
-              <p class="filter-hint">All items are digital downloads — instant access after checkout.</p>
-              <div class="filter-options">
-                <label class="filter-checkbox">
-                  <input type="checkbox" id="filter-free" name="free" value="1" />
-                  <span class="checkmark"></span>
-                  Free resources only
-                </label>
-                <label class="filter-checkbox">
-                  <input type="checkbox" id="filter-featured" name="featured" value="1" />
-                  <span class="checkmark"></span>
-                  Featured only
-                </label>
-              </div>
+        <!-- Product Grid -->
+        <div class="shop-grid" id="product-grid">
+          <?php if ($result && $result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+            <?= uxpShopAllProductCard($row) ?>
+            <?php endwhile; ?>
+          <?php else: ?>
+            <div class="shop-empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <p>No products found<?= $categoryName ? ' in <strong>' . htmlspecialchars($categoryName) . '</strong>' : '' ?>.</p>
+              <?php if ($categoryName): ?><a href="shopAll.php" class="btn btn-primary" style="margin-top:12px;">Browse All Products</a><?php endif; ?>
             </div>
+          <?php endif; ?>
+        </div>
 
-            <!-- Price Range Filter -->
-            <div class="filter-section">
-              <h3 class="filter-title">Price Range</h3>
-              <div class="price-range-wrapper">
-                <div class="price-inputs">
-                  <span class="price-label">₹<span id="price-min-val"><?= $minPrice ?></span></span>
-                  <span class="price-separator">–</span>
-                  <span class="price-label">₹<span id="price-max-val"><?= $maxPrice ?></span>+</span>
-                </div>
-                <div class="range-slider">
-                  <input type="range" id="price-range" min="<?= $minPrice ?>" max="<?= $maxPrice ?>" value="<?= $maxPrice ?>" />
-                </div>
-              </div>
-            </div>
-
-          </aside>
-
-          <!-- Product Grid -->
-          <div class="shop-products">
-            <div class="shop-results-meta" id="shop-results-meta">
-              <span>Showing <strong id="shop-visible-count"><?= (int) $totalProducts ?></strong> digital resources</span>
-            </div>
-            <div class="product-grid shop-grid" id="product-grid">
-              <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                <?= uxpShopAllProductCard($row) ?>
-                <?php endwhile; ?>
-              <?php else: ?>
-                <div class="shop-empty-state">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                  <p>No products found<?= $categoryName ? ' in <strong>' . htmlspecialchars($categoryName) . '</strong>' : '' ?>.</p>
-                  <?php if ($categoryName): ?>
-                    <a href="shopAll.php" class="btn btn-primary" style="margin-top:12px;">Browse All Products</a>
-                  <?php endif; ?>
-                </div>
-              <?php endif; ?>
-            </div>
-
-            <!-- Pagination -->
-            <?php if ($totalPages > 1): ?>
-            <nav class="pagination">
-              <a href="<?= $pageBase ?><?= max(1, $page - 1) ?>"
-                 class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>" aria-label="Previous page">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M15 18l-6-6 6-6"/>
-                </svg>
-              </a>
-              <?php
-              $startPage = max(1, $page - 2);
-              $endPage   = min($totalPages, $page + 2);
-              if ($startPage > 1) {
-                  echo '<a href="' . $pageBase . '1" class="page-num">1</a>';
-                  if ($startPage > 2) echo '<span class="page-ellipsis">…</span>';
-              }
-              for ($i = $startPage; $i <= $endPage; $i++) {
-                  $cls = $i === $page ? 'active' : '';
-                  echo "<a href='{$pageBase}{$i}' class='page-num {$cls}'>{$i}</a>";
-              }
-              if ($endPage < $totalPages) {
-                  if ($endPage < $totalPages - 1) echo '<span class="page-ellipsis">…</span>';
-                  echo "<a href='{$pageBase}{$totalPages}' class='page-num'>{$totalPages}</a>";
-              }
-              ?>
-              <a href="<?= $pageBase ?><?= min($totalPages, $page + 1) ?>"
-                 class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>" aria-label="Next page">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 18l6-6-6-6"/>
-                </svg>
-              </a>
-            </nav>
-            <?php endif; ?>
-
-          </div>
-        </section>
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <nav class="pagination">
+          <a href="<?= $pageBase ?><?= max(1, $page - 1) ?>" class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>" aria-label="Previous page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </a>
+          <?php
+          $startPage = max(1, $page - 2);
+          $endPage   = min($totalPages, $page + 2);
+          if ($startPage > 1) { echo '<a href="'.$pageBase.'1" class="page-num">1</a>'; if ($startPage > 2) echo '<span class="page-ellipsis">…</span>'; }
+          for ($i = $startPage; $i <= $endPage; $i++) { $cls = $i === $page ? 'active' : ''; echo "<a href='{$pageBase}{$i}' class='page-num {$cls}'>{$i}</a>"; }
+          if ($endPage < $totalPages) { if ($endPage < $totalPages - 1) echo '<span class="page-ellipsis">…</span>'; echo "<a href='{$pageBase}{$totalPages}' class='page-num'>{$totalPages}</a>"; }
+          ?>
+          <a href="<?= $pageBase ?><?= min($totalPages, $page + 1) ?>" class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>" aria-label="Next page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </nav>
+        <?php endif; ?>
       </main>
 
       <!-- FOOTER -->
@@ -276,29 +217,31 @@ function catSlug(string $name): string {
     <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const productCards   = document.querySelectorAll('.shop-product-card');
-      const filterFree     = document.getElementById('filter-free');
-      const filterFeatured = document.getElementById('filter-featured');
-      const priceRangeEl   = document.getElementById('price-range');
-      const sortSelect     = document.getElementById('sort-select');
-      const priceMaxVal    = document.getElementById('price-max-val');
-      const visibleCountEl = document.getElementById('shop-visible-count');
+      const productCards      = document.querySelectorAll('.shop-product-card');
+      const filterFreeBtn     = document.getElementById('filter-free-btn');
+      const filterFeaturedBtn = document.getElementById('filter-featured-btn');
+      const sortSelect        = document.getElementById('sort-select');
+      const visibleCountEl    = document.getElementById('shop-visible-count');
 
-      // ── Client-side filter (free / featured / price) ──────────────────────
+      // ── Toggle pill buttons ────────────────────────────────────────────────
+      [filterFreeBtn, filterFeaturedBtn].forEach(btn => {
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+          this.classList.toggle('is-active');
+          filterProducts();
+        });
+      });
+
+      // ── Client-side filter (free / featured) ──────────────────────────────
       function filterProducts() {
-        const freeOnly = filterFree?.checked === true;
-        const featuredOnly = filterFeatured?.checked === true;
-        const maxPrice = parseFloat(priceRangeEl?.value || 999999);
+        const freeOnly     = filterFreeBtn?.classList.contains('is-active') === true;
+        const featuredOnly = filterFeaturedBtn?.classList.contains('is-active') === true;
         let visible = 0;
 
         productCards.forEach(card => {
-          const cardPrice = parseFloat(card.dataset.price || 0);
-          const isFree = card.dataset.isFree === '1';
-          const isFeatured = card.dataset.featured === '1';
-          const freeMatch = !freeOnly || isFree;
-          const featuredMatch = !featuredOnly || isFeatured;
-          const priceMatch = cardPrice <= maxPrice;
-          const show = freeMatch && featuredMatch && priceMatch;
+          const isFree     = card.dataset.isFree    === '1';
+          const isFeatured = card.dataset.featured  === '1';
+          const show = (!freeOnly || isFree) && (!featuredOnly || isFeatured);
           card.style.display = show ? '' : 'none';
           if (show) visible++;
         });
@@ -325,22 +268,8 @@ function catSlug(string $name): string {
         cards.forEach(card => grid.appendChild(card));
       }
 
-      // ── Event listeners ───────────────────────────────────────────────────
-      filterFree?.addEventListener('change', filterProducts);
-      filterFeatured?.addEventListener('change', filterProducts);
+      if (sortSelect) sortSelect.addEventListener('change', sortProducts);
 
-      if (priceRangeEl) {
-        priceRangeEl.addEventListener('input', function () {
-          if (priceMaxVal) priceMaxVal.textContent = this.value;
-          filterProducts();
-        });
-      }
-
-      if (sortSelect) {
-        sortSelect.addEventListener('change', sortProducts);
-      }
-
-      // Initial run (applies type filter defaults)
       filterProducts();
     });
     </script>

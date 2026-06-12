@@ -602,10 +602,5 @@ class EmailService
         } catch (Throwable $e) {
             error_log('EmailService::sendInvoice: ' . $e->getMessage());
         }
-        try {
-            self::notifyAdminNewOrder($orderId, $conn);
-        } catch (Throwable $e) {
-            error_log('EmailService::notifyAdminNewOrder: ' . $e->getMessage());
-        }
     }
 }

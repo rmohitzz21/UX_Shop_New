@@ -5,6 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse('error', 'Method not allowed.', null, 405);
 }
 validateCsrf();
+
 $input = adminInput();
 $id = (int) ($input['id'] ?? 0);
 $name = trim((string) ($input['name'] ?? ''));
@@ -41,9 +42,6 @@ if ($image === '') $image = 'img/poster.webp';
 // Prefer whats_included textarea (one item per line) as the source of truth.
 // Falls back to included_items JSON for legacy toggle calls.
 $whatsIncluded = trim((string) ($input['whats_included'] ?? ''));
-if ($whatsIncluded === '') {
-    sendResponse('error', "What's Included is required for bundles.", null, 422);
-}
 $fileSpec = trim((string) ($input['file_specification'] ?? ''));
 
 // Additional images: JSON array (form) or newline-separated (legacy) + file uploads (media[])
@@ -94,6 +92,26 @@ if ($whatsIncluded !== '') {
         }
     }
 }
+if ($whatsIncluded === '' && !empty($includedItems)) {
+    $whatsIncluded = implode("\n", array_map(static function (array $item): string {
+        return trim((string) ($item['label'] ?? ''));
+    }, $includedItems));
+}
+
+if ($whatsIncluded === '' && $id > 0) {
+    $existingStmt = $conn->prepare('SELECT whats_included FROM bundles WHERE id = ? LIMIT 1');
+    if ($existingStmt) {
+        $existingStmt->bind_param('i', $id);
+        $existingStmt->execute();
+        $existingRow = $existingStmt->get_result()->fetch_assoc();
+        $whatsIncluded = trim((string) ($existingRow['whats_included'] ?? ''));
+    }
+}
+
+if ($whatsIncluded === '') {
+    sendResponse('error', "What's Included is required for bundles.", null, 422);
+}
+
 $includedJson = json_encode($includedItems, JSON_UNESCAPED_SLASHES);
 
 $productItems = [];
@@ -131,11 +149,13 @@ if ($id > 0) {
     }
 
     $stmt = $conn->prepare('UPDATE bundles SET name=?, slug=?, description=?, category=?, tags=?, included_items=?, whats_included=?, file_specification=?, additional_images=?, price=?, old_price=?, image=?, badge_text=?, rating=?, stock=?, is_featured=?, is_active=? WHERE id=?');
+    if (!$stmt) sendResponse('error', 'Could not update bundle: ' . $conn->error, null, 500);
     $stmt->bind_param('sssssssssddssdiiii', $name, $slug, $description, $category, $tags, $includedJson, $whatsIncluded, $fileSpec, $additionalImagesJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active, $id);
     if (!$stmt->execute()) sendResponse('error', 'Could not update bundle: ' . $stmt->error, null, 500);
     adminRecordInventory($conn, 'bundle', $id, (int) $before['stock'], $stock, 'Admin bundle update');
 } else {
     $stmt = $conn->prepare('INSERT INTO bundles (name, slug, description, category, tags, included_items, whats_included, file_specification, additional_images, price, old_price, image, badge_text, rating, stock, is_featured, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    if (!$stmt) sendResponse('error', 'Could not create bundle: ' . $conn->error, null, 500);
     $stmt->bind_param('sssssssssddssdiii', $name, $slug, $description, $category, $tags, $includedJson, $whatsIncluded, $fileSpec, $additionalImagesJson, $price, $old, $image, $badgeText, $rating, $stock, $featured, $active);
     if (!$stmt->execute()) sendResponse('error', 'Could not create bundle: ' . $stmt->error, null, 500);
     $id = (int) $conn->insert_id;

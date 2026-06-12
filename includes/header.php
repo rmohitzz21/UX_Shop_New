@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__ . '/nav-icons.php';
     $headerUserId = $_SESSION['user_id'] ?? null;
     $headerFirstName = trim((string) ($_SESSION['first_name'] ?? ''));
     $headerLastName = trim((string) ($_SESSION['last_name'] ?? ''));
@@ -46,9 +47,7 @@
                         <i class="ph ph-caret-down"></i>
                     </button>
                     <div class="profile-dropdown" role="menu">
-                        <a href="account.php" role="menuitem">Edit Profile</a>
-                        <a href="orders.php" role="menuitem">My Orders</a>
-                        <button type="button" role="menuitem" onclick="handleSignOut()">Logout</button>
+                        <?php echo nav_profile_dropdown_html(); ?>
                     </div>
                 </div>
                 <button type="button" class="icon-btn mobile-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-panel">

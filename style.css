@@ -10751,6 +10751,14 @@ html.auth-preloaded .user-menu.profile-menu {
 }
 .profile-dropdown a:hover,
 .profile-dropdown button:hover { background: rgba(97, 71, 189, 0.22); color: #fff; }
+.profile-dropdown .nav-menu-icon,
+.profile-dropdown a i,
+.profile-dropdown button i {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+}
 .nav-search { position: relative; }
 .nav-search-suggestions {
     position: absolute;
@@ -13447,6 +13455,7 @@ body.modal-open { overflow: hidden; }
   aspect-ratio: 4 / 4.2;
   object-fit: contain;
   background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 60%);
+  transition: opacity 0.28s ease;
 }
 
 .product-gallery .main-image img.fit-cover {

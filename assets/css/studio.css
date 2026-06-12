@@ -57,33 +57,18 @@
   background: #6147bd;
 }
 
-/* ── Headings ── */
-.studio-heading {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(28px, 6vw, 42px);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: #ffffff;
-  margin: 0 0 20px;
+/* Section titles reuse index `.uxp-top-products-heading` + `.highlight-italic` from style.css */
+
+.studio-page .uxp-top-products-heading {
+  margin-bottom: 40px;
 }
 
-.studio-heading em {
-  font-style: italic;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.7);
+.studio-page .uxp-top-products-heading h2 {
+  font-family: Inter, system-ui, sans-serif;
 }
 
-.studio-sub {
-  font-size: 17px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.55);
-  max-width: 640px;
-  margin: 0 auto 40px;
-}
-
-.studio-sub-wide {
-  max-width: 720px;
+.studio-page .uxp-top-products-heading p {
+  font-family: Inter, system-ui, sans-serif;
 }
 
 /* ════════════════════════════════════════════
@@ -357,11 +342,6 @@
 /* ════════════════════════════════════════════
    FEATURED WORK — Bento Grid
    ════════════════════════════════════════════ */
-.studio-portfolio-header {
-  text-align: center;
-  margin-bottom: 8px;
-}
-
 .studio-bento {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -375,6 +355,13 @@
   background: #0a0a1a;
   border: 1px solid rgba(255, 255, 255, 0.08);
   min-height: 240px;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.studio-bento-item:hover {
+  border-color: rgba(177, 152, 255, 0.22);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
 }
 
 .studio-bento-item:nth-child(1) {
@@ -392,14 +379,26 @@
   grid-column: span 1;
 }
 
-.studio-bento-bg {
+.studio-bento-media {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.38;
-  pointer-events: none;
   z-index: 0;
+  overflow: hidden;
+  background: #12121f;
+}
+
+.studio-bento-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.studio-bento-item:hover .studio-bento-media img {
+  transform: scale(1.05);
 }
 
 .studio-bento-content {
@@ -411,6 +410,11 @@
   flex-direction: column;
   justify-content: flex-end;
   z-index: 2;
+  transition: transform 0.4s ease;
+}
+
+.studio-bento-item:hover .studio-bento-content {
+  transform: translateY(-2px);
 }
 
 .studio-bento-content h3 {
@@ -423,9 +427,14 @@
 .studio-bento-content p {
   font-size: 14px;
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.52);
+  color: rgba(255, 255, 255, 0.58);
   margin: 0;
   max-width: 360px;
+  transition: color 0.35s ease;
+}
+
+.studio-bento-item:hover .studio-bento-content p {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .studio-bento-tag {
@@ -441,6 +450,12 @@
   text-transform: uppercase;
   color: #b198ff;
   margin-bottom: 14px;
+  transition: background 0.35s ease, border-color 0.35s ease;
+}
+
+.studio-bento-item:hover .studio-bento-tag {
+  background: rgba(97, 71, 189, 0.24);
+  border-color: rgba(177, 152, 255, 0.3);
 }
 
 .studio-bento-overlay {
@@ -448,16 +463,42 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(5, 5, 11, 0.1) 0%,
-    rgba(5, 5, 11, 0.7) 55%,
-    rgba(5, 5, 11, 0.95) 100%
+    rgba(5, 5, 11, 0.05) 0%,
+    rgba(5, 5, 11, 0.45) 40%,
+    rgba(5, 5, 11, 0.88) 72%,
+    rgba(5, 5, 11, 0.97) 100%
   );
   pointer-events: none;
   z-index: 1;
+  transition: opacity 0.45s ease;
+}
+
+.studio-bento-item:hover .studio-bento-overlay {
+  opacity: 0.88;
 }
 
 .studio-bento-item--featured .studio-bento-content h3 {
   font-size: clamp(22px, 2.2vw, 26px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-bento-item,
+  .studio-bento-media img,
+  .studio-bento-content,
+  .studio-bento-overlay,
+  .studio-bento-tag,
+  .studio-bento-content p {
+    transition: none;
+  }
+
+  .studio-bento-item:hover {
+    transform: none;
+  }
+
+  .studio-bento-item:hover .studio-bento-media img,
+  .studio-bento-item:hover .studio-bento-content {
+    transform: none;
+  }
 }
 
 /* ════════════════════════════════════════════
@@ -778,7 +819,10 @@
 
 @media (max-width: 767px) {
   .studio-section { padding: 64px 0; }
-  .studio-heading { font-size: clamp(24px, 7vw, 36px); letter-spacing: -0.01em; }
+  .studio-page .uxp-top-products-heading h2 {
+    font-size: clamp(28px, 7vw, 42px);
+    line-height: 1.05;
+  }
   .studio-hero { padding: 32px 16px; }
   .studio-hero-inner { padding: 60px 24px; border-radius: 24px; }
   .studio-hero-text { font-size: 16px; }

@@ -15,7 +15,40 @@ if (!$row) sendResponse('error', 'Product not found.', null, 404);
 $name = $row['name'] . ' Copy';
 $slug = slugify($name . '-' . bin2hex(random_bytes(2)));
 $sku = !empty($row['sku']) ? $row['sku'] . '-COPY' : null;
-$copy = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, related_products, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)');
-$copy->bind_param('sssssssssdddssids', $name, $slug, $sku, $row['description'], $row['whats_included'], $row['file_specification'], $row['category'], $row['tags'], $row['related_products'], $row['price'], $row['old_price'], $row['commercial_price'], $row['image'], $row['additional_images'], $row['stock'], $row['rating'], $row['available_type']);
-$copy->execute();
+$copy = $conn->prepare('INSERT INTO products (name, slug, sku, description, whats_included, file_specification, category, tags, price, old_price, commercial_price, image, additional_images, stock, rating, available_type, is_active, is_featured, is_free, high_resolution, compatible_software, software_version, files_included, grid_columns, layout_type, license_type, custom_fields) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+if (!$copy) {
+    sendResponse('error', 'Could not duplicate product.', null, 500);
+}
+$isFree = (int) ($row['is_free'] ?? 0);
+$copy->bind_param(
+    'sssssssssdddssidsissssssss',
+    $name,
+    $slug,
+    $sku,
+    $row['description'],
+    $row['whats_included'],
+    $row['file_specification'],
+    $row['category'],
+    $row['tags'],
+    $row['price'],
+    $row['old_price'],
+    $row['commercial_price'],
+    $row['image'],
+    $row['additional_images'],
+    $row['stock'],
+    $row['rating'],
+    $row['available_type'],
+    $isFree,
+    $row['high_resolution'] ?? null,
+    $row['compatible_software'] ?? null,
+    $row['software_version'] ?? null,
+    $row['files_included'] ?? null,
+    $row['grid_columns'] ?? null,
+    $row['layout_type'] ?? null,
+    $row['license_type'] ?? null,
+    $row['custom_fields'] ?? null
+);
+if (!$copy->execute()) {
+    sendResponse('error', 'Could not duplicate product.', null, 500);
+}
 sendResponse('success', 'Product duplicated.', ['id' => (int) $conn->insert_id]);

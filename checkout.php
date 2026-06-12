@@ -19,7 +19,8 @@ if (empty($_SESSION['user_id'])) {
     />
       <link rel="icon" type="image/png" href="img/fav.png" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
       /* Frontend-only: COD disabled message styling */
       .cod-disabled-message {
@@ -216,8 +217,18 @@ if (empty($_SESSION['user_id'])) {
                     Your digital products will be available for download immediately after payment in <strong>My Orders</strong>.
                   </div>
 
+                  <!-- Free checkout (no payment) -->
+                  <div id="free-checkout-notice" class="checkout-block" style="display:none;">
+                    <h2 class="block-title">Free Download</h2>
+                    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:16px;">
+                      <p style="margin:0;color:#86efac;font-size:0.95rem;">
+                        No payment required. Enter your email above and click <strong>Get Free Download</strong> — your files will be available in <strong>My Orders</strong> right away.
+                      </p>
+                    </div>
+                  </div>
+
                   <!-- Payment Method -->
-                  <div class="checkout-block">
+                  <div class="checkout-block" id="checkout-payment-block">
                     <h2 class="block-title">Payment Method</h2>
                     
                     <div class="payment-methods" id="checkout-payment-section">
@@ -329,7 +340,6 @@ if (empty($_SESSION['user_id'])) {
       <?php include 'includes/footer.php'; ?>
     </div>
 
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="<?php echo htmlspecialchars(asset_url('script.js')); ?>"></script>
 
   </body>

@@ -1,17 +1,40 @@
 <?php
 
+function marketplaceSchemaMarkerPath(): string {
+    return dirname(__DIR__) . '/storage/cache/schema-v12.ok';
+}
+
 function tableExists(mysqli $conn, string $table): bool {
+    static $cache = [];
+    if (array_key_exists($table, $cache)) {
+        return $cache[$table];
+    }
     $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');
+    if (!$stmt) {
+        return $cache[$table] = false;
+    }
     $stmt->bind_param('s', $table);
     $stmt->execute();
-    return ((int) ($stmt->get_result()->fetch_assoc()['c'] ?? 0)) > 0;
+    return $cache[$table] = ((int) ($stmt->get_result()->fetch_assoc()['c'] ?? 0)) > 0;
 }
 
 function columnExists(mysqli $conn, string $table, string $column): bool {
+    static $cache = [];
+    $key = $table . '.' . $column;
+    if (!empty($cache[$key])) {
+        return true;
+    }
     $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+    if (!$stmt) {
+        return false;
+    }
     $stmt->bind_param('ss', $table, $column);
     $stmt->execute();
-    return ((int) ($stmt->get_result()->fetch_assoc()['c'] ?? 0)) > 0;
+    $exists = ((int) ($stmt->get_result()->fetch_assoc()['c'] ?? 0)) > 0;
+    if ($exists) {
+        $cache[$key] = true;
+    }
+    return $exists;
 }
 
 function addColumnIfMissing(mysqli $conn, string $table, string $column, string $definition): void {
@@ -40,8 +63,15 @@ function ensureAutoIncrementPrimaryKey(mysqli $conn, string $table): void {
 
 function marketplaceEnsureSchema(mysqli $conn): void {
     static $done = false;
-    if ($done) return;
+    if ($done) {
+        return;
+    }
     $done = true;
+
+    $marker = marketplaceSchemaMarkerPath();
+    if (is_file($marker)) {
+        return;
+    }
 
     $conn->query("CREATE TABLE IF NOT EXISTS categories (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -285,6 +315,12 @@ function marketplaceEnsureSchema(mysqli $conn): void {
     } else {
         marketplaceUpdateBundlesWhatsIncluded($conn);
     }
+
+    $markerDir = dirname($marker);
+    if (!is_dir($markerDir)) {
+        @mkdir($markerDir, 0755, true);
+    }
+    @file_put_contents($marker, date('c'));
 }
 
 function marketplaceUpdateBundlesWhatsIncluded(mysqli $conn): void {
@@ -733,22 +769,20 @@ function uxpShopAllProductCard(array $row): string
     $jsDesc = htmlspecialchars(json_encode($row['description'] ?? ''), ENT_QUOTES, 'UTF-8');
 
     $oldHtml = $oldPriceFmt !== ''
-        ? "<span class='uxp-old-price'>₹{$oldPriceFmt}</span>"
+        ? "<span class='spc-price-old'>₹{$oldPriceFmt}</span>"
         : '';
 
     $featuredBadge = $isFeatured
-        ? '<span cl/ass="shop-card-badge shop-card-badge--featured">Featured</span>'
+        ? '<span class="spc-badge spc-badge--featured">Featured</span>'
         : '';
     $freeBadge = $isFreeProduct
-        ? '<span class="shop-card-badge shop-card-badge--free">Free</span>'
+        ? '<span class="spc-badge spc-badge--free">Free</span>'
         : '';
-    $formatBadge = '<span class="shop-card-badge shop-card-badge--format">' . $formatLabel . '</span>';
-    $buyLabel = $isFreeProduct ? 'Get Free' : 'Buy Now';
     $isFreeAttr = $isFreeProduct ? '1' : '0';
     $isFeaturedAttr = $isFeatured ? '1' : '0';
 
     return <<<HTML
-<article class="uxp-product-card shop-product-card digital-product-card"
+<article class="spc shop-product-card"
   data-product-id="{$id}"
   data-name="{$name}"
   data-image="{$image}"
@@ -759,31 +793,21 @@ function uxpShopAllProductCard(array $row): string
   data-price="{$displayPrice}"
   data-old-price="{$row['old_price']}"
   data-rating="{$rating}">
-  <a href="#" class="uxp-product-media js-product-popup" data-product-id="{$id}" data-item-type="product" aria-label="Quick view {$name}">
-    <img src="{$image}" alt="{$name}" loading="lazy" width="480" height="360" onerror="this.src='img/sticker.webp'">
+  <a href="#" class="spc-media js-product-popup" data-product-id="{$id}" data-item-type="product" aria-label="Quick view {$name}">
+    <img src="{$image}" alt="{$name}" loading="lazy" onerror="this.src='img/sticker.webp'">
     {$featuredBadge}
     {$freeBadge}
-    {$formatBadge}
-    <span class="uxp-qv-overlay" aria-hidden="true">
-      <span class="uxp-qv-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        Quick View
-      </span>
-    </span>
+    <span class="spc-fmt">{$formatLabel}</span>
+    <div class="spc-hover">
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Quick View</span>
+    </div>
   </a>
-  <div class="uxp-product-body">
-    <div class="uxp-product-title-row">
-      <h3 title="{$name}">{$name}</h3>
-      <div class="uxp-rating" aria-label="Rating {$rating} out of 5"><span aria-hidden="true">&#9733;</span><b>{$rating}</b></div>
-    </div>
-    <p>{$desc}</p>
-    <p class="uxp-product-spec">{$specs}</p>
-    <div class="uxp-product-meta">
-      <div class="uxp-product-price">₹{$price}{$oldHtml}</div>
-    </div>
-    <div class="uxp-product-actions">
-      <button type="button" class="uxp-card-btn uxp-card-btn-primary js-buy-now" data-product-id="{$id}" data-item-type="product" data-available-type="digital">{$buyLabel}</button>
-      <button class="uxp-card-btn uxp-card-btn-secondary" type="button" onclick="addToCart('{$id}', null, 1, {name: {$jsName}, price: {$displayPrice}, image: {$jsImage}, category: {$jsCategory}, description: {$jsDesc}, item_type: 'product'}, 'digital')">Add to Cart</button>
+  <div class="spc-info">
+    <p class="spc-cat">{$category}</p>
+    <h3 class="spc-name" title="{$name}">{$name}</h3>
+    <div class="spc-price-row">
+      <b class="spc-price">₹{$price}</b>
+      {$oldHtml}
     </div>
   </div>
 </article>

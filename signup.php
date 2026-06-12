@@ -8,7 +8,7 @@ if (empty($_SESSION['csrf_token'])) {
 <html lang="en" class="auth-premium-root">
 <head>
   <meta charset="UTF-8" />
-  <title>Create Account – UX Pacific Shop</title>
+  <title>Create Account | UX Pacific Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -24,7 +24,7 @@ if (empty($_SESSION['csrf_token'])) {
         <?php include 'includes/auth-premium-logo.php'; ?>
       </div>
 
-      <h1 class="auth-premium-title">Create new account</h1>
+      <h1 class="auth-premium-title">Create New Account</h1>
 
       <form class="auth-premium-form" id="signup-form" onsubmit="handleSignUp(event)" novalidate>
         <div id="auth-error" class="auth-premium-alert auth-premium-alert--error" style="display:none;"></div>

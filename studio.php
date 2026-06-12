@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="UX Pacific Studio — Premium design resources, UI kits, and digital products crafted for real-world product design." />
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
-  <title>Studio — UX Pacific Shop</title>
+  <title>Studio | UX Pacific Shop</title>
   <link rel="icon" type="image/png" href="img/fav.png" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,600;1,9..40,200&family=Gabarito:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
@@ -21,9 +21,9 @@
     <!-- Studio Showcase -->
     <section class="studio-section studio-section-dark">
       <div class="studio-container">
-        <div class="studio-reveal" style="text-align:center;">
-          <h2 class="studio-heading">Studio <em>Showcase</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">Studio Showcase</h2>
+          <p>
             Every resource is crafted with the same care we bring to client work.
             Here&rsquo;s what we create.
           </p>
@@ -103,9 +103,9 @@
     <!-- How We Build -->
     <section class="studio-section studio-section-darker">
       <div class="studio-container">
-        <div class="studio-reveal" style="text-align:center;">
-          <h2 class="studio-heading">How We <em>Build</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">How We Build</h2>
+          <p>
             Every resource follows a rigorous four-stage process to ensure
             quality, consistency, and real-world usability.
           </p>
@@ -142,9 +142,9 @@
     <!-- Featured Studio Work -->
     <section class="studio-section studio-section-dark studio-portfolio-section">
       <div class="studio-container">
-        <div class="studio-portfolio-header">
-          <h2 class="studio-heading">Studio <em>Portfolio</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">Studio Portfolio</h2>
+          <p>
             A selection of our finest work&mdash;design systems, component libraries,
             and tools built for real-world impact.
           </p>
@@ -152,7 +152,9 @@
 
         <div class="studio-bento">
           <article class="studio-bento-item studio-bento-item--featured">
-            <div class="studio-bento-bg" style="background-image:url('img/poster3.webp')"></div>
+            <div class="studio-bento-media">
+              <img src="img/poster3.webp" alt="Pacific Design System preview" loading="lazy" width="800" height="600" onerror="this.src='img/poster.webp'" />
+            </div>
             <div class="studio-bento-overlay"></div>
             <div class="studio-bento-content">
               <span class="studio-bento-tag">Design System</span>
@@ -162,7 +164,9 @@
           </article>
 
           <article class="studio-bento-item">
-            <div class="studio-bento-bg" style="background-image:url('img/poster1.webp')"></div>
+            <div class="studio-bento-media">
+              <img src="img/poster1.webp" alt="Figma Component Collection preview" loading="lazy" width="800" height="600" onerror="this.src='img/poster.webp'" />
+            </div>
             <div class="studio-bento-overlay"></div>
             <div class="studio-bento-content">
               <span class="studio-bento-tag">UI Library</span>
@@ -172,7 +176,9 @@
           </article>
 
           <article class="studio-bento-item">
-            <div class="studio-bento-bg" style="background-image:url('img/poster2.webp')"></div>
+            <div class="studio-bento-media">
+              <img src="img/poster2.webp" alt="Component Docs preview" loading="lazy" width="800" height="600" onerror="this.src='img/poster.webp'" />
+            </div>
             <div class="studio-bento-overlay"></div>
             <div class="studio-bento-content">
               <span class="studio-bento-tag">Documentation</span>
@@ -182,7 +188,9 @@
           </article>
 
           <article class="studio-bento-item">
-            <div class="studio-bento-bg" style="background-image:url('img/poster.webp')"></div>
+            <div class="studio-bento-media">
+              <img src="img/poster4.webp" alt="UX Wireframe Kit preview" loading="lazy" width="800" height="600" onerror="this.src='img/poster.webp'" />
+            </div>
             <div class="studio-bento-overlay"></div>
             <div class="studio-bento-content">
               <span class="studio-bento-tag">Wireframes</span>
@@ -197,9 +205,9 @@
     <!-- Design Principles -->
     <section class="studio-section studio-section-darker">
       <div class="studio-container">
-        <div class="studio-reveal" style="text-align:center;">
-          <h2 class="studio-heading">Design <em>Principles</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">Design Principles</h2>
+          <p>
             Four core principles guide every resource we create, from concept to final polish.
           </p>
         </div>
@@ -243,9 +251,9 @@
     <!-- Behind The Process -->
     <section class="studio-section studio-section-dark">
       <div class="studio-container">
-        <div class="studio-reveal" style="text-align:center;">
-          <h2 class="studio-heading">Behind The <em>Process</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">Behind The Process</h2>
+          <p>
             Step inside our studio workflow. Every resource passes through
             rigorous stages before reaching your hands.
           </p>
@@ -282,9 +290,9 @@
     <!-- FAQ -->
     <section class="studio-section studio-section-darker">
       <div class="studio-container">
-        <div class="studio-reveal" style="text-align:center;">
-          <h2 class="studio-heading">Frequently Asked <em>Questions</em></h2>
-          <p class="studio-sub">
+        <div class="uxp-top-products-heading studio-reveal">
+          <h2 id="top-products-title">Frequently Asked Questions</h2>
+          <p>
             Everything you need to know about our design resources, workflow, and how we can help.
           </p>
         </div>

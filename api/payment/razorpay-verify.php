@@ -63,14 +63,21 @@ if (!$result['ok']) {
     sendResponse('error', $result['message'] ?? 'Payment capture failed.', null, $code);
 }
 
-// Fulfill: generate downloads + send confirmation email (idempotent, non-fatal)
+// Fulfill downloads/inventory first (fast); emails run after response is flushed.
 try {
-    OrderFulfillmentService::fulfillPaidOrder($internalOrderId, $conn);
+    OrderFulfillmentService::fulfillPaidOrder($internalOrderId, $conn, true);
 } catch (Throwable $e) {
     error_log('razorpay-verify.php: fulfillment failed for order ' . $internalOrderId . ': ' . $e->getMessage());
 }
 
-sendResponse('success', 'Payment verified successfully.', [
+flushJsonResponse('success', 'Payment verified successfully.', [
     'order_id'   => $internalOrderId,
     'duplicate'  => (bool) ($result['duplicate'] ?? false),
 ]);
+
+try {
+    OrderFulfillmentService::sendFulfillmentEmails($internalOrderId, $conn);
+} catch (Throwable $e) {
+    error_log('razorpay-verify.php: post-response emails failed for order ' . $internalOrderId . ': ' . $e->getMessage());
+}
+exit;

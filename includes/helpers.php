@@ -30,6 +30,40 @@ function sendResponse($status, $message, $data = null, $code = 200) {
     exit;
 }
 
+/**
+ * Send a JSON response and release the HTTP client before continuing PHP work
+ * (e.g. slow SMTP). Keeps checkout feeling instant after payment.
+ */
+function flushJsonResponse($status, $message, $data = null, $code = 200): void
+{
+    http_response_code($code);
+    header('Content-Type: application/json');
+
+    $response = [
+        'status'  => $status,
+        'message' => $message,
+    ];
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+
+    $json = json_encode($response);
+    header('Content-Length: ' . strlen((string) $json));
+    header('Connection: close');
+    echo $json;
+
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+        flush();
+    }
+
+    ignore_user_abort(true);
+}
+
 function requireUserAuth() {
     if (empty($_SESSION['user_id'])) {
         sendResponse("error", "Unauthorized: Login required", null, 401);
@@ -46,19 +80,34 @@ function requireAuth() {
     requireUserAuth();
 }
 
+/**
+ * Read JSON request body once (php://input is not rewindable).
+ */
+function apiReadJsonBody(): array {
+    static $body = null;
+    if ($body !== null) {
+        return $body;
+    }
+    $raw = file_get_contents('php://input');
+    $decoded = json_decode($raw ?: '[]', true);
+    $body = is_array($decoded) ? $decoded : [];
+    return $body;
+}
+
 function validateCsrf() {
     if (empty($_SESSION['csrf_token'])) {
         sendResponse("error", "Session expired", null, 403);
     }
 
-    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-
-    if (empty($token)) {
-        $body = json_decode(file_get_contents('php://input'), true);
-        $token = $body['csrf_token'] ?? '';
+    $token = trim((string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
+    if ($token === '' && !empty($_POST['csrf_token'])) {
+        $token = trim((string) $_POST['csrf_token']);
+    }
+    if ($token === '') {
+        $token = trim((string) (apiReadJsonBody()['csrf_token'] ?? ''));
     }
 
-    if (!$token || !hash_equals($_SESSION['csrf_token'], $token)) {
+    if ($token === '' || !hash_equals($_SESSION['csrf_token'], $token)) {
         sendResponse("error", "Invalid CSRF token", null, 403);
     }
 }
@@ -113,6 +162,7 @@ function sendContactEmail($data) {
 function buildEmailLayout($title, $preheader, $contentHtml) {
     $safeTitle = htmlspecialchars((string) $title, ENT_QUOTES, 'UTF-8');
     $safePreheader = htmlspecialchars((string) $preheader, ENT_QUOTES, 'UTF-8');
+    $safeSupportEmail = htmlspecialchars((string)(getenv('SUPPORT_EMAIL') ?: 'support@uxpacific.com'), ENT_QUOTES, 'UTF-8');
 
     return <<<HTML
 <!doctype html>
@@ -153,7 +203,7 @@ function buildEmailLayout($title, $preheader, $contentHtml) {
       <div class="footer">
         <div>UX Pacific Shop</div>
         <div>If you were not expecting this email, you can safely ignore it.</div>
-        <div>Email: support@uxpacific.com</div>
+        <div>Email: {$safeSupportEmail}</div>
       </div>
     </div>
   </div>

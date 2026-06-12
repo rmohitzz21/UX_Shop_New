@@ -11,8 +11,19 @@ class OrderFulfillmentService
      * Run all post-payment fulfillment steps for a paid order.
      * Idempotent: safe to call multiple times (webhook retry, race between
      * browser verify and webhook, admin re-trigger via status update).
+     *
+     * @param bool $deferEmails When true, only DB work runs; call sendFulfillmentEmails() after flushJsonResponse().
      */
-    public static function fulfillPaidOrder(int $orderId, mysqli $conn): void
+    public static function fulfillPaidOrder(int $orderId, mysqli $conn, bool $deferEmails = false): void
+    {
+        self::fulfillPaidOrderCore($orderId, $conn);
+        if (!$deferEmails) {
+            self::sendFulfillmentEmails($orderId, $conn);
+        }
+    }
+
+    /** Inventory + download tokens only (fast path for checkout). */
+    public static function fulfillPaidOrderCore(int $orderId, mysqli $conn): void
     {
         $conn->begin_transaction();
         try {
@@ -36,8 +47,21 @@ class OrderFulfillmentService
             $conn->rollback();
             throw $e;
         }
+    }
 
-        EmailService::sendPaidOrderEmails($orderId, $conn);
+    /** Confirmation + invoice + admin notification (slow SMTP — defer on user-facing checkout). */
+    public static function sendFulfillmentEmails(int $orderId, mysqli $conn): void
+    {
+        try {
+            EmailService::sendOrderConfirmation($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('OrderFulfillmentService: confirmation email failed for order ' . $orderId . ': ' . $e->getMessage());
+        }
+        try {
+            EmailService::sendInvoice($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('OrderFulfillmentService: invoice email failed for order ' . $orderId . ': ' . $e->getMessage());
+        }
         self::notifyAdminOnce($orderId, $conn);
     }
 

@@ -35,7 +35,16 @@
       "Bash(git -C \".claude/worktrees/agent-a78e356cdb105a900\" diff -- style.css)",
       "Read(//tmp/**)",
       "Bash(git apply *)",
-      "Bash(\"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root uxmerchandise)"
+      "Bash(\"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root uxmerchandise)",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\db_check.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\db_check2.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\db_check3.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\apply_migrations.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\full_check.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\debug_fails.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\check_remaining.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\check_admins.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" \"C:\\\\Users\\\\Survey Pacific\\\\.claude\\\\jobs\\\\a9fe9cc1\\\\check_and_fix2.php\")"
     ]
   }
 }

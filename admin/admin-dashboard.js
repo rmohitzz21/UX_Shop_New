@@ -604,7 +604,6 @@ function loadProductMediaFromRow(p) {
   productMediaState.gallery = gallery.filter(path => path !== productMediaState.main);
   renderProductMediaPreviews();
   toggleProductResourcesSection();
-  loadProductResources(0);
 }
 
 const bundleMediaState = {
@@ -768,56 +767,60 @@ async function openCreateProductModal() {
 }
 
 async function editProduct(productId) {
-  const data = await fetchJson(`../api/admin/product/get.php?id=${encodeURIComponent(productId)}`);
-  const p = data.product || data;
-  if (!state.categories.length) {
-    await getCategories();
-    populateCategoryControls();
+  try {
+    const data = await fetchJson(`../api/admin/product/get.php?id=${encodeURIComponent(productId)}`);
+    const p = data.product || data;
+    if (!state.categories.length) {
+      await getCategories();
+      populateCategoryControls();
+    }
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ''; };
+    clearProductForm();
+    document.getElementById('product-modal-title').textContent = 'Edit Product';
+    set('edit-product-id', p.id);
+    set('edit-product-existing-image', p.image);
+    set('edit-product-name', p.name);
+    set('edit-product-sku', p.sku);
+    set('edit-product-category', p.category);
+    set('edit-product-rating', p.rating);
+    set('edit-product-available', p.available_type || 'digital');
+    set('edit-product-description', p.description);
+    set('edit-product-whats', p.whats_included);
+    set('edit-product-specs', p.file_specification);
+    set('edit-product-high-resolution', p.high_resolution);
+    set('edit-product-compatible-software', p.compatible_software);
+    set('edit-product-software-version', p.software_version);
+    set('edit-product-files-included', p.files_included);
+    set('edit-product-grid-columns', p.grid_columns);
+    set('edit-product-layout-type', p.layout_type);
+    set('edit-product-license-type', p.license_type);
+    set('edit-product-tags', p.tags);
+    const customFields = Array.isArray(p.custom_fields_parsed)
+      ? p.custom_fields_parsed
+      : (() => {
+        try {
+          return JSON.parse(p.custom_fields || '[]');
+        } catch {
+          return [];
+        }
+      })();
+    renderProductCustomFields(customFields);
+    set('edit-product-price', p.price);
+    set('edit-product-old-price', p.old_price);
+    set('edit-product-commercial-price', p.commercial_price);
+    set('edit-product-stock', p.stock);
+    set('edit-product-active', String(p.is_active ?? 1));
+    set('edit-product-featured', String(p.is_featured ?? 0));
+    const freeCb = document.getElementById('edit-product-is-free');
+    if (freeCb) freeCb.checked = Number(p.is_free) === 1;
+    syncProductIsFreePriceField();
+    loadProductMediaFromRow(p);
+    toggleProductResourcesSection();
+    loadProductResources(p.id);
+    openEditProductModal();
+  } catch (err) {
+    showToast(err.message || 'Could not load product.', 'error');
   }
-  const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ''; };
-  clearProductForm();
-  document.getElementById('product-modal-title').textContent = 'Edit Product';
-  set('edit-product-id', p.id);
-  set('edit-product-existing-image', p.image);
-  set('edit-product-name', p.name);
-  set('edit-product-sku', p.sku);
-  set('edit-product-category', p.category);
-  set('edit-product-rating', p.rating);
-  set('edit-product-available', p.available_type || 'digital');
-  set('edit-product-description', p.description);
-  set('edit-product-whats', p.whats_included);
-  set('edit-product-specs', p.file_specification);
-  set('edit-product-high-resolution', p.high_resolution);
-  set('edit-product-compatible-software', p.compatible_software);
-  set('edit-product-software-version', p.software_version);
-  set('edit-product-files-included', p.files_included);
-  set('edit-product-grid-columns', p.grid_columns);
-  set('edit-product-layout-type', p.layout_type);
-  set('edit-product-license-type', p.license_type);
-  set('edit-product-tags', p.tags);
-  const customFields = Array.isArray(p.custom_fields_parsed)
-    ? p.custom_fields_parsed
-    : (() => {
-      try {
-        return JSON.parse(p.custom_fields || '[]');
-      } catch {
-        return [];
-      }
-    })();
-  renderProductCustomFields(customFields);
-  set('edit-product-price', p.price);
-  set('edit-product-old-price', p.old_price);
-  set('edit-product-commercial-price', p.commercial_price);
-  set('edit-product-stock', p.stock);
-  set('edit-product-active', String(p.is_active ?? 1));
-  set('edit-product-featured', String(p.is_featured ?? 0));
-  const freeCb = document.getElementById('edit-product-is-free');
-  if (freeCb) freeCb.checked = Number(p.is_free) === 1;
-  syncProductIsFreePriceField();
-  loadProductMediaFromRow(p);
-  toggleProductResourcesSection();
-  loadProductResources(p.id);
-  openEditProductModal();
 }
 
 async function saveProductForm(event) {
@@ -848,22 +851,31 @@ async function saveProductForm(event) {
 }
 
 async function toggleProductStatus(productId, isActive) {
-  await fetchJson('../api/admin/product/toggle_status.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: productId, is_active: isActive }),
-  });
-  await loadProducts();
+  try {
+    await fetchJson('../api/admin/product/toggle_status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productId, is_active: isActive }),
+    });
+    await loadProducts();
+    showToast(isActive ? 'Product restored.' : 'Product archived.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not update product status.', 'error');
+  }
 }
 
 async function duplicateProduct(productId) {
-  await fetchJson('../api/admin/product/duplicate.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: productId }),
-  });
-  await loadProducts();
-  showToast('Product duplicated as archived.', 'success');
+  try {
+    await fetchJson('../api/admin/product/duplicate.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productId }),
+    });
+    await loadProducts();
+    showToast('Product duplicated as archived.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not duplicate product.', 'error');
+  }
 }
 
 async function deleteProduct(productId) {
@@ -1010,6 +1022,9 @@ async function loadAdminBundles() {
 async function adminSaveBundle(event) {
   event.preventDefault();
   const form = event.target;
+  const submitBtn = document.getElementById('bundle-submit-btn');
+  const label = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) submitBtn.disabled = true;
   syncBundleAdditionalImagesField();
   if (form.elements['existing_image']) {
     form.elements['existing_image'].value = bundleMediaState.main || '';
@@ -1033,6 +1048,11 @@ async function adminSaveBundle(event) {
     showToast('Bundle saved.', 'success');
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = label;
+    }
   }
 }
 
@@ -1042,6 +1062,11 @@ function adminEditBundle(id) {
 
   const form = document.getElementById('bundle-editor-form');
   if (!form) return;
+
+  form.reset();
+  clearBundleMediaState();
+  const fileInputs = form.querySelectorAll('input[type="file"]');
+  fileInputs.forEach(input => { input.value = ''; });
 
   form.elements['id'].value = String(row.id);
   form.elements['existing_image'].value = row.image || '';
@@ -1055,7 +1080,8 @@ function adminEditBundle(id) {
   form.elements['stock'].value = row.stock ?? '';
   form.elements['rating'].value = row.rating ?? '';
   form.elements['description'].value = row.description || '';
-  form.elements['product_ids'].value = '';
+  const productIds = Array.isArray(row.product_ids) ? row.product_ids : [];
+  form.elements['product_ids'].value = productIds.join(', ');
 
   // whats_included: stored as plain text (newline-separated)
   // Fall back to deriving from included_items_list if whats_included is empty
@@ -1216,12 +1242,16 @@ async function adminToggleBundle(id, field) {
   const payload = { ...row };
   payload[field] = row[field] == 1 ? 0 : 1;
   payload.included_items = JSON.stringify(row.included_items_list || []);
-  await fetchJson('../api/admin/bundles/save.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  await loadAdminBundles();
+  try {
+    await fetchJson('../api/admin/bundles/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    await loadAdminBundles();
+  } catch (err) {
+    showToast(err.message || 'Failed to update bundle.', 'error');
+  }
 }
 
 async function adminDeleteBundle(id) {
@@ -1495,9 +1525,15 @@ function openStatusEditor(orderId) {
 async function confirmStatusUpdate() {
   const orderId = Number(document.getElementById('modal-order-id')?.value || 0);
   const status = document.getElementById('status-select').value;
+  const confirmBtn = document.getElementById('status-confirm-btn');
   if (!orderId || !status) {
     showToast('Select a valid status.', 'error');
     return;
+  }
+  const label = confirmBtn ? confirmBtn.textContent : '';
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Updating...';
   }
   try {
     await fetchJson('../api/admin/order/update_status.php', {
@@ -1510,6 +1546,11 @@ async function confirmStatusUpdate() {
     showToast('Order status updated.', 'success');
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = label;
+    }
   }
 }
 
@@ -2126,12 +2167,15 @@ async function loadProductResources(productId) {
     list.innerHTML = '<p class="form-hint">Save the product first, then add digital resources.</p>';
     return;
   }
+  list.innerHTML = '<p class="form-hint">Loading resources…</p>';
   try {
     const rows = await fetchJson(`../api/admin/resources/list.php?product_id=${productResourcesState.productId}`);
     productResourcesState.rows = Array.isArray(rows) ? rows : [];
     renderProductResourcesList();
   } catch (err) {
-    list.innerHTML = `<p class="form-hint">${escapeHtml(err.message)}</p>`;
+    const msg = err.message || 'Could not load resources.';
+    list.innerHTML = `<p class="form-hint adm-resource-error">${escapeHtml(msg)}</p>`;
+    showToast(msg, 'error');
   }
 }
 
@@ -2171,19 +2215,30 @@ async function uploadProductResourceFile(resourceId) {
   input.onchange = async () => {
     const file = input.files?.[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append('resource_id', String(resourceId));
-    fd.append('file', file);
-    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const res = await fetch('../api/admin/resources/upload.php', {
-      method: 'POST',
-      headers: { 'X-CSRF-Token': csrf },
-      body: fd,
-    });
-    const data = await res.json();
-    if (data.status !== 'success') throw new Error(data.message || 'Upload failed');
-    await loadProductResources(productResourcesState.productId);
-    showToast('File uploaded.', 'success');
+    try {
+      const fd = new FormData();
+      fd.append('resource_id', String(resourceId));
+      fd.append('file', file);
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const res = await fetch('../api/admin/resources/upload.php', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrf },
+        body: fd,
+      });
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Invalid server response.');
+      }
+      if (!res.ok || data.status !== 'success') {
+        throw new Error(data.message || 'Upload failed');
+      }
+      await loadProductResources(productResourcesState.productId);
+      showToast('File uploaded.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Upload failed.', 'error');
+    }
   };
   input.click();
 }
@@ -2221,9 +2276,16 @@ async function loadBundleResources(bundleId) {
     list.innerHTML = '<p class="form-hint">Save the bundle first, then add digital resources.</p>';
     return;
   }
-  const rows = await fetchJson(`../api/admin/resources/list.php?bundle_id=${bundleResourcesState.bundleId}`);
-  bundleResourcesState.rows = Array.isArray(rows) ? rows : [];
-  renderBundleResourcesList();
+  list.innerHTML = '<p class="form-hint">Loading resources…</p>';
+  try {
+    const rows = await fetchJson(`../api/admin/resources/list.php?bundle_id=${bundleResourcesState.bundleId}`);
+    bundleResourcesState.rows = Array.isArray(rows) ? rows : [];
+    renderBundleResourcesList();
+  } catch (err) {
+    const msg = err.message || 'Could not load resources.';
+    list.innerHTML = `<p class="form-hint adm-resource-error">${escapeHtml(msg)}</p>`;
+    showToast(msg, 'error');
+  }
 }
 
 function renderBundleResourcesList() {
@@ -2259,19 +2321,30 @@ async function uploadBundleResourceFile(resourceId) {
   input.onchange = async () => {
     const file = input.files?.[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append('resource_id', String(resourceId));
-    fd.append('file', file);
-    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const res = await fetch('../api/admin/resources/upload.php', {
-      method: 'POST',
-      headers: { 'X-CSRF-Token': csrf },
-      body: fd,
-    });
-    const data = await res.json();
-    if (data.status !== 'success') { showToast(data.message || 'Upload failed.', 'error'); return; }
-    await loadBundleResources(bundleResourcesState.bundleId);
-    showToast('File uploaded.', 'success');
+    try {
+      const fd = new FormData();
+      fd.append('resource_id', String(resourceId));
+      fd.append('file', file);
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const res = await fetch('../api/admin/resources/upload.php', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrf },
+        body: fd,
+      });
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Invalid server response.');
+      }
+      if (!res.ok || data.status !== 'success') {
+        throw new Error(data.message || 'Upload failed');
+      }
+      await loadBundleResources(bundleResourcesState.bundleId);
+      showToast('File uploaded.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Upload failed.', 'error');
+    }
   };
   input.click();
 }
@@ -2393,7 +2466,6 @@ async function deleteFreebieResource(resourceId) {
 }
 
 function initDashboard() {
-  Promise.allSettled([getCategories()]).then(populateCategoryControls);
   loadOverview();
 }
 

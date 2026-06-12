@@ -754,20 +754,43 @@ function normalizeSize(s) {
   return (s === null || s === undefined || s === 'null') ? '' : String(s);
 }
 
+function findCartLine(productId, size = null) {
+  return cart.find(i => String(i.id) === String(productId) && normalizeSize(i.size) === normalizeSize(size));
+}
+
+function cartLineApiPayload(item, productId, size, quantity = null) {
+  const cartId = item && item.cart_id ? Number(item.cart_id) : 0;
+  if (cartId > 0) {
+    const body = { cart_id: cartId };
+    if (quantity !== null) body.quantity = quantity;
+    return body;
+  }
+  const itemType = item?.item_type || 'product';
+  const body = {
+    item_type: itemType,
+    quantity: quantity !== null ? quantity : undefined,
+    size: size,
+    available_type: item?.available_type || 'physical',
+    selected_format: item?.selected_format || item?.available_type || 'digital',
+  };
+  if (itemType === 'bundle') {
+    body.bundle_id = Number(item?.bundle_id || productId);
+  } else {
+    body.product_id = Number(productId);
+  }
+  return body;
+}
+
 // Remove from cart
-function removeFromCart(productId, size = null) {
+function removeFromCart(productId, size = null, cartIdOverride = 0) {
   const userSession = getUserSession();
 
-  // Find item in local array to get cart_id (preferred) or fallback fields
-  const item = cart.find(i => String(i.id) === String(productId) && normalizeSize(i.size) === normalizeSize(size));
-  const available_type = item ? (item.available_type || 'physical') : 'physical';
-  const cartId = item ? (item.cart_id || null) : null;
+  const item = findCartLine(productId, size);
 
   if (userSession && userSession.id) {
-      // LOGGED IN: API — prefer cart_id, fall back to legacy key
-      const body = cartId
-          ? { cart_id: cartId }
-          : { product_id: productId, size: size, available_type: available_type };
+      const body = Number(cartIdOverride) > 0
+        ? { cart_id: Number(cartIdOverride) }
+        : cartLineApiPayload(item, productId, size);
       fetch('api/cart/remove.php', {
           method: 'POST',
           headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
@@ -801,11 +824,11 @@ function removeFromCart(productId, size = null) {
 }
 
 // Update cart item quantity
-function updateCartQuantity(productId, size, newQuantity) {
+function updateCartQuantity(productId, size, newQuantity, cartIdOverride = 0) {
   const userSession = getUserSession();
 
   if (newQuantity <= 0) {
-      removeFromCart(productId, size);
+      removeFromCart(productId, size, cartIdOverride);
       return;
   }
 
@@ -814,29 +837,28 @@ function updateCartQuantity(productId, size, newQuantity) {
       return;
   }
 
-  // Find item to get cart_id (preferred) or fallback key fields
-  const item = cart.find(i => String(i.id) === String(productId) && normalizeSize(i.size) === normalizeSize(size));
-  const available_type = item ? (item.available_type || 'physical') : 'physical';
-  const cartId = item ? (item.cart_id || null) : null;
+  const item = findCartLine(productId, size);
 
   if (userSession && userSession.id) {
-     // LOGGED IN: API — prefer cart_id, fall back to legacy key
-     const body = cartId
-         ? { cart_id: cartId, quantity: newQuantity }
-         : { product_id: productId, quantity: newQuantity, size: size, available_type: available_type };
+     const body = Number(cartIdOverride) > 0
+       ? { cart_id: Number(cartIdOverride), quantity: newQuantity }
+       : cartLineApiPayload(item, productId, size, newQuantity);
      fetch('api/cart/update.php', {
          method: 'POST',
+         credentials: 'same-origin',
          headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
          body: JSON.stringify(body)
      })
      .then(res => res.json())
      .then(data => {
          if(data.status === 'success') {
-             fetchCartFromAPI(); // Refresh to update totals etc
+             fetchCartFromAPI();
          } else {
-             showToast('Failed to update quantity', 'error');
+             showToast(data.message || 'Failed to update quantity', 'error');
+             fetchCartFromAPI();
          }
-     });
+     })
+     .catch(() => showToast('Failed to update quantity', 'error'));
 
   } else {
       // GUEST: LocalStorage
@@ -884,6 +906,39 @@ function updateCartCount() {
 // Calculate cart total
 function getCartTotal() {
   return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+}
+
+function isCatalogItemFree(item) {
+  if (!item) return false;
+  if (item.type === 'freebie' || item.item_type === 'freebie') return true;
+  return Boolean(item.is_free) || Number(item.price || 0) <= 0;
+}
+
+function isFreeCheckout() {
+  if (!cart.length) return false;
+  if (getCartTotal() <= 0) return true;
+  return cart.every(isCatalogItemFree);
+}
+
+function loadRazorpayScript() {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Payment gateway failed to load.')), { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Payment gateway failed to load.'));
+    document.body.appendChild(script);
+  });
 }
 
 // Load cart page
@@ -945,11 +1000,11 @@ async function loadCartPage() {
           </div>
           <div class="cart-item-actions">
             <div class="cart-item-qty">
-              <button onclick="updateCartQuantity('${esc(item.id)}', '${esc(item.size || '')}', ${item.quantity - 1})">−</button>
+              <button onclick="updateCartQuantity('${esc(item.id)}', '${esc(item.size || '')}', ${item.quantity - 1}, ${Number(item.cart_id || 0)})">−</button>
               <span>${item.quantity}</span>
-              <button onclick="updateCartQuantity('${esc(item.id)}', '${esc(item.size || '')}', ${item.quantity + 1})">+</button>
+              <button onclick="updateCartQuantity('${esc(item.id)}', '${esc(item.size || '')}', ${item.quantity + 1}, ${Number(item.cart_id || 0)})">+</button>
             </div>
-            <button class="remove-item" onclick="removeFromCart('${esc(item.id)}', '${esc(item.size || '')}')">Remove</button>
+            <button class="remove-item" onclick="removeFromCart('${esc(item.id)}', '${esc(item.size || '')}', ${Number(item.cart_id || 0)})">Remove</button>
           </div>
         </div>
       `,
@@ -1165,18 +1220,58 @@ function loadCheckoutPage() {
   }
   syncCheckoutRequiredFields({ onlyDigital });
 
-  const paymentSection = document.getElementById('checkout-payment-section');
+  const paymentBlock = document.getElementById('checkout-payment-block');
+  const freeNotice = document.getElementById('free-checkout-notice');
+  const cardDetails = document.getElementById('card-details');
+  const digitalNotice = document.getElementById('digital-delivery-notice');
   const orderText = document.getElementById('order-text');
   const codOption = document.getElementById('cod-option');
   const codRadio = document.getElementById('cod-radio');
   const codMessage = document.getElementById('cod-disabled-message');
   const cardRadio = document.querySelector('#checkout-form input[name="paymentMethod"][value="card"]');
+  const isFree = isFreeCheckout();
 
-  if (total <= 0) {
-    if (paymentSection) paymentSection.style.display = 'none';
+  document.querySelectorAll('#checkout-form input[name="paymentMethod"]').forEach((radio) => {
+    radio.required = !isFree;
+    radio.disabled = isFree;
+  });
+
+  if (isFree) {
+    if (paymentBlock) paymentBlock.style.display = 'none';
+    if (freeNotice) freeNotice.style.display = '';
+    if (cardDetails) cardDetails.style.display = 'none';
+    if (digitalNotice) {
+      digitalNotice.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:8px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Your free download will be available immediately in <strong>My Orders</strong> after checkout.`;
+    }
     if (orderText) orderText.textContent = 'Get Free Download';
+    // Pre-fill email from session for frictionless free checkout
+    const _freeSession = getUserSession();
+    const _freeEmailField = document.getElementById('email');
+    if (_freeSession && _freeSession.email && _freeEmailField && !_freeEmailField.value) {
+      _freeEmailField.value = _freeSession.email;
+    }
   } else {
-    if (paymentSection) paymentSection.style.display = '';
+    if (paymentBlock) paymentBlock.style.display = '';
+    if (freeNotice) freeNotice.style.display = 'none';
+    if (cardDetails) cardDetails.style.display = '';
+    document.querySelectorAll('#checkout-form input[name="paymentMethod"]').forEach((radio) => {
+      radio.disabled = false;
+    });
+    if (digitalNotice) {
+      digitalNotice.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:8px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Your digital products will be available for download immediately after payment in <strong>My Orders</strong>.`;
+    }
     if (orderText) orderText.textContent = 'Place Order';
     if (onlyPhysical) {
       if (codRadio) codRadio.disabled = false;
@@ -1374,6 +1469,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     loadCheckoutPage();
+
+    // Preload Razorpay so payment modal opens without waiting on click
+    loadRazorpayScript().catch(() => {});
 
     // Initialize address selection
     initCheckoutAddresses();
@@ -1942,6 +2040,12 @@ function handleCheckout(event) {
   const hasPhysicalInCart = cart.some(cartItemIsPhysical);
   const onlyDigitalInCart = !hasPhysicalInCart;
 
+  // Totals (needed for free-order validation below)
+  const subtotal = getCartTotal();
+  const shippingCost = (subtotal > 0 && !onlyDigitalInCart) ? 50 : 0;
+  const tax = Math.round(subtotal * 0.18);
+  const total = subtotal + shippingCost + tax;
+
   // Validation
   let isValid = true;
 
@@ -1972,6 +2076,15 @@ function handleCheckout(event) {
     } else {
       clearFieldError(document.getElementById('email-saved'));
     }
+  } else if (isFreeCheckout() && onlyDigitalInCart) {
+    // Free digital order — only email required, no address/phone needed
+    if (!email) {
+      if (form.email) showFieldError(form.email, 'Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      if (form.email) showFieldError(form.email, 'Please enter a valid email address');
+      isValid = false;
+    } else if (form.email) clearFieldError(form.email);
   } else {
     // Manual address entry - validate all fields
     if (!firstName || firstName.length < 2) {
@@ -2034,12 +2147,6 @@ function handleCheckout(event) {
   btn.disabled = true;
   btnText.style.display = 'none';
   btnLoader.style.display = 'inline';
-  
-  // Calculate totals
-  const subtotal = getCartTotal();
-  const shippingCost = (subtotal > 0 && !onlyDigitalInCart) ? 50 : 0;
-  const tax = Math.round(subtotal * 0.18);
-  const total = subtotal + shippingCost + tax;
 
   // Get User ID
   const userId = userSession ? userSession.id : 0;
@@ -2098,14 +2205,13 @@ function handleCheckout(event) {
   }
 
   function handleOrderSuccess(orderData, serverData, verifyData) {
-    showToast('Order placed successfully!', 'success');
     cart = [];
     saveCart();
     updateCartCount();
     const confirmId = serverData.data.orderId || '';
     const redirect = serverData.data.redirect
       || ('order-confirmation.php' + (confirmId ? '?order_id=' + encodeURIComponent(confirmId) : ''));
-    setTimeout(() => { window.location.href = redirect; }, serverData.data.free_order ? 400 : 1000);
+    window.location.href = redirect;
   }
 
   function createDraftOrder() {
@@ -2127,8 +2233,8 @@ function handleCheckout(event) {
     });
   }
 
-  if (total <= 0) {
-    orderPayload.paymentMethod = 'razorpay';
+  if (isFreeCheckout()) {
+    orderPayload.paymentMethod = 'free';
     createDraftOrder()
       .then(data => handleOrderSuccess(orderPayload, data))
       .catch(err => {
@@ -2176,10 +2282,10 @@ function handleCheckout(event) {
   }
 
   // ── Razorpay (card / UPI) flow ─────────────────────────────────────────────
-  // Normalise so the API creates the order in awaiting_payment state
   orderPayload.paymentMethod = 'razorpay';
 
-  createDraftOrder()
+  loadRazorpayScript()
+    .then(() => createDraftOrder())
     .then(serverData => {
       const orderId = serverData.data.orderId;
       return fetch('api/payment/razorpay-create-order.php', {
@@ -2204,6 +2310,7 @@ function handleCheckout(event) {
           name:     'UX Pacific Shop',
           description: 'Order ' + serverData.data.orderNumber,
           handler: function(response) {
+            if (btnLoader) btnLoader.textContent = 'Confirming payment...';
             fetch('api/payment/razorpay-verify.php', {
               method: 'POST',
               headers: orderHeaders,
@@ -2554,16 +2661,6 @@ async function handleForgotPassword(event) {
   btn.disabled = false;
   btnText.style.display = 'inline';
   btnLoader.style.display = 'none';
-}
-
-// Social sign in
-function signInWithGoogle() {
-  showToast('Google sign-in is not available yet.', 'error');
-}
-
-// Social sign up
-function signUpWithGoogle() {
-  showToast('Google sign-up is not available yet.', 'error');
 }
 
 // Make functions globally available
@@ -3471,12 +3568,6 @@ function initSearchModal() {
 
 function formatMoney(value) {
   return '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
-}
-
-function isCatalogItemFree(item) {
-  if (!item) return false;
-  if (item.type === 'freebie' || item.item_type === 'freebie') return true;
-  return Boolean(item.is_free) || Number(item.price || 0) <= 0;
 }
 
 function isGalleryImageUrl(url) {
@@ -4829,8 +4920,6 @@ function handleSignInRedirect() {
 
 window.buyNow = buyNow;
 window.handleSignOut = handleSignOut;
-window.signInWithGoogle = signInWithGoogle;
-window.signUpWithGoogle = signUpWithGoogle;
 window.checkAuthBeforeCheckout = checkAuthBeforeCheckout;
 
 // ==================== LOCALHOST SHOP INTERACTIONS ====================
@@ -4907,20 +4996,29 @@ window.checkAuthBeforeCheckout = checkAuthBeforeCheckout;
           <p>${esc(item.available_type || 'physical')}${item.size ? ` / ${esc(item.size)}` : ''}</p>
           <strong>${money((Number(item.price || 0) * Number(item.quantity || 1)))}</strong>
           <div class="cart-drawer-qty">
-            <button type="button" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) - 1}">-</button>
+            <button type="button" data-cart-id="${Number(item.cart_id || 0)}" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) - 1}">-</button>
             <span>${Number(item.quantity || 1)}</span>
-            <button type="button" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) + 1}">+</button>
-            <button type="button" data-cart-remove="${esc(item.id)}" data-size="${esc(item.size || '')}">Remove</button>
+            <button type="button" data-cart-id="${Number(item.cart_id || 0)}" data-cart-qty="${esc(item.id)}" data-size="${esc(item.size || '')}" data-next="${Number(item.quantity || 1) + 1}">+</button>
+            <button type="button" data-cart-id="${Number(item.cart_id || 0)}" data-cart-remove="${esc(item.id)}" data-size="${esc(item.size || '')}">Remove</button>
           </div>
         </div>
       </article>
     `).join('');
 
     itemsEl.querySelectorAll('[data-cart-qty]').forEach((button) => {
-      button.addEventListener('click', () => window.updateCartQuantity(button.dataset.cartQty, button.dataset.size || null, Number(button.dataset.next)));
+      button.addEventListener('click', () => window.updateCartQuantity(
+        button.dataset.cartQty,
+        button.dataset.size || null,
+        Number(button.dataset.next),
+        Number(button.dataset.cartId || 0)
+      ));
     });
     itemsEl.querySelectorAll('[data-cart-remove]').forEach((button) => {
-      button.addEventListener('click', () => window.removeFromCart(button.dataset.cartRemove, button.dataset.size || null));
+      button.addEventListener('click', () => window.removeFromCart(
+        button.dataset.cartRemove,
+        button.dataset.size || null,
+        Number(button.dataset.cartId || 0)
+      ));
     });
   }
 
@@ -4964,10 +5062,14 @@ window.checkAuthBeforeCheckout = checkAuthBeforeCheckout;
   };
 
   function profileDropdownMenuHtml() {
+    const icon = (paths) => `<svg class="nav-menu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+    const userIcon = icon('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>');
+    const ordersIcon = icon('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>');
+    const logoutIcon = icon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>');
     return `
-      <a href="account.php" role="menuitem"><i class="ph ph-user-circle"></i> Edit Profile</a>
-      <a href="orders.php" role="menuitem"><i class="ph ph-package"></i> My Orders</a>
-      <button type="button" role="menuitem" onclick="handleSignOut()"><i class="ph ph-sign-out"></i> Logout</button>
+      <a href="account.php" role="menuitem">${userIcon} Edit Profile</a>
+      <a href="orders.php" role="menuitem">${ordersIcon} My Orders</a>
+      <button type="button" role="menuitem" onclick="handleSignOut()">${logoutIcon} Logout</button>
     `;
   }
 

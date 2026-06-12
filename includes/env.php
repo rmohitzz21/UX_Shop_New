@@ -37,11 +37,27 @@ function loadEnv(string $path): void {
             }
         }
 
-        if (!array_key_exists($key, $_ENV)) {
-            $_ENV[$key] = $value;
-            putenv("$key=$value");
+        // .env is the project source of truth — always apply (fixes empty $_ENV on XAMPP/Windows).
+        $_ENV[$key] = $value;
+        putenv("$key=$value");
+    }
+}
+
+/**
+ * Read env var from $_ENV / getenv with optional default.
+ */
+function env(string $key, ?string $default = null): ?string {
+    if (array_key_exists($key, $_ENV)) {
+        $fromEnv = $_ENV[$key];
+        if ($fromEnv !== null && $fromEnv !== '') {
+            return (string) $fromEnv;
         }
     }
+    $fromGetenv = getenv($key);
+    if ($fromGetenv !== false && $fromGetenv !== '') {
+        return (string) $fromGetenv;
+    }
+    return $default;
 }
 
 // Auto-load on include

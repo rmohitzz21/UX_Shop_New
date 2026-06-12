@@ -50,14 +50,21 @@ if (!$alreadyPaid) {
     $clr->execute();
 }
 
-// Fulfill: downloads + confirmation email (idempotent)
+// Fulfill downloads/inventory first; emails after response is flushed.
 try {
-    OrderFulfillmentService::fulfillPaidOrder($orderId, $conn);
+    OrderFulfillmentService::fulfillPaidOrder($orderId, $conn, true);
 } catch (Throwable $e) {
     error_log('test-pay.php: fulfillment failed for order ' . $orderId . ': ' . $e->getMessage());
 }
 
-sendResponse('success', 'Test payment accepted.', [
+flushJsonResponse('success', 'Test payment accepted.', [
     'order_id' => $orderId,
     'status'   => 'paid',
 ]);
+
+try {
+    OrderFulfillmentService::sendFulfillmentEmails($orderId, $conn);
+} catch (Throwable $e) {
+    error_log('test-pay.php: post-response emails failed for order ' . $orderId . ': ' . $e->getMessage());
+}
+exit;

@@ -24,7 +24,8 @@ function rzp_api_get(string $path): array
         CURLOPT_HTTPGET        => true,
         CURLOPT_USERPWD        => "{$keyId}:{$keySecret}",
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_CONNECTTIMEOUT => 5,
     ]);
     $response = curl_exec($ch);
     $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -66,7 +67,8 @@ function rzp_api_post(string $path, array $payload): array
         CURLOPT_POSTFIELDS     => $body,
         CURLOPT_USERPWD        => "{$keyId}:{$keySecret}",
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_CONNECTTIMEOUT => 5,
     ]);
     $response = curl_exec($ch);
     $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

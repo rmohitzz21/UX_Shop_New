@@ -713,6 +713,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   color: var(--text-3);
 }
 .form-hint { font-weight: 400; color: var(--text-3); font-size: .75rem; }
+.adm-resource-error { color: #f87171; font-weight: 500; }
 .form-grid-2 { grid-template-columns: 1fr 1fr; }
 .form-col-full { grid-column: 1 / -1; }
 

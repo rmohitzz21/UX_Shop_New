@@ -20,15 +20,20 @@ if (!$exists->get_result()->fetch_assoc()) {
 }
 
 // Products with orders are soft-deleted (archived) to preserve order history
-$chk = $conn->prepare('SELECT COUNT(*) AS c FROM order_items WHERE product_id = ? LIMIT 1');
+$chk = $conn->prepare("SELECT COUNT(*) AS c FROM order_items WHERE product_id = ? AND item_type = 'product' LIMIT 1");
 $chk->bind_param('i', $id);
 $chk->execute();
 $orderCount = (int) ($chk->get_result()->fetch_assoc()['c'] ?? 0);
 
 if ($orderCount > 0) {
     $stmt = $conn->prepare('UPDATE products SET is_active = 0 WHERE id = ?');
+    if (!$stmt) {
+        sendResponse('error', 'Could not archive product.', null, 500);
+    }
     $stmt->bind_param('i', $id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        sendResponse('error', 'Could not archive product.', null, 500);
+    }
     sendResponse('success', 'Product archived (has existing orders).', ['action' => 'archived']);
 }
 
@@ -60,7 +65,8 @@ try {
     $conn->commit();
 } catch (Throwable $e) {
     $conn->rollback();
-    sendResponse('error', 'Could not delete product: ' . $e->getMessage(), null, 500);
+    error_log('Product delete failed: ' . $e->getMessage());
+    sendResponse('error', 'Could not delete product.', null, 500);
 }
 
 sendResponse('success', 'Product deleted.', ['action' => 'deleted']);

@@ -17,7 +17,7 @@ if (count($items) > 50) {
 }
 
 $paymentMethod = strtolower(trim((string) ($input['paymentMethod'] ?? 'cod')));
-$allowedMethods = ['cod', 'card', 'upi', 'razorpay'];
+$allowedMethods = ['cod', 'card', 'upi', 'razorpay', 'free'];
 if (getenv('ENABLE_TEST_PAYMENT') === 'true' && getenv('APP_ENV') !== 'production') {
     $allowedMethods[] = 'test';
 }
@@ -109,7 +109,9 @@ try {
             $update->execute();
         }
 
-        $price = $type === 'freebie' ? 0.0 : (float) $row['price'];
+        $price = ($type === 'freebie' || !empty($row['is_free']))
+            ? 0.0
+            : (float) $row['price'];
         $subtotal += $price * $qty;
         $orderItems[] = [
             'type'            => $type,
@@ -134,6 +136,10 @@ try {
     $total        = $subtotal + $shippingCost + $tax;
     $orderNumber  = 'UXP-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
     $isFreeOrder  = $total <= 0;
+
+    if ($paymentMethod === 'free' && !$isFreeOrder) {
+        throw new InvalidArgumentException('This order requires payment. Please choose a payment method.');
+    }
 
     if ($isFreeOrder) {
         $orderStatus    = 'paid';
@@ -236,12 +242,12 @@ try {
 
     if ($isFreeOrder) {
         try {
-            OrderFulfillmentService::fulfillPaidOrder($orderId, $conn);
+            OrderFulfillmentService::fulfillPaidOrder($orderId, $conn, true);
         } catch (Throwable $e) {
             error_log('api/order/create.php free fulfillment: ' . $e->getMessage());
         }
 
-        sendResponse('success', 'Order placed successfully.', [
+        flushJsonResponse('success', 'Order placed successfully.', [
             'orderNumber'   => $orderNumber,
             'orderId'       => $orderId,
             'total'         => $total,
@@ -253,6 +259,13 @@ try {
             'free_order'    => true,
             'redirect'      => 'order-confirmation.php?order_id=' . $orderId,
         ]);
+
+        try {
+            OrderFulfillmentService::sendFulfillmentEmails($orderId, $conn);
+        } catch (Throwable $e) {
+            error_log('api/order/create.php free post-response emails: ' . $e->getMessage());
+        }
+        exit;
     }
 
     if (!in_array($paymentMethod, ['razorpay', 'test'], true)) {

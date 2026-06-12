@@ -6,7 +6,7 @@ function adminInput(): array {
     if (!empty($_POST)) {
         return $_POST;
     }
-    return apiInput();
+    return apiReadJsonBody();
 }
 
 function adminBool($value, int $default = 0): int {

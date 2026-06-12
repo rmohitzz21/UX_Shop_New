@@ -50,6 +50,7 @@ if ($deliveryMode === 'open_link') {
 
 if ($id > 0) {
     $chk = $conn->prepare('SELECT id, storage_key FROM digital_resources WHERE id = ? LIMIT 1');
+    if (!$chk) sendResponse('error', 'Could not update resource: ' . $conn->error, null, 500);
     $chk->bind_param('i', $id);
     $chk->execute();
     $existing = $chk->get_result()->fetch_assoc();
@@ -63,6 +64,7 @@ if ($id > 0) {
          download_limit = ?, expiry_days = ?, sort_order = ?, is_active = ?
          WHERE id = ?'
     );
+    if (!$stmt) sendResponse('error', 'Could not update resource: ' . $conn->error, null, 500);
     $stmt->bind_param(
         'ssssssiiiii',
         $title,
@@ -86,10 +88,11 @@ if ($id > 0) {
 if ($productId > 0) {
     $stmt = $conn->prepare(
         'INSERT INTO digital_resources
-         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
-          storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
-         VALUES (?, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+         (product_id, title, resource_type, delivery_mode, storage_provider,
+          external_url, instructions, download_limit, expiry_days, sort_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
+    if (!$stmt) sendResponse('error', 'Could not create resource: ' . $conn->error, null, 500);
     $stmt->bind_param(
         'issssssiiii',
         $productId,
@@ -107,10 +110,11 @@ if ($productId > 0) {
 } elseif ($bundleId > 0) {
     $stmt = $conn->prepare(
         'INSERT INTO digital_resources
-         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
-          storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
-         VALUES (NULL, ?, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+         (bundle_id, title, resource_type, delivery_mode, storage_provider,
+          external_url, instructions, download_limit, expiry_days, sort_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
+    if (!$stmt) sendResponse('error', 'Could not create resource: ' . $conn->error, null, 500);
     $stmt->bind_param(
         'issssssiiii',
         $bundleId,
@@ -128,10 +132,11 @@ if ($productId > 0) {
 } else {
     $stmt = $conn->prepare(
         'INSERT INTO digital_resources
-         (product_id, bundle_id, freebie_id, title, resource_type, delivery_mode, storage_provider,
-          storage_key, external_url, instructions, download_limit, expiry_days, sort_order, is_active)
-         VALUES (NULL, NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)'
+         (freebie_id, title, resource_type, delivery_mode, storage_provider,
+          external_url, instructions, download_limit, expiry_days, sort_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
+    if (!$stmt) sendResponse('error', 'Could not create resource: ' . $conn->error, null, 500);
     $stmt->bind_param(
         'issssssiiii',
         $freebieId,
@@ -148,7 +153,7 @@ if ($productId > 0) {
     );
 }
 if (!$stmt->execute()) {
-    sendResponse('error', 'Could not create resource.', null, 500);
+    sendResponse('error', 'Could not create resource: ' . $stmt->error, null, 500);
 }
 
 sendResponse('success', 'Resource created.', ['id' => (int) $conn->insert_id]);

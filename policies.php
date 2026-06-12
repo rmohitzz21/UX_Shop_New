@@ -13,7 +13,7 @@
     />
       <link rel="icon" type="image/png" href="img/fav.png" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
   <style></style>
   <body class="shopAll">

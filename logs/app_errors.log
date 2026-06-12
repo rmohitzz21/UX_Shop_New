@@ -4011,3 +4011,706 @@ Stack trace:
 [09-Jun-2026 14:56:19 Europe/Berlin] SMTP << 250 OK id=1wWw0B-00000002tJf-3BNX
 [09-Jun-2026 14:56:19 Europe/Berlin] SMTP >> QUIT
 [09-Jun-2026 14:56:19 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260609-0AB1E8 — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 16:56:23 +0530
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:26:23 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:24 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:26:24 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:26:24 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:26:24 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:26:25 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:26:25 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:26:25 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:26:26 Europe/Berlin] SMTP << 250 OK id=1wXH4k-00000001Tlz-21qu
+[10-Jun-2026 13:26:26 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:26:26 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260610-5EAD78)" to rmohittt21@gmail.com
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 16:56:27 +0530
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:26:27 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:26:28 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:26:29 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:26:29 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:26:29 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:26:29 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:26:30 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:26:30 Europe/Berlin] SMTP << 250 OK id=1wXH4o-00000001Tox-3BuE
+[10-Jun-2026 13:26:30 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:26:30 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260610-5EAD78 — UX Pacific" to rmohittt21@gmail.com
+[10-Jun-2026 13:26:31 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 16:56:32 +0530
+[10-Jun-2026 13:26:31 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:26:31 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:26:31 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:26:32 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:26:33 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:26:34 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:26:34 Europe/Berlin] SMTP << 250 OK id=1wXH4s-00000001TrE-3OQt
+[10-Jun-2026 13:26:34 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:26:34 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-5EAD78 — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:26:36 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 16:56:37 +0530
+[10-Jun-2026 13:26:36 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:26:36 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:26:36 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:26:37 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:38 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:26:38 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:26:38 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:26:38 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:26:40 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:26:40 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:26:40 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:26:40 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:26:42 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:26:42 Europe/Berlin] SMTP << 250 OK id=1wXH4z-00000001Tt4-3YKu
+[10-Jun-2026 13:26:42 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:26:42 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-5EAD78 — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:30:11 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:00:12 +0530
+[10-Jun-2026 13:30:11 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:30:11 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:30:11 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:30:12 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:30:13 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:30:14 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:30:14 Europe/Berlin] SMTP << 250 OK id=1wXH8Q-00000001WRq-46M6
+[10-Jun-2026 13:30:14 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:30:14 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260610-ED39F2)" to rmohittt21@gmail.com
+[10-Jun-2026 13:30:15 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:00:16 +0530
+[10-Jun-2026 13:30:15 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:30:15 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:30:15 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:30:16 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:17 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:30:17 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:30:18 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:30:18 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:30:19 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:30:19 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:30:19 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:30:19 Europe/Berlin] SMTP << 250 OK id=1wXH8W-00000001WXY-0sBC
+[10-Jun-2026 13:30:19 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:30:19 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260610-ED39F2 — UX Pacific" to rmohittt21@gmail.com
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:00:21 +0530
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:30:21 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:30:22 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:30:23 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:30:23 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:30:23 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:30:23 Europe/Berlin] SMTP << 250 OK id=1wXH8a-00000001Wbe-0xJK
+[10-Jun-2026 13:30:23 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:30:23 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-ED39F2 — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:00:25 +0530
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:30:25 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:30:26 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:30:27 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:30:27 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:30:27 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:30:27 Europe/Berlin] SMTP << 250 OK id=1wXH8e-00000001Wiz-0nl5
+[10-Jun-2026 13:30:27 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:30:27 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-ED39F2 — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:25:17 +0530
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:55:17 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:55:18 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:55:19 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:55:19 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:55:19 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:55:19 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:55:19 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:55:20 Europe/Berlin] SMTP << 250 OK id=1wXHWi-00000001xXe-2B8r
+[10-Jun-2026 13:55:20 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:55:20 Europe/Berlin] EmailService: sent "Your free download is ready! (#UXP-20260610-E4CF1A)" to rmohittt21@gmail.com
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:25:21 +0530
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:55:21 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:55:22 Europe/Berlin] SMTP >> RCPT TO:<rmohittt21@gmail.com>
+[10-Jun-2026 13:55:23 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:55:23 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:55:23 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:55:24 Europe/Berlin] SMTP << 250 OK id=1wXHWm-00000001xaw-1hI8
+[10-Jun-2026 13:55:24 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:55:24 Europe/Berlin] EmailService: sent "Invoice for Order #UXP-20260610-E4CF1A — UX Pacific" to rmohittt21@gmail.com
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:25:25 +0530
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:55:25 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:55:26 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:55:27 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:55:27 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:55:27 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:55:27 Europe/Berlin] SMTP << 250 OK id=1wXHWq-00000001xf7-0KX6
+[10-Jun-2026 13:55:27 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:55:27 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-E4CF1A — ₹0.00" to support@uxpacific.com
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 220-sh007.bigrock.com ESMTP Exim 4.99.4 #2 Wed, 10 Jun 2026 17:25:30 +0530
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 220-We do not authorize the use of this system to transport unsolicited,
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 220 and/or bulk e-mail.
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP >> EHLO LAPTOP-LDCRSE06
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-sh007.bigrock.com Hello LAPTOP-LDCRSE06 [183.82.198.210]
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-SIZE 52428800
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-LIMITS MAILMAX=50 RCPTMAX=50000
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-8BITMIME
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-PIPELINING
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-PIPECONNECT
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250-AUTH PLAIN LOGIN
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 250 HELP
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP >> AUTH LOGIN
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 334 VXNlcm5hbWU6
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP << 334 UGFzc3dvcmQ6
+[10-Jun-2026 13:55:30 Europe/Berlin] SMTP >> [base64-redacted]
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP << 235 Authentication succeeded
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP >> MAIL FROM:<support@uxpacific.com>
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP << 250 OK
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP >> RCPT TO:<support@uxpacific.com>
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP << 250 Accepted
+[10-Jun-2026 13:55:31 Europe/Berlin] SMTP >> DATA
+[10-Jun-2026 13:55:32 Europe/Berlin] SMTP << 354 Enter message, ending with "." on a line by itself
+[10-Jun-2026 13:55:32 Europe/Berlin] SMTP << 250 OK id=1wXHWu-00000001xi2-3LOE
+[10-Jun-2026 13:55:32 Europe/Berlin] SMTP >> QUIT
+[10-Jun-2026 13:55:32 Europe/Berlin] EmailService: sent "[New Order] #UXP-20260610-E4CF1A — ₹0.00" to support@uxpacific.com
+[11-Jun-2026 07:28:51 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'REPLACE_WITH_DB_USERNAME'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:28:53 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'REPLACE_WITH_DB_USERNAME'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:28:59 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'REPLACE_WITH_DB_USERNAME'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:28:59 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'REPLACE_WITH_DB_USERNAME'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:25 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:26 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:26 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:27 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:27 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:27 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:29:40 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: YES) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 70
+[11-Jun-2026 07:30:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:31:39 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:31:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:38:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:39:36 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:40:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:40:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:41:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:42:07 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:42:14 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:43:44 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:44:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 07:44:14 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 09:19:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 09:19:42 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 09:20:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 09:20:18 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 11:03:04 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 11:03:21 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php:139
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\bundles\save.php on line 139
+[11-Jun-2026 11:15:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:36
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 36
+[11-Jun-2026 12:24:12 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:24:12 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:24:16 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:24:16 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:24:27 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:25:22 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:25:22 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:25:22 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:30:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:31:21 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:31:33 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user ''@'localhost' (using password: NO) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 76
+[11-Jun-2026 12:39:26 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 299
+[11-Jun-2026 12:39:48 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 11
+[11-Jun-2026 12:39:51 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[11-Jun-2026 12:40:40 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 271
+[11-Jun-2026 12:41:28 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 14
+[11-Jun-2026 12:42:07 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 253
+[11-Jun-2026 13:00:58 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\marketplace.php on line 299
+[11-Jun-2026 13:03:07 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\stats\_helpers.php on line 27
+[11-Jun-2026 13:06:56 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:07:35 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:07:50 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:07:59 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:08:22 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:08:53 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:09:05 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:09:17 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:09:25 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:40:43 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 13:41:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:42:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:42:27 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php:93
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php on line 93
+[11-Jun-2026 13:42:34 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php:93
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php on line 93
+[11-Jun-2026 13:42:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php:93
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php on line 93
+[11-Jun-2026 13:44:34 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:44:36 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:44:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:44:56 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 13:45:13 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php:93
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\save.php on line 93
+[11-Jun-2026 13:45:31 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:02:30 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:02:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:03:11 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:03:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:03:30 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:10:25 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:10:31 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:20:20 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:24:20 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:25:27 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:25:40 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:25:42 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:25:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:26:31 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:31:00 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:31:36 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:32:10 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:32:18 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:32:22 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:34:33 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:34:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:34:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:36:14 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php:26
+Stack trace:
+#0 C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\storage\cache\_test_resources_list.php(9): include()
+#1 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\admin\resources\list.php on line 26
+[11-Jun-2026 14:37:54 Europe/Berlin] drEnsureFreebieResourcesColumn: could not add freebie_id — 
+[11-Jun-2026 14:38:53 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:39:56 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:40:02 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:40:43 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[11-Jun-2026 14:42:47 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[11-Jun-2026 14:42:47 Europe/Berlin] EmailService: failed to send "Welcome to UX Pacific!" to mohit001@gmail.com
+[11-Jun-2026 14:42:53 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:42:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:53 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:43:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:01 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:03 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:05 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:13 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php:84
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php on line 84
+[11-Jun-2026 14:44:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php:84
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php on line 84
+[11-Jun-2026 14:44:41 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[11-Jun-2026 14:44:47 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php:84
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\add.php on line 84
+[11-Jun-2026 14:44:49 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php:11
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\api\cart\list.php on line 11
+[12-Jun-2026 06:45:50 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 06:45:50 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260612-9C2228)" to mohit001@gmail.com
+[12-Jun-2026 06:46:03 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 06:46:03 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-9C2228 — UX Pacific" to mohit001@gmail.com
+[12-Jun-2026 06:46:08 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 06:46:08 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260612-9C2228 — ₹0.00" to hello@uxpacific.com
+[12-Jun-2026 07:28:14 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 07:28:14 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260612-9FF3F1)" to mohit001@gmail.com
+[12-Jun-2026 07:28:24 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 07:28:24 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-9FF3F1 — UX Pacific" to mohit001@gmail.com
+[12-Jun-2026 07:28:30 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 07:28:30 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260612-9FF3F1 — ₹0.00" to hello@uxpacific.com
+[12-Jun-2026 08:36:07 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 08:36:07 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260612-039659)" to mohit001@gmail.com
+[12-Jun-2026 08:36:19 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 08:36:19 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-039659 — UX Pacific" to mohit001@gmail.com
+[12-Jun-2026 08:36:27 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 08:36:27 Europe/Berlin] EmailService: failed to send "[New Order] #UXP-20260612-039659 — ₹0.00" to hello@uxpacific.com
+[12-Jun-2026 08:55:22 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 08:55:22 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260612-9376F7)" to mohit001@gmail.com
+[12-Jun-2026 08:55:34 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 08:55:35 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-9376F7 — UX Pacific" to mohit001@gmail.com
+[12-Jun-2026 08:57:29 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[12-Jun-2026 08:58:41 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[12-Jun-2026 09:30:41 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[12-Jun-2026 11:11:17 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:17 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:19 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:19 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:20 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:20 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:21 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:21 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:21 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:21 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:22 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:22 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:23 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_b7ekmhnntq6iopqi170cgvfho4, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:11:24 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[12-Jun-2026 11:17:29 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 11:17:29 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260612-117762)" to zulaprajapati26@gmail.com
+[12-Jun-2026 11:17:39 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[12-Jun-2026 11:17:39 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-117762 — UX Pacific" to zulaprajapati26@gmail.com
+[12-Jun-2026 11:32:37 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'

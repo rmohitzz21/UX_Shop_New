@@ -203,7 +203,7 @@ $related_html = getRelatedProducts($conn, $product);
     />
       <link rel="icon" type="image/png" href="img/fav.png" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
   <body>
     <?php include 'includes/header.php'; ?>
@@ -515,9 +515,14 @@ $related_html = getRelatedProducts($conn, $product);
       const dots = document.querySelectorAll("#sliderDots span");
 
       function updateSlider() {
-        if(mainImage) mainImage.src = productImages[currentIndex];
-        if(slideCount) slideCount.textContent = `${currentIndex + 1} / ${productImages.length}`;
-        
+        if (mainImage) {
+          mainImage.style.opacity = '0';
+          window.setTimeout(() => {
+            mainImage.src = productImages[currentIndex];
+            mainImage.style.opacity = '1';
+          }, 140);
+        }
+        if (slideCount) slideCount.textContent = `${currentIndex + 1} / ${productImages.length}`;
         thumbs.forEach((t, i) => t.classList.toggle("active", i === currentIndex));
         dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
       }

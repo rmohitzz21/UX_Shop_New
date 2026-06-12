@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <?php include 'includes/auth-preload.php'; ?>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
     <!-- <header class="navbar">
@@ -109,7 +109,7 @@
                 $topProducts = [];
                 $topCategories = [];
                 if (isset($conn)) {
-                    $sql = 'SELECT * FROM products WHERE is_active = 1 ORDER BY is_featured DESC, rating DESC, COALESCE(view_count, 0) DESC, id DESC LIMIT 4';
+                    $sql = 'SELECT * FROM products WHERE is_active = 1 ORDER BY is_featured DESC, rating DESC, COALESCE(view_count, 0) DESC, id DESC LIMIT 8';
                     $result = $conn->query($sql);
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {

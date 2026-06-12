@@ -26,8 +26,15 @@ if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
 $sql .= ' GROUP BY c.id ORDER BY c.sort_order ASC, c.name ASC';
 
 $stmt = $conn->prepare($sql);
-if ($params) $stmt->bind_param($types, ...$params);
-$stmt->execute();
+if (!$stmt) {
+    sendResponse('error', 'Could not load categories: ' . $conn->error, null, 500);
+}
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+if (!$stmt->execute()) {
+    sendResponse('error', 'Could not load categories: ' . $stmt->error, null, 500);
+}
 $rows = [];
 $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) $rows[] = $row;
