@@ -13,6 +13,23 @@ function asset_url(string $path): string
     return $rel . '?v=' . rawurlencode($version);
 }
 
+/**
+ * Return a public image path, falling back when the file is missing on disk.
+ */
+function resolvePublicImagePath(?string $image, string $fallback = 'img/poster.webp'): string
+{
+    $image = trim((string) $image);
+    if ($image === '') {
+        return $fallback;
+    }
+    if (preg_match('#^https?://#i', $image)) {
+        return $image;
+    }
+    $rel = ltrim(str_replace('\\', '/', $image), '/');
+    $full = dirname(__DIR__) . '/' . $rel;
+    return is_file($full) ? $rel : $fallback;
+}
+
 function sendResponse($status, $message, $data = null, $code = 200) {
     http_response_code($code);
     header('Content-Type: application/json');
@@ -96,18 +113,32 @@ function apiReadJsonBody(): array {
 
 function validateCsrf() {
     if (empty($_SESSION['csrf_token'])) {
+        error_log(sprintf(
+            'CSRF: no session token (URI=%s, SID=%s, cookies=%s)',
+            $_SERVER['REQUEST_URI'] ?? '?',
+            substr(session_id(), 0, 8),
+            implode(',', array_keys($_COOKIE ?? []))
+        ));
         sendResponse("error", "Session expired", null, 403);
     }
 
-    $token = trim((string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
-    if ($token === '' && !empty($_POST['csrf_token'])) {
-        $token = trim((string) $_POST['csrf_token']);
-    }
-    if ($token === '') {
-        $token = trim((string) (apiReadJsonBody()['csrf_token'] ?? ''));
-    }
+    $headerToken = trim((string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
+    $postToken   = !empty($_POST['csrf_token']) ? trim((string) $_POST['csrf_token']) : '';
+    $bodyToken   = trim((string) (apiReadJsonBody()['csrf_token'] ?? ''));
+
+    $token = $headerToken !== '' ? $headerToken
+           : ($postToken   !== '' ? $postToken
+           : $bodyToken);
 
     if ($token === '' || !hash_equals($_SESSION['csrf_token'], $token)) {
+        error_log(sprintf(
+            'CSRF: reject (URI=%s, session=%s…, header=%s, post=%s, body=%s)',
+            $_SERVER['REQUEST_URI'] ?? '?',
+            substr((string) $_SESSION['csrf_token'], 0, 8),
+            $headerToken !== '' ? substr($headerToken, 0, 8) . '…' : '(empty)',
+            $postToken   !== '' ? substr($postToken,   0, 8) . '…' : '(empty)',
+            $bodyToken   !== '' ? substr($bodyToken,   0, 8) . '…' : '(empty)'
+        ));
         sendResponse("error", "Invalid CSRF token", null, 403);
     }
 }

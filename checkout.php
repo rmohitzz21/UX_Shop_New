@@ -13,6 +13,11 @@ if (empty($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" />
     <?php include 'includes/auth-preload.php'; ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://checkout.razorpay.com" />
+    <link rel="preconnect" href="https://api.razorpay.com" />
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"

@@ -1,4 +1,4 @@
-﻿<?php require_once 'includes/config.php'; ?>
+<?php require_once 'includes/config.php'; ?>
 <?php require_once __DIR__ . '/marketplace.php'; ?>
 <?php
 // ── Category filter resolution ──────────────────────────────────────────────

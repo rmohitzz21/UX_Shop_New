@@ -112,6 +112,15 @@ try {
         $price = ($type === 'freebie' || !empty($row['is_free']))
             ? 0.0
             : (float) $row['price'];
+
+        // Enforce 1 free item per account, lifetime.
+        if ($price <= 0 && in_array($type, ['product', 'freebie'], true)) {
+            $qty = 1;
+            if (apiUserAlreadyOwnsFreeItem($conn, (int) $user['id'], (int) $id)) {
+                throw new InvalidArgumentException('You have already claimed ' . ($row['name'] ?? 'this free item') . '.');
+            }
+        }
+
         $subtotal += $price * $qty;
         $orderItems[] = [
             'type'            => $type,

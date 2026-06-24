@@ -34,8 +34,7 @@ function apiRequirePost(): void {
 }
 
 function apiProductImage(?string $image): string {
-    $image = trim((string) $image);
-    return $image !== '' ? $image : 'img/sticker.webp';
+    return resolvePublicImagePath($image, 'img/sticker.webp');
 }
 
 function apiProductPayload(array $row): array {
@@ -59,6 +58,29 @@ function apiNormalizeCartItemType(string $raw): string
 {
     $raw = strtolower(trim($raw));
     return in_array($raw, ['product', 'bundle', 'freebie'], true) ? $raw : 'product';
+}
+
+/**
+ * Free items (price = 0) are limited to one per account, lifetime.
+ * Returns true if the user has already received this product_id in any
+ * non-cancelled order at price 0.
+ */
+function apiUserAlreadyOwnsFreeItem(mysqli $conn, int $userId, int $productId): bool
+{
+    if ($userId <= 0 || $productId <= 0) return false;
+    $stmt = $conn->prepare(
+        'SELECT 1 FROM order_items oi
+         JOIN orders o ON o.id = oi.order_id
+         WHERE o.user_id = ?
+           AND oi.product_id = ?
+           AND oi.price = 0
+           AND (o.status IS NULL OR o.status NOT IN ("cancelled", "failed", "refunded"))
+         LIMIT 1'
+    );
+    if (!$stmt) return false;
+    $stmt->bind_param('ii', $userId, $productId);
+    $stmt->execute();
+    return (bool) $stmt->get_result()->fetch_assoc();
 }
 
 function apiFreebiePayload(array $row): array

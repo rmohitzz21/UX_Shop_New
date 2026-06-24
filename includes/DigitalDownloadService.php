@@ -349,6 +349,9 @@ class DigitalDownloadService
         }
 
         $filename = basename($absPath);
+        // Drop any output buffer opened upstream (config.php) so readfile streams
+        // directly to the socket instead of buffering large files in memory.
+        while (ob_get_level() > 0) { ob_end_clean(); }
         header('Content-Type: ' . self::getMime($absPath));
         header('Content-Disposition: attachment; filename="' . rawurlencode($filename) . '"');
         header('Content-Length: ' . (string) filesize($absPath));

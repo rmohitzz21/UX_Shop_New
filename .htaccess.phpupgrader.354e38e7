@@ -1,0 +1,83 @@
+# ============================================================
+# UX Shop - Production .htaccess
+# ============================================================
+
+# 1) Baseline hardening
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 2) Sensitive directory blocking
+  RewriteRule ^(?:includes|core|logs|tests|migrations)(?:/|$) - [F,L,NC]
+
+  # 3) Sensitive file blocking
+  RewriteRule (^|/)\.env$ - [F,L,NC]
+  RewriteRule (^|/)\.ht(?:access|passwd)$ - [F,L,NC]
+  RewriteRule \.(?:sql|log|ini|sh|bak|old|orig|swp|dist)$ - [F,L,NC]
+
+  # 4) Optional HTTPS enforcement (enable when SSL is ready)
+  # RewriteCond %{HTTPS} !=on
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 5) Front-controller fallback (keep disabled unless using index router)
+  # RewriteCond %{REQUEST_FILENAME} !-f
+  # RewriteCond %{REQUEST_FILENAME} !-d
+  # RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_authz_core.c>
+  <FilesMatch "(^\.env$|^\.htaccess$|^composer\.(json|lock)$|^package(-lock)?\.json$|^phpunit\.xml$)">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "(^\.env$|^\.htaccess$|^composer\.(json|lock)$|^package(-lock)?\.json$|^phpunit\.xml$)">
+    Order Allow,Deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
+
+# 6) Security headers
+<IfModule mod_headers.c>
+  Header always unset X-Powered-By
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# 7) Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain text/html text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# 8) Browser caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 2 days"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType text/javascript "access plus 7 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpg "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/gif "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType font/woff "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 30 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|webp|woff|woff2)$">
+    Header set Cache-Control "public, max-age=2592000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html|php|json)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

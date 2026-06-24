@@ -64,7 +64,7 @@ $images = [];
 
 // 1. Main Image from 'image' column (Priority 1) — must be a real image file
 if (!empty($product['image']) && marketplaceIsGalleryImagePath((string) $product['image'])) {
-    $images[] = $product['image'];
+    $images[] = marketplaceImage($product['image']);
 }
 
 // 2. Additional gallery images (image files only — not ZIP/PDF/resource paths)
@@ -655,7 +655,8 @@ $related_html = getRelatedProducts($conn, $product);
 
          try {
            await buyNow(id, getSelectedSize(), qty, 'product', {
-             format,
+             format: <?php echo $isFreeProduct ? "'digital'" : 'format'; ?>,
+             isFree: <?php echo $isFreeProduct ? 'true' : 'false'; ?>,
              details: {
                name: '<?php echo addslashes($name); ?>',
                price: finalPrice,

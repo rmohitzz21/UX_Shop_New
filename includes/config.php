@@ -1,6 +1,14 @@
 <?php
 // includes/config.php
 
+// ── -1. Output buffer (defensive) ────────────────────────────────────────────
+// Catch any stray bytes from a BOM, whitespace before <?php, or accidental echo
+// in an upstream include so the security headers + session cookie can still go
+// out on the response. The buffer auto-flushes at end of script.
+if (ob_get_level() === 0) {
+    ob_start();
+}
+
 // ── 0. Load environment variables ────────────────────────────────────────────
 require_once __DIR__ . '/env.php';
 
@@ -33,7 +41,7 @@ if (!headers_sent()) {
     // Permissions policy
     header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
     // Content Security Policy (includes Razorpay for payments)
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://checkout.razorpay.com https://cdn.razorpay.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://checkout.razorpay.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://lh3.googleusercontent.com https://cdn.razorpay.com https://checkout.razorpay.com; connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://cdn.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self';");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://checkout.razorpay.com https://cdn.razorpay.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://checkout.razorpay.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://lh3.googleusercontent.com https://cdn.razorpay.com https://checkout.razorpay.com; connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://cdn.razorpay.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self';");
     // HSTS (only meaningful on HTTPS — harmless on HTTP dev)
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }

@@ -3,29 +3,37 @@ require_once __DIR__ . '/../_bootstrap.php';
 
 $user = apiRequireUser();
 
-$cleanProd = $conn->prepare(
-    'DELETE c FROM cart c
-     LEFT JOIN products p ON p.id = c.product_id AND p.is_active = 1
-     WHERE c.user_id = ? AND c.item_type = "product" AND p.id IS NULL'
-);
-$cleanProd->bind_param('i', $user['id']);
-$cleanProd->execute();
+// Stale-cart cleanup is expensive (3 DELETE-LEFT-JOINs).
+// The SELECT below already filters out stale rows via inner LEFT-JOIN guards,
+// so the user never sees them. We only physically delete them at most once per
+// session — losers eventually clean up on demand or via cron.
+if (empty($_SESSION['cart_cleaned_at']) || (time() - (int) $_SESSION['cart_cleaned_at']) > 1800) {
+    $cleanProd = $conn->prepare(
+        'DELETE c FROM cart c
+         LEFT JOIN products p ON p.id = c.product_id AND p.is_active = 1
+         WHERE c.user_id = ? AND c.item_type = "product" AND p.id IS NULL'
+    );
+    $cleanProd->bind_param('i', $user['id']);
+    $cleanProd->execute();
 
-$cleanBund = $conn->prepare(
-    'DELETE c FROM cart c
-     LEFT JOIN bundles b ON b.id = c.bundle_id AND b.is_active = 1
-     WHERE c.user_id = ? AND c.item_type = "bundle" AND b.id IS NULL'
-);
-$cleanBund->bind_param('i', $user['id']);
-$cleanBund->execute();
+    $cleanBund = $conn->prepare(
+        'DELETE c FROM cart c
+         LEFT JOIN bundles b ON b.id = c.bundle_id AND b.is_active = 1
+         WHERE c.user_id = ? AND c.item_type = "bundle" AND b.id IS NULL'
+    );
+    $cleanBund->bind_param('i', $user['id']);
+    $cleanBund->execute();
 
-$cleanFree = $conn->prepare(
-    'DELETE c FROM cart c
-     LEFT JOIN freebies f ON f.id = c.product_id AND f.is_active = 1
-     WHERE c.user_id = ? AND c.item_type = "freebie" AND f.id IS NULL'
-);
-$cleanFree->bind_param('i', $user['id']);
-$cleanFree->execute();
+    $cleanFree = $conn->prepare(
+        'DELETE c FROM cart c
+         LEFT JOIN freebies f ON f.id = c.product_id AND f.is_active = 1
+         WHERE c.user_id = ? AND c.item_type = "freebie" AND f.id IS NULL'
+    );
+    $cleanFree->bind_param('i', $user['id']);
+    $cleanFree->execute();
+
+    $_SESSION['cart_cleaned_at'] = time();
+}
 
 $stmt = $conn->prepare('
     SELECT

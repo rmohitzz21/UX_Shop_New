@@ -15,6 +15,12 @@
     <?php if ($appUrl !== ''): ?><meta property="og:image" content="<?php echo htmlspecialchars($appUrl . '/img/poster.webp'); ?>" /><?php endif; ?>
     <meta name="twitter:card" content="summary_large_image" />
     <title>UX Pacific – Shop</title>
+    <?php include 'includes/favicon.php'; ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://checkout.razorpay.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="<?php echo htmlspecialchars(asset_url('style.css')); ?>" />
     <?php include 'includes/auth-preload.php'; ?>

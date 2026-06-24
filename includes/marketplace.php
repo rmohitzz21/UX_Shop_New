@@ -458,8 +458,7 @@ function money($value): string {
 }
 
 function marketplaceImage(?string $image): string {
-    $image = trim((string) $image);
-    return $image !== '' ? $image : 'img/poster.webp';
+    return resolvePublicImagePath($image, 'img/poster.webp');
 }
 
 function marketplaceIsGalleryImagePath(string $path): bool

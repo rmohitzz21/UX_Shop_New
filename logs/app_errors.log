@@ -4714,3 +4714,44 @@ Stack trace:
 [12-Jun-2026 11:17:39 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
 [12-Jun-2026 11:17:39 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260612-117762 — UX Pacific" to zulaprajapati26@gmail.com
 [12-Jun-2026 11:32:37 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[13-Jun-2026 08:43:26 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 08:43:26 Europe/Berlin] EmailService: failed to send "Welcome to UX Pacific!" to rmohittt21@gmail.com
+[13-Jun-2026 09:27:30 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_nh29ng75va6ahlt3ir4a260cav, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[13-Jun-2026 09:27:30 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[13-Jun-2026 09:27:31 Europe/Berlin] PHP Warning:  session_start(): open(C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions\sess_nh29ng75va6ahlt3ir4a260cav, O_RDWR) failed: Permission denied (13) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[13-Jun-2026 09:27:31 Europe/Berlin] PHP Warning:  session_start(): Failed to read session data: files (path: C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New/storage/sessions) in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 60
+[13-Jun-2026 09:37:25 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 09:37:25 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260613-8122D5)" to rmohittt21@gmail.com
+[13-Jun-2026 09:37:36 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 09:37:36 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260613-8122D5 — UX Pacific" to rmohittt21@gmail.com
+[13-Jun-2026 11:45:30 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 11:45:30 Europe/Berlin] EmailService: failed to send "Welcome to UX Pacific!" to zulauiux@gmail.com
+[13-Jun-2026 11:48:23 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 11:48:23 Europe/Berlin] EmailService: failed to send "Your free download is ready! (#UXP-20260613-236F41)" to zulauiux@gmail.com
+[13-Jun-2026 11:48:34 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 11:48:34 Europe/Berlin] EmailService: failed to send "Invoice for Order #UXP-20260613-236F41 — UX Pacific" to zulauiux@gmail.com
+[13-Jun-2026 12:11:47 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/2006): MySQL server has gone away in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[13-Jun-2026 12:12:43 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/2002): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[13-Jun-2026 16:26:17 Europe/Berlin] Mailer SMTP error: SMTP expected 235, got: 535 Incorrect authentication data
+[13-Jun-2026 16:26:17 Europe/Berlin] EmailService: failed to send "Welcome to UX Pacific!" to demo@gmail.com
+[13-Jun-2026 17:36:13 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[13-Jun-2026 17:38:45 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[14-Jun-2026 07:05:57 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[14-Jun-2026 07:06:10 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[15-Jun-2026 08:34:17 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Warning:  mysqli::__construct(): Error while reading greeting packet. PID=23472 in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Warning:  mysqli::__construct(): (HY000/2006): MySQL server has gone away in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 71
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[18-Jun-2026 08:36:00 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Shop\UX_SHOP\UX_Shop_New\includes\config.php on line 64
+[23-Jun-2026 08:54:33 Europe/Berlin] admin stats prepare failed: Unknown column 'status' in 'field list'

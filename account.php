@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'includes/config.php';
 if (empty($_SESSION['user_id'])) {
     header('Location: signin.php?redirect=account.php');

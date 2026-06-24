@@ -12,21 +12,34 @@ function getCsrfToken() {
   return _csrfToken || '';
 }
 
-/** Async read — resolves with a valid token, fetching from /api/auth/csrf.php if needed. */
-async function getCsrfTokenAsync() {
-  if (_csrfToken) return _csrfToken;
-  const meta = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  if (meta) { _csrfToken = meta; return _csrfToken; }
+/**
+ * Async read — resolves with a valid token, fetching from /api/auth/csrf.php if needed.
+ * Pass forceRefresh=true to bypass the cache and meta tag and always pull the live
+ * server-side token. Use this on auth forms (signin/signup/forgot-password/reset)
+ * where a stale meta tag (e.g. left over after a session_regenerate_id in another
+ * tab) would otherwise cause a 403.
+ */
+async function getCsrfTokenAsync(forceRefresh = false) {
+  if (!forceRefresh) {
+    if (_csrfToken) return _csrfToken;
+    const meta = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    if (meta) { _csrfToken = meta; return _csrfToken; }
+  }
   // Deduplicate concurrent calls — only one inflight request at a time
   if (!_csrfFetchPromise) {
-    _csrfFetchPromise = fetch('api/auth/csrf.php', { credentials: 'same-origin' })
+    _csrfFetchPromise = fetch('api/auth/csrf.php', { credentials: 'same-origin', cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
-        _csrfToken = d.data?.token || d.token || '';
+        const fresh = d.data?.token || d.token || '';
+        if (fresh) {
+          _csrfToken = fresh;
+          const meta = document.querySelector('meta[name="csrf-token"]');
+          if (meta) meta.setAttribute('content', fresh);
+        }
         _csrfFetchPromise = null;
-        return _csrfToken;
+        return _csrfToken || '';
       })
-      .catch(() => { _csrfFetchPromise = null; return ''; });
+      .catch(() => { _csrfFetchPromise = null; return _csrfToken || ''; });
   }
   return _csrfFetchPromise;
 }
@@ -40,20 +53,32 @@ function setCsrfToken(token) {
 
 /**
  * secureFetch — drop-in replacement for fetch() that automatically injects
- * the X-CSRF-Token header on every request.
+ * the X-CSRF-Token header on every request, AND auto-recovers from a stale
+ * CSRF token (403) by fetching a fresh one and retrying once.
+ *
  * Usage: secureFetch('api/cart/add.php', { method:'POST', body: JSON.stringify(data) })
  */
 async function secureFetch(url, options = {}) {
-  const token = await getCsrfTokenAsync();
-  return fetch(url, {
-    ...options,
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token,
-      ...(options.headers || {}),
-    },
-  });
+  const send = async (forceRefresh) => {
+    const token = await getCsrfTokenAsync(forceRefresh);
+    return fetch(url, {
+      ...options,
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': token,
+        ...(options.headers || {}),
+      },
+    });
+  };
+
+  let res = await send(false);
+  if (res.status === 403) {
+    // Could be a stale CSRF token (session rotated in another tab, etc.).
+    // Pull a fresh one and retry exactly once before surfacing the 403.
+    res = await send(true);
+  }
+  return res;
 }
 
 // ── Security: HTML entity encoder — use on ALL user data injected via innerHTML ─
@@ -602,8 +627,10 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 document.addEventListener('DOMContentLoaded', function() {
   const userSession = getUserSession();
   if (userSession && userSession.id) {
-     // Load from API if logged in
-     fetchCartFromAPI();
+     // Checkout page loads cart inside initCheckoutPageAsync to avoid empty-cart race.
+     if (!window.location.pathname.includes('checkout.php')) {
+       fetchCartFromAPI();
+     }
   } else {
      // LocalStorage already loaded
      updateCartCount();
@@ -611,25 +638,39 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+let _cartFetchInFlight = null;
+let _cartFetchLastAt = 0;
 function fetchCartFromAPI() {
-    fetch('api/cart/list.php')
+    // Dedupe: if a request is already in flight, return that promise instead of firing another.
+    if (_cartFetchInFlight) return _cartFetchInFlight;
+    // Throttle: ignore calls within 250ms of the previous successful response.
+    if (Date.now() - _cartFetchLastAt < 250) return Promise.resolve();
+
+    _cartFetchInFlight = fetch('api/cart/list.php', { credentials: 'same-origin' })
       .then(res => {
-         if(res.status === 401) return []; // Guest/Expired
+         if (res.status === 401) return null; // Guest / session expired
          return res.json();
       })
       .then(data => {
-         if(data.status === 'success') {
-             cart = data.data; // Sync global cart variable
-             saveCart(); // Optional: Keep local storage in sync or just rely on memory? 
-                         // Better to just update memory for logged in users to avoid conflicts.
-                         // But for now, let's keep cart variable as source of truth.
+         if (data && data.status === 'success') {
+             cart = data.data;
+             saveCart();
              updateCartCount();
              if (typeof window.renderCartDrawer === 'function') window.renderCartDrawer();
              if (window.location.pathname.includes('cart.php')) loadCartPage();
              if (window.location.pathname.includes('checkout.php')) loadCheckoutPage();
          }
+         return data;
       })
-      .catch(err => console.error('Error fetching cart:', err));
+      .catch(err => {
+         console.error('Error fetching cart:', err);
+         return null;
+      })
+      .finally(() => {
+         _cartFetchInFlight = null;
+         _cartFetchLastAt = Date.now();
+      });
+    return _cartFetchInFlight;
 }
 
 // Product database (temporary - replace with API call later)
@@ -646,7 +687,8 @@ const products = {
 // Add to cart
 // Add to cart
 // Add to cart
-function addToCart(productId, size = null, quantity = 1, explicitDetails = null, productFormat = null) {
+function addToCart(productId, size = null, quantity = 1, explicitDetails = null, productFormat = null, options = {}) {
+  const silent = options === true || (options && options.silent === true);
   return new Promise((resolve, reject) => {
     // If explicitDetails are provided (e.g. from shop page), use them for immediate feedback.
     // Otherwise, default to placeholders. The cart page will fetch fresh data from API using ID.
@@ -683,26 +725,33 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
             payload.product_id = productId;
         }
 
-        fetch('api/cart/add.php', {
+        secureFetch('api/cart/add.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
             body: JSON.stringify(payload)
         })
-        .then(res => res.json())
-        .then(data => {
+        .then(async (res) => {
+            let data;
+            try {
+                data = await res.json();
+            } catch (_) {
+                data = { status: 'error', message: 'Unexpected server response.' };
+            }
             if (data.status === 'success') {
-                showToast('Item added to cart!', 'success');
-                fetchCartFromAPI(); // Refresh cart
-                resolve(data);
+                fetchCartFromAPI()
+                  .finally(() => {
+                    if (!silent) showToast('Item added to cart!', 'success');
+                    resolve(data);
+                  });
             } else {
-                showToast(data.message || 'Failed to add item', 'error');
-                reject(data.message);
+                const message = data.message || 'Failed to add item';
+                if (!silent) showToast(message, 'error');
+                reject({ message, status: res.status });
             }
         })
         .catch(err => {
             console.error(err);
-            showToast('Error adding item', 'error');
-            reject(err);
+            if (!silent) showToast('Error adding item', 'error');
+            reject(typeof err === 'object' && err?.message ? err : { message: 'Error adding item', status: 0 });
         });
   
     } else {
@@ -737,11 +786,11 @@ function addToCart(productId, size = null, quantity = 1, explicitDetails = null,
         
         saveCart();
         updateCartCount();
-        showToast('Item added to cart!', 'success');
-        
-        // If on cart page, refresh it
-        if (window.location.pathname.includes('cart.php')) {
-          loadCartPage();
+        if (!silent) {
+          showToast('Item added to cart!', 'success');
+          if (window.location.pathname.includes('cart.php')) {
+            loadCartPage();
+          }
         }
         resolve({ status: 'success' });
     }
@@ -791,9 +840,8 @@ function removeFromCart(productId, size = null, cartIdOverride = 0) {
       const body = Number(cartIdOverride) > 0
         ? { cart_id: Number(cartIdOverride) }
         : cartLineApiPayload(item, productId, size);
-      fetch('api/cart/remove.php', {
+      secureFetch('api/cart/remove.php', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
           body: JSON.stringify(body)
       })
       .then(res => res.json())
@@ -843,10 +891,8 @@ function updateCartQuantity(productId, size, newQuantity, cartIdOverride = 0) {
      const body = Number(cartIdOverride) > 0
        ? { cart_id: Number(cartIdOverride), quantity: newQuantity }
        : cartLineApiPayload(item, productId, size, newQuantity);
-     fetch('api/cart/update.php', {
+     secureFetch('api/cart/update.php', {
          method: 'POST',
-         credentials: 'same-origin',
-         headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()},
          body: JSON.stringify(body)
      })
      .then(res => res.json())
@@ -1147,6 +1193,44 @@ async function loadCartPage() {
 }
 
 // Load checkout page
+async function initCheckoutPageAsync() {
+  const userSession = getUserSession();
+  if (!userSession || !userSession.id) {
+    if (userSession) clearUserSession();
+    showToast('Please sign in with a valid account to proceed to checkout', 'error');
+    window.location.href = 'signin.php?redirect=checkout.php';
+    return;
+  }
+
+  const checkoutItemsContainer = document.getElementById('checkout-items');
+  if (checkoutItemsContainer) {
+    checkoutItemsContainer.innerHTML = '<p>Loading your cart…</p>';
+  }
+
+  await fetchCartFromAPI();
+
+  if (cart.length === 0) {
+    showToast('Your cart is empty!', 'error');
+    window.location.href = 'cart.php';
+    return;
+  }
+
+  loadCheckoutPage();
+  loadRazorpayScript().catch(() => {});
+  initCheckoutAddresses();
+
+  document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const cardDetails = document.getElementById('card-details');
+      if (this.value === 'card' || this.value === 'upi') {
+        cardDetails.style.display = 'block';
+      } else {
+        cardDetails.style.display = 'none';
+      }
+    });
+  });
+}
+
 function loadCheckoutPage() {
   const checkoutItemsContainer = document.getElementById('checkout-items');
   
@@ -1448,46 +1532,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   if (window.location.pathname.includes('checkout.php')) {
-    // Check if user is signed in
-    const userSession = getUserSession();
-    if (!userSession || !userSession.id) {
-      if (userSession) clearUserSession(); // Clear invalid session
-      showToast('Please sign in with a valid account to proceed to checkout', 'error');
-      setTimeout(() => {
-        window.location.href = 'signin.php?redirect=checkout.php';
-      }, 1500);
-      return;
-    }
-    
-    // Check if cart is empty
-    if (cart.length === 0) {
-      showToast('Your cart is empty!', 'error');
-      setTimeout(() => {
-        window.location.href = 'cart.php';
-      }, 1500);
-      return;
-    }
-    
-    loadCheckoutPage();
-
-    // Preload Razorpay so payment modal opens without waiting on click
-    loadRazorpayScript().catch(() => {});
-
-    // Initialize address selection
-    initCheckoutAddresses();
-
-    // Handle payment method change
-    document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-      radio.addEventListener('change', function() {
-        const cardDetails = document.getElementById('card-details');
-        // Show Razorpay info for both card and UPI (both use Razorpay gateway)
-        if (this.value === 'card' || this.value === 'upi') {
-          cardDetails.style.display = 'block';
-        } else {
-          cardDetails.style.display = 'none';
-        }
-      });
-    });
+    initCheckoutPageAsync();
   }
   
 });
@@ -1846,8 +1891,9 @@ function handleSignIn(event) {
   btnText.style.display = 'none';
   btnLoader.style.display = 'inline';
   
-  // Call API
-  getCsrfTokenAsync().then((csrfToken) => fetch('api/auth/login.php', {
+  // Call API — force-refresh CSRF token to defeat stale meta tags (e.g. after
+  // session_regenerate_id in another tab).
+  getCsrfTokenAsync(true).then((csrfToken) => fetch('api/auth/login.php', {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
@@ -1886,9 +1932,8 @@ function handleSignIn(event) {
       // Merge local cart if exists
       const localCart = JSON.parse(localStorage.getItem('cart')) || [];
       if (localCart.length > 0) {
-          fetch('api/cart/merge.php', {
+          secureFetch('api/cart/merge.php', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
               body: JSON.stringify({ cart: localCart })
           })
           .then(res => res.json())
@@ -1993,9 +2038,8 @@ async function handleContactSubmit(event) {
   if (submitBtn) submitBtn.disabled = true;
 
   try {
-    const res = await fetch('api/contact/send.php', {
+    const res = await secureFetch('api/contact/send.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
       body: JSON.stringify(formData)
     });
     const data = await res.json();
@@ -2021,9 +2065,7 @@ function handleCheckout(event) {
   if (!userSession || !userSession.id) {
     if (userSession) clearUserSession(); // Clear invalid session
     showToast('Your session is invalid. Please sign in again.', 'error');
-    setTimeout(() => {
-      window.location.href = 'signin.php?redirect=checkout.php';
-    }, 1500);
+    window.location.href = 'signin.php?redirect=checkout.php';
     return;
   }
   
@@ -2195,8 +2237,8 @@ function handleCheckout(event) {
     }
   };
   
-  const csrfToken = getCsrfToken();
-  const orderHeaders = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken };
+  // Note: createDraftOrder uses secureFetch — it injects a fresh CSRF token
+  // (with auto-retry on 403) on every send, so no upfront token needed here.
 
   function resetOrderBtn() {
     btn.disabled = false;
@@ -2215,15 +2257,14 @@ function handleCheckout(event) {
   }
 
   function createDraftOrder() {
-    return fetch('api/order/create.php', {
+    return secureFetch('api/order/create.php', {
       method: 'POST',
-      headers: orderHeaders,
       body: JSON.stringify(orderPayload)
     }).then(res => {
       if (res.status === 401) {
         clearUserSession();
         showToast('Session expired. Please sign in again.', 'error');
-        setTimeout(() => { window.location.href = 'signin.php?redirect=checkout.php'; }, 1500);
+        window.location.href = 'signin.php?redirect=checkout.php';
         throw new Error('Session expired');
       }
       return res.json();
@@ -2262,9 +2303,8 @@ function handleCheckout(event) {
     createDraftOrder()
       .then(serverData => {
         const orderId = serverData.data.orderId;
-        return fetch('api/payment/test-pay.php', {
+        return secureFetch('api/payment/test-pay.php', {
           method: 'POST',
-          headers: orderHeaders,
           body: JSON.stringify({ order_id: orderId })
         })
           .then(r => r.json())
@@ -2288,9 +2328,8 @@ function handleCheckout(event) {
     .then(() => createDraftOrder())
     .then(serverData => {
       const orderId = serverData.data.orderId;
-      return fetch('api/payment/razorpay-create-order.php', {
+      return secureFetch('api/payment/razorpay-create-order.php', {
         method: 'POST',
-        headers: orderHeaders,
         body: JSON.stringify({ order_id: orderId })
       })
         .then(r => r.json())
@@ -2311,9 +2350,8 @@ function handleCheckout(event) {
           description: 'Order ' + serverData.data.orderNumber,
           handler: function(response) {
             if (btnLoader) btnLoader.textContent = 'Confirming payment...';
-            fetch('api/payment/razorpay-verify.php', {
+            secureFetch('api/payment/razorpay-verify.php', {
               method: 'POST',
-              headers: orderHeaders,
               body: JSON.stringify({
                 razorpay_order_id:   response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -2528,8 +2566,8 @@ function handleSignUp(event) {
     if (btnLoader) btnLoader.style.display = 'inline';
   }
   
-  // Call actual API
-  getCsrfTokenAsync().then((csrfToken) => fetch('api/auth/signup.php', {
+  // Call actual API — force-refresh CSRF token (stale meta-tag tolerant).
+  getCsrfTokenAsync(true).then((csrfToken) => fetch('api/auth/signup.php', {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
@@ -2546,7 +2584,14 @@ function handleSignUp(event) {
       csrf_token: csrfToken
     })
   }))
-  .then(response => response.json())
+  .then(async (response) => {
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      throw new Error('Server error. Please try again.');
+    }
+  })
   .then(data => {
     if (data.status === 'success') {
       const user = data.data?.user;
@@ -2631,10 +2676,10 @@ async function handleForgotPassword(event) {
   if (successDiv) successDiv.style.display = 'none';
 
   try {
-    const csrfToken = getCsrfToken();
+    const csrfToken = await getCsrfTokenAsync(true);
     const res = await fetch('api/auth/forgot-password.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ email, csrf_token: csrfToken })
     });
     const data = await res.json();
@@ -3601,7 +3646,7 @@ function renderCatalogPriceRow(item) {
 }
 
 const marketplaceDetailCache = new Map();
-const marketplacePrefetching = new Set();
+const marketplaceInflight = new Map();
 let marketplaceOpenToken = 0;
 
 function normalizeMarketplaceType(t) {
@@ -3616,9 +3661,10 @@ function getCardPreviewData(card) {
   const img = card.querySelector('.uxp-product-media img, .uxp-bundle-image img, .prod-img img, img');
   const isFree = card.dataset.isFree === '1' || card.dataset.isFree === 'true'
     || card.dataset.type === 'freebie' || Number(card.dataset.price || 0) <= 0;
+  const rawType = card.dataset.itemType || card.dataset.type || 'product';
   return {
     id: card.dataset.productId || card.dataset.id,
-    type: normalizeMarketplaceType(card.dataset.type),
+    type: normalizeMarketplaceType(rawType),
     name: card.dataset.name || card.querySelector('h3')?.textContent?.trim() || 'Product',
     image: card.dataset.image || img?.getAttribute('src') || 'img/poster.webp',
     price: isFree ? 0 : Number(card.dataset.price || 0),
@@ -3633,19 +3679,30 @@ function marketplaceCacheKey(type, id) {
   return `${type}:${id}`;
 }
 
-function prefetchMarketplaceDetail(type, id) {
+function fetchMarketplaceDetail(type, id) {
   const key = marketplaceCacheKey(type, id);
-  if (marketplaceDetailCache.has(key) || marketplacePrefetching.has(key)) return;
-  marketplacePrefetching.add(key);
-  fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
+  if (marketplaceDetailCache.has(key)) {
+    return Promise.resolve(marketplaceDetailCache.get(key));
+  }
+  if (marketplaceInflight.has(key)) {
+    return marketplaceInflight.get(key);
+  }
+  const promise = fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
     credentials: 'same-origin',
   })
     .then((r) => r.json())
     .then((data) => {
-      if (data.status === 'success') marketplaceDetailCache.set(key, data.data);
+      if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
+      marketplaceDetailCache.set(key, data.data);
+      return data.data;
     })
-    .catch(() => {})
-    .finally(() => marketplacePrefetching.delete(key));
+    .finally(() => marketplaceInflight.delete(key));
+  marketplaceInflight.set(key, promise);
+  return promise;
+}
+
+function prefetchMarketplaceDetail(type, id) {
+  fetchMarketplaceDetail(type, id).catch(() => {});
 }
 
 function trackMarketplaceView(type, id) {
@@ -3687,7 +3744,9 @@ function ensureMarketplaceModal() {
 
 function renderInstantModalShell(preview, type) {
   const itemType = preview.type || type;
-  const typeLabel = itemType === 'bundle' ? 'Bundle' : 'Product';
+  const typeLabel = itemType === 'bundle' ? 'Bundle' : (itemType === 'freebie' ? 'Freebie' : 'Product');
+  const isFree = isCatalogItemFree(preview);
+  const buyLabel = isFree ? 'Get Free' : 'Buy Now';
   return `
     <div class="mp-gallery-col mp-scroll-col" data-mp-scroll>
       <div class="mp-gallery-inner">
@@ -3702,13 +3761,18 @@ function renderInstantModalShell(preview, type) {
       <div class="mp-details is-hydrating">
         <div class="mp-tags">
           <span class="mp-tag-pill">${esc(preview.category || typeLabel)}</span>
+          ${isFree ? '<span class="mp-tag-pill mp-tag-pill--accent">Free</span>' : ''}
         </div>
         <h2 id="marketplace-modal-title">${esc(preview.name)}</h2>
         <div class="mp-rating-row mp-rating-row--loading">
           <span class="mp-rating-text">★ ${esc(preview.rating || '4.5')}</span>
         </div>
         <div class="mp-price-row">
-          <strong>${formatMoney(isCatalogItemFree(preview) ? 0 : preview.price)}</strong>
+          <strong>${formatMoney(isFree ? 0 : preview.price)}</strong>
+        </div>
+        <div class="mp-action-stack mp-action-stack--instant">
+          <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('${esc(itemType)}', '${esc(preview.id)}')">Add to Cart</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(preview.id)}', ${isFree ? 'true' : 'false'})">${buyLabel}</button>
         </div>
         <div class="mp-shimmer-block">
           <div class="mp-shimmer-line"></div>
@@ -4171,7 +4235,7 @@ function renderFreebieDetailModal(item, related) {
         </div>
         <div class="mp-action-stack">
           <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('freebie', '${esc(item.id)}')">Add to Cart</button>
-          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('freebie', '${esc(item.id)}')">Get Free</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('freebie', '${esc(item.id)}', true)">Get Free</button>
         </div>
         ${relatedHtml}
       </div>
@@ -4188,9 +4252,6 @@ function renderProductDetailModal(item, type, related, tagTokens) {
   const ratingHtml = renderMpStarRating(item.rating || '4.5', reviewCount);
   const sizeHtml = renderMpSizeSelector(item);
   const lowerPanelsHtml = renderProductInfoPanels(item, itemType, false, true);
-  const detailPageUrl = itemType === 'bundle'
-    ? `bundles.php?id=${encodeURIComponent(item.id)}`
-    : `product.php?id=${encodeURIComponent(item.id)}`;
   const descHtml = item.description
     ? `<div class="mp-desc-inline"><p class="mp-about-text">${esc(item.description)}</p></div>`
     : '';
@@ -4284,15 +4345,11 @@ function renderProductDetailModal(item, type, related, tagTokens) {
 
         <div class="mp-action-stack">
           <button type="button" class="mp-btn-cart" onclick="addMarketplaceItemToCart('${esc(itemType)}', '${esc(item.id)}')">Add to Cart</button>
-          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}')">${isFree ? 'Get Free' : 'Buy Now'}</button>
+          <button type="button" class="mp-btn-buy" onclick="mpModalBuyNow('${esc(itemType)}', '${esc(item.id)}', ${isFree ? 'true' : 'false'})">${isFree ? 'Get Free' : 'Buy Now'}</button>
         </div>
 
         <div class="mp-lower-panels">
           ${lowerPanelsHtml}
-          <a href="${detailPageUrl}" class="mp-view-full-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            View full product page
-          </a>
         </div>
 
         ${relatedHtml}
@@ -4382,29 +4439,31 @@ function initMpModalControls() {
   });
 }
 
-async function mpModalBuyNow(type, id) {
+async function mpModalBuyNow(type, id, isFree = false) {
   const buyBtn = document.querySelector('.mp-btn-buy');
   const cartBtn = document.querySelector('.mp-btn-cart');
-  
+
   try {
     if (buyBtn) {
       buyBtn.classList.add('is-loading');
       buyBtn.disabled = true;
     }
     if (cartBtn) cartBtn.disabled = true;
-    
+
     const qty = getMpModalQty();
     const size = getMpModalSize();
-    
+
     if (type === 'bundle') {
       await addMarketplaceItemToCart(type, id);
+      await fetchCartFromAPI();
       window.location.href = 'checkout.php';
       return;
     }
 
-    await buyNow(id, size, qty);
+    await buyNow(id, size, qty, type === 'freebie' ? 'freebie' : 'product', { isFree: !!isFree });
   } catch (error) {
-    showToast(error.message || 'Could not process request.', 'error');
+    const msg = error?.message || (typeof error === 'string' ? error : 'Could not process request.');
+    showToast(msg, 'error');
     if (buyBtn) {
       buyBtn.classList.remove('is-loading');
       buyBtn.disabled = false;
@@ -4427,19 +4486,41 @@ function initRelatedCarousel() {
 }
 
 function initProductCardPopups() {
-  document.addEventListener('mouseenter', (event) => {
-    const card = event.target.closest?.('.uxp-product-card, .shop-product-card, .marketplace-card');
-    if (!card) return;
+  const cardSelector = '.uxp-product-card, .shop-product-card, .marketplace-card, .uxp-bundle-card, .freebie-card';
+
+  const prefetchFromCard = (card) => {
     const preview = getCardPreviewData(card);
     if (preview?.id) prefetchMarketplaceDetail(preview.type, preview.id);
+  };
+
+  document.addEventListener('mouseenter', (event) => {
+    const card = event.target.closest?.(cardSelector);
+    if (!card) return;
+    prefetchFromCard(card);
+  }, true);
+
+  document.addEventListener('mousedown', (event) => {
+    const card = event.target.closest?.(cardSelector);
+    if (!card) return;
+    prefetchFromCard(card);
   }, true);
 
   document.addEventListener('focusin', (event) => {
-    const card = event.target.closest?.('.uxp-product-card, .shop-product-card, .marketplace-card');
+    const card = event.target.closest?.(cardSelector);
     if (!card) return;
-    const preview = getCardPreviewData(card);
-    if (preview?.id) prefetchMarketplaceDetail(preview.type, preview.id);
+    prefetchFromCard(card);
   });
+
+  if ('IntersectionObserver' in window) {
+    const prefetchObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        prefetchFromCard(entry.target);
+        prefetchObserver.unobserve(entry.target);
+      });
+    }, { rootMargin: '120px' });
+    document.querySelectorAll(cardSelector).forEach((card) => prefetchObserver.observe(card));
+  }
 
   document.addEventListener('click', (event) => {
     const buyNowBtn = event.target.closest('.js-buy-now');
@@ -4452,10 +4533,12 @@ function initProductCardPopups() {
       if (!id) return;
       const card = buyNowBtn.closest('.uxp-product-card, .shop-product-card, .marketplace-card, [data-product-id]');
       const format = buyNowBtn.dataset.availableType || card?.dataset.type || null;
+      const isFree = String(card?.dataset.isFree || buyNowBtn.dataset.isFree || '') === '1'
+        || Number(card?.dataset.price || 0) === 0;
       const origText = buyNowBtn.textContent.trim();
       buyNowBtn.disabled = true;
       buyNowBtn.textContent = '…';
-      buyNow(id, null, 1, itemType, { format }).catch(() => {
+      buyNow(id, null, 1, itemType, { format, isFree }).catch(() => {
         buyNowBtn.disabled = false;
         buyNowBtn.textContent = origText;
       });
@@ -4522,25 +4605,12 @@ async function openMarketplaceModal(type, id, triggerEl) {
   content.className = 'marketplace-modal-content is-loading';
   body.innerHTML = renderInstantModalShell(preview, type);
 
-  trackMarketplaceView(type, id);
-
-  const cacheKey = marketplaceCacheKey(type, id);
-  const loadFull = async () => {
-    if (marketplaceDetailCache.has(cacheKey)) {
-      return marketplaceDetailCache.get(cacheKey);
-    }
-    const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, {
-      credentials: 'same-origin',
-    });
-    const data = await response.json();
-    if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
-    marketplaceDetailCache.set(cacheKey, data.data);
-    return data.data;
-  };
+  prefetchMarketplaceDetail(type, id);
 
   try {
-    const payload = await loadFull();
+    const payload = await fetchMarketplaceDetail(type, id);
     if (openToken !== marketplaceOpenToken) return;
+    trackMarketplaceView(type, id);
     const item = payload.item;
     const related = payload.related || [];
     const tagTokens = payload.tag_tokens || [];
@@ -4585,10 +4655,8 @@ function closeMarketplaceModal() {
 let marketplaceTriggerEl = null;
 
 async function fetchMarketplaceItem(type, id) {
-  const response = await fetch(`api/catalog/detail.php?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
-  const data = await response.json();
-  if (data.status !== 'success') throw new Error(data.message || 'Unable to load item.');
-  return data.data.item;
+  const payload = await fetchMarketplaceDetail(type, id);
+  return payload.item;
 }
 
 async function addMarketplaceItemToCart(type, id) {
@@ -4605,16 +4673,23 @@ async function addMarketplaceItemToCart(type, id) {
     const item = await fetchMarketplaceItem(type, id);
     const qty = getMpModalQty();
     const size = getMpModalSize();
+    const format = isCatalogItemFree(item) ? 'digital' : (item.available_type || 'digital');
     await addToCart(
       item.id,
       size,
       qty,
       { ...item, item_type: type },
-      item.available_type || 'digital',
+      format,
     );
     showToast('Added to cart!', 'success');
   } catch (error) {
-    showToast(error.message || 'Could not add item.', 'error');
+    const msg = error?.message || (typeof error === 'string' ? error : 'Could not add item.');
+    if (error?.status === 409 || /already claimed/i.test(msg)) {
+      showToast(msg, 'error');
+      window.location.href = 'orders.php';
+      return;
+    }
+    showToast(msg, 'error');
   } finally {
     if (cartBtn) {
       cartBtn.classList.remove('is-loading');
@@ -4711,11 +4786,8 @@ function toggleMarketplaceWishlist(itemType, itemId) {
     window.location.href = 'signin.php?redirect=' + encodeURIComponent(window.location.pathname);
     return;
   }
-  const csrf = getCsrfToken();
-  fetch('api/wishlist/toggle.php', {
+  secureFetch('api/wishlist/toggle.php', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-    credentials: 'same-origin',
     body: JSON.stringify({ item_type: itemType, item_id: Number(itemId) })
   })
     .then(r => r.json())
@@ -4826,27 +4898,35 @@ if (typeof document !== 'undefined') {
   });
 }
 
-// Buy Now — add item to cart, then go to checkout (or sign-in first)
+// Buy Now / Get Free — add item to cart, then go to checkout (or sign-in first)
 async function buyNow(productId, size, quantity, itemType = 'product', options = {}) {
-  const format = options.format || null;
+  const isFree = options.isFree === true || itemType === 'freebie';
+  const format = isFree ? 'digital' : (options.format || null);
   const details = { item_type: itemType, ...(options.details || {}) };
 
   const userSession = getUserSession();
   if (!userSession || !userSession.id) {
     if (userSession) clearUserSession();
-    await addToCart(productId, size, quantity, details, format).catch(() => {});
-    showToast('Please sign in to complete your purchase', 'error');
-    setTimeout(() => {
-      window.location.href = 'signin.php?redirect=checkout.php';
-    }, 1500);
+    // Guest cart is localStorage — synchronous, no need to await.
+    addToCart(productId, size, quantity, details, format, { silent: true }).catch(() => {});
+    showToast('Please sign in to continue', 'error');
+    window.location.href = 'signin.php?redirect=checkout.php';
     return;
   }
 
   try {
-    await addToCart(productId, size, quantity, details, format);
+    await addToCart(productId, size, quantity, details, format, { silent: true });
+    // Ensure local cart is synced before navigation (checkout reads it on first paint).
+    await fetchCartFromAPI();
     window.location.href = 'checkout.php';
   } catch (err) {
-    showToast(typeof err === 'string' ? err : 'Failed to add item to cart.', 'error');
+    const message = (typeof err === 'object' && err?.message) ? err.message : String(err || 'Failed to add item to cart.');
+    if (err?.status === 409 || /already claimed/i.test(message)) {
+      showToast(message || 'You have already claimed this free item.', 'error');
+      window.location.href = 'orders.php';
+      return;
+    }
+    showToast(message, 'error');
     throw err;
   }
 }
@@ -4855,12 +4935,10 @@ async function buyNow(productId, size, quantity, itemType = 'product', options =
 function checkAuthBeforeCheckout(event) {
   const userSession = getUserSession();
   if (!userSession || !userSession.id) {
-    if (userSession) clearUserSession(); // Clear invalid session
+    if (userSession) clearUserSession();
     event.preventDefault();
     showToast('Please sign in to proceed to checkout', 'error');
-    setTimeout(() => {
-      window.location.href = 'signin.php?redirect=checkout.php';
-    }, 1500);
+    window.location.href = 'signin.php?redirect=checkout.php';
     return false;
   }
   return true;
@@ -4913,9 +4991,7 @@ function cartItemIsPhysical(item) {
 function handleSignInRedirect() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectUrl = getSafeRedirect(urlParams.get('redirect'));
-  setTimeout(() => {
-    window.location.href = redirectUrl;
-  }, 1500);
+  window.location.href = redirectUrl;
 }
 
 window.buyNow = buyNow;

@@ -1,4 +1,4 @@
-﻿<?php require_once 'includes/config.php'; ?>
+<?php require_once 'includes/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en" class="auth-premium-root">
 <head>

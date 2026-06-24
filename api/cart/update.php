@@ -17,6 +17,28 @@ if ($cartId > 0) {
         sendResponse('success', 'Item removed.');
     }
 
+    // Determine if this cart line is a free item; cap qty at 1 if so.
+    $row = null;
+    $look = $conn->prepare(
+        'SELECT c.item_type, c.product_id,
+                CASE
+                    WHEN c.item_type = "freebie" THEN 1
+                    WHEN c.item_type = "product" AND p.price = 0 THEN 1
+                    ELSE 0
+                END AS is_free
+         FROM cart c
+         LEFT JOIN products p ON p.id = c.product_id
+         WHERE c.id = ? AND c.user_id = ? LIMIT 1'
+    );
+    if ($look) {
+        $look->bind_param('ii', $cartId, $user['id']);
+        $look->execute();
+        $row = $look->get_result()->fetch_assoc();
+    }
+    if ($row && (int) $row['is_free'] === 1) {
+        $quantity = 1;
+    }
+
     $quantity = min(10, $quantity);
     $stmt = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?');
     $stmt->bind_param('iii', $quantity, $cartId, $user['id']);
@@ -26,7 +48,7 @@ if ($cartId > 0) {
         sendResponse('error', 'Item not found in cart.', null, 404);
     }
 
-    sendResponse('success', 'Cart updated.');
+    sendResponse('success', 'Cart updated.', ['quantity' => $quantity]);
 }
 
 $itemType = apiNormalizeCartItemType((string) ($input['item_type'] ?? 'product'));

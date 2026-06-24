@@ -12,6 +12,8 @@ $quantity = max(1, min(10, (int) ($input['quantity'] ?? 1)));
 $size     = trim((string) ($input['size'] ?? ''));
 $sizeVal  = $size !== '' ? $size : null;
 
+$isFreeItem = false; // set below for free products / freebies; capped to qty 1
+
 if ($itemType === 'freebie') {
     $catalogId = (int) ($input['freebie_id'] ?? $input['product_id'] ?? $input['id'] ?? 0);
     if ($catalogId <= 0) {
@@ -26,12 +28,13 @@ if ($itemType === 'freebie') {
     $catalogAvailType = 'digital';
     $productId = $catalogId;
     $bundleId  = null;
+    $isFreeItem = true;
 } elseif ($itemType === 'product') {
     $catalogId = (int) ($input['product_id'] ?? $input['id'] ?? 0);
     if ($catalogId <= 0) {
         sendResponse('error', 'Invalid product.', null, 422);
     }
-    $chk = $conn->prepare('SELECT id, available_type FROM products WHERE id = ? AND is_active = 1 LIMIT 1');
+    $chk = $conn->prepare('SELECT id, available_type, price, is_free FROM products WHERE id = ? AND is_active = 1 LIMIT 1');
     $chk->bind_param('i', $catalogId);
     $chk->execute();
     $row = $chk->get_result()->fetch_assoc();
@@ -41,6 +44,7 @@ if ($itemType === 'freebie') {
     $catalogAvailType = (string) $row['available_type'];
     $productId = $catalogId;
     $bundleId  = null;
+    $isFreeItem = !empty($row['is_free']) || ((float) $row['price']) <= 0.0;
 } else {
     $catalogId = (int) ($input['bundle_id'] ?? $input['id'] ?? $input['product_id'] ?? 0);
     if ($catalogId <= 0) {
@@ -55,6 +59,14 @@ if ($itemType === 'freebie') {
     $catalogAvailType = 'digital';
     $productId = null;
     $bundleId  = $catalogId;
+}
+
+// Free items: 1 per account, lifetime. Cap qty and block if already owned.
+if ($isFreeItem) {
+    $quantity = 1;
+    if (apiUserAlreadyOwnsFreeItem($conn, (int) $user['id'], (int) $productId)) {
+        sendResponse('error', 'You have already claimed this free item.', null, 409);
+    }
 }
 
 $requestedFormat = trim((string) ($input['selected_format'] ?? $input['available_type'] ?? ''));
@@ -87,10 +99,13 @@ $sel->execute();
 $existing = $sel->get_result()->fetch_assoc();
 
 if ($existing) {
-    $newQty = min(10, (int) $existing['quantity'] + $quantity);
-    $upd = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
-    $upd->bind_param('ii', $newQty, $existing['id']);
-    $upd->execute();
+    // Free items stay at qty 1 — idempotent re-add.
+    $newQty = $isFreeItem ? 1 : min(10, (int) $existing['quantity'] + $quantity);
+    if ($newQty !== (int) $existing['quantity']) {
+        $upd = $conn->prepare('UPDATE cart SET quantity = ? WHERE id = ?');
+        $upd->bind_param('ii', $newQty, $existing['id']);
+        $upd->execute();
+    }
     sendResponse('success', 'Cart updated.', ['cart_id' => (int) $existing['id']]);
 }
 
